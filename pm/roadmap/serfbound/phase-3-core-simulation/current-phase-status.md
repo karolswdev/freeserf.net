@@ -24,8 +24,8 @@ oracle fixtures.
 
 ## Exit criteria (evidence required)
 
-- [ ] Data-free parity tests pass against at least one Phase 1 oracle fixture.
-- [ ] Numeric determinism and wrapping/overflow behavior are documented and
+- [x] Data-free parity tests pass against at least one Phase 1 oracle fixture.
+- [x] Numeric determinism and wrapping/overflow behavior are documented and
   tested.
 - [ ] Map/coordinate primitives have focused unit tests.
 - [ ] State/tick skeleton has at least one deterministic round-trip or snapshot
@@ -36,17 +36,17 @@ oracle fixtures.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-3-01 | Port deterministic numeric/random rules | ready | story-01-numeric-random-rules.md | — |
-| SB-3-02 | Port map geometry primitive | backlog | story-02-map-geometry-primitive.md | — |
+| SB-3-01 | Port deterministic numeric/random rules | done | story-01-numeric-random-rules.md | evidence-story-01.md |
+| SB-3-02 | Port map geometry primitive | ready | story-02-map-geometry-primitive.md | — |
 | SB-3-03 | Add state and tick skeleton | backlog | story-03-state-tick-skeleton.md | — |
 | SB-3-04 | Prove first simulation parity | backlog | story-04-first-simulation-parity.md | — |
 
 ## Where we are
 
-Phase 3 is ready. Phase 1 produced the RNG and map geometry oracle fixtures,
-and Phase 2 completed the browser workspace, CI-safe test spine, runtime
-boundaries, and static browser shell. The next responsible move is SB-3-01:
-port deterministic numeric/random rules inside the engine boundary.
+Phase 3 is in progress. SB-3-01 ported the deterministic numeric helpers and
+`FreeserfRandom` into `@serfbound/engine`, with tests matching every case in
+the Phase 1 RNG fixture. The next responsible move is SB-3-02: port the map
+geometry primitive against `map-geometry-facts.json`.
 
 ## Active risks
 
@@ -61,6 +61,9 @@ port deterministic numeric/random rules inside the engine boundary.
 - 2026-06-09 — Start Phase 3 after the Phase 2 final audit — use
   `rng-fixed-seed-sequence.json` as the first parity target and keep
   implementation inside `@serfbound/engine` — Phase 2 completion audit.
+- 2026-06-09 — Preserve `Freeserf.Core/Random.cs` behavior with explicit
+  TypeScript fixed-width helpers and fixture-backed tests; no intentional RNG
+  behavior divergences — SB-3-01.
 
 ## Decisions deferred
 
