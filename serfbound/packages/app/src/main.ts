@@ -3,8 +3,33 @@ import {
   parseDosPaCatalog,
   validateArchiveFileSelection,
   type ArchiveValidationResult,
+  type DosPaCatalog,
 } from "@serfbound/assets";
 import { engineBoundary, uint16 } from "@serfbound/engine";
+import {
+  BrowserIndexedDbImportedArchiveStore,
+  clearImportedArchiveRecord,
+  createStoredImportedArchiveRecord,
+  errorMessage,
+  saveImportedArchiveRecord,
+  type ImportedArchiveStore,
+  type StoredImportedArchiveRecord,
+} from "./imported-data-store.js";
+
+export {
+  BrowserIndexedDbImportedArchiveStore,
+  clearImportedArchiveRecord,
+  cloneToArrayBuffer,
+  createStoredImportedArchiveRecord,
+  currentImportedArchiveKey,
+  importedArchiveDatabaseName,
+  importedArchiveStoreName,
+  saveImportedArchiveRecord,
+  type ImportedArchiveStore,
+  type StorageOperationResult,
+  type StoredImportedArchiveMetadata,
+  type StoredImportedArchiveRecord,
+} from "./imported-data-store.js";
 
 export type AppBootstrapSummary = {
   readonly runtime: "browser";
@@ -24,10 +49,18 @@ export function bootstrapSummary(): AppBootstrapSummary {
   };
 }
 
-export function mountSerfbound(root: HTMLElement): void {
+export type MountSerfboundOptions = {
+  readonly importedArchiveStore?: ImportedArchiveStore;
+};
+
+export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
+  const importedArchiveStore =
+    options.importedArchiveStore ?? new BrowserIndexedDbImportedArchiveStore();
   const summary = bootstrapSummary();
   root.dataset.serfboundRuntime = summary.runtime;
   root.dataset.serfboundDataState = summary.dataState;
+  root.dataset.serfboundCatalogState = "unread";
+  root.dataset.serfboundStorageState = "empty";
   root.innerHTML = `
     <main class="serfbound-shell" data-testid="serfbound-shell">
       <section class="scene" aria-labelledby="serfbound-title">
@@ -54,7 +87,7 @@ export function mountSerfbound(root: HTMLElement): void {
         <p class="status-panel__detail" data-testid="data-detail">Select SPAU.PA from your local files.</p>
         <div>
           <p class="status-panel__label">Source</p>
-          <p class="status-panel__value">Local file</p>
+          <p class="status-panel__value" data-testid="source-state">Local file</p>
         </div>
         <div>
           <p class="status-panel__label">Engine</p>
@@ -68,6 +101,12 @@ export function mountSerfbound(root: HTMLElement): void {
           accept=".PA,.pa"
         />
         <label class="primary-action" for="data-import">Import data</label>
+        <button
+          class="secondary-action"
+          data-testid="data-reset-button"
+          type="button"
+          disabled
+        >Clear data</button>
       </aside>
     </main>
   `;
@@ -90,9 +129,20 @@ export function mountSerfbound(root: HTMLElement): void {
     applyArchiveValidation(root, validation);
 
     if (validation.state === "supported" && file !== null && file !== undefined) {
-      void parseSelectedArchive(root, file);
+      void importSelectedArchive(root, file, validation, importedArchiveStore);
     }
   });
+
+  const resetButton = root.querySelector<HTMLButtonElement>("[data-testid='data-reset-button']");
+  if (resetButton === null) {
+    throw new Error("Serfbound shell reset button did not mount.");
+  }
+
+  resetButton.addEventListener("click", () => {
+    void clearSelectedArchive(root, importedArchiveStore);
+  });
+
+  void restorePersistedArchive(root, importedArchiveStore);
 }
 
 function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResult): void {
@@ -109,21 +159,33 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
       state.textContent = "Game data selected";
       detail.textContent = `${result.normalizedName} ready for catalog parsing`;
       root.dataset.serfboundCatalogState = "ready";
+      setSourceState(root, "Local file");
       break;
     case "unsupported":
       state.textContent = "Unsupported data file";
       detail.textContent = `${result.fileName} is not accepted`;
       root.dataset.serfboundCatalogState = "unread";
+      root.dataset.serfboundStorageState = "empty";
+      setSourceState(root, "Local file");
+      setResetEnabled(root, false);
       break;
     case "missing":
       state.textContent = "No game data imported";
       detail.textContent = "Select SPAU.PA from your local files.";
       root.dataset.serfboundCatalogState = "unread";
+      root.dataset.serfboundStorageState = "empty";
+      setSourceState(root, "Local file");
+      setResetEnabled(root, false);
       break;
   }
 }
 
-async function parseSelectedArchive(root: HTMLElement, file: File): Promise<void> {
+async function importSelectedArchive(
+  root: HTMLElement,
+  file: File,
+  validation: Extract<ArchiveValidationResult, { readonly state: "supported" }>,
+  importedArchiveStore: ImportedArchiveStore,
+): Promise<void> {
   const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
   const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
   if (state === null || detail === null) {
@@ -134,15 +196,155 @@ async function parseSelectedArchive(root: HTMLElement, file: File): Promise<void
   detail.textContent = "Parsing local DOS PA catalog";
 
   try {
-    const catalog = parseDosPaCatalog(await file.arrayBuffer());
-    root.dataset.serfboundCatalogState = "parsed";
-    state.textContent = "Catalog parsed";
-    detail.textContent = `${catalog.header.entryCount} entries, ${catalog.entrySummary.defined} defined, ${catalog.fixupSummary.count} fixups`;
+    const bytes = await file.arrayBuffer();
+    const catalog = parseDosPaCatalog(bytes);
+    const record = createStoredImportedArchiveRecord({
+      fileName: validation.fileName,
+      normalizedName: validation.normalizedName,
+      bytes,
+    });
+    const storageResult = await saveImportedArchiveRecord(importedArchiveStore, record);
+
+    if (storageResult.state === "error") {
+      root.dataset.serfboundStorageState = "error";
+      root.dataset.serfboundCatalogState = "parsed";
+      root.dataset.serfboundDataState = "supported";
+      state.textContent = "Storage error";
+      detail.textContent = `Catalog parsed, but local storage failed: ${storageResult.message}`;
+      setSourceState(root, "Local file");
+      setResetEnabled(root, false);
+      return;
+    }
+
+    applyParsedCatalogState(root, catalog, "persisted");
   } catch (error) {
     root.dataset.serfboundCatalogState = "invalid";
+    root.dataset.serfboundStorageState = "empty";
     state.textContent = "Catalog parse failed";
     detail.textContent = error instanceof Error ? error.message : "Unknown catalog parse error";
+    setSourceState(root, "Local file");
+    setResetEnabled(root, false);
   }
+}
+
+async function restorePersistedArchive(
+  root: HTMLElement,
+  importedArchiveStore: ImportedArchiveStore,
+): Promise<void> {
+  root.dataset.serfboundStorageState = "loading";
+
+  try {
+    const record = await importedArchiveStore.loadCurrent();
+    if (record === null) {
+      root.dataset.serfboundStorageState = "empty";
+      return;
+    }
+
+    applyStoredArchiveRecord(root, record);
+  } catch (error) {
+    applyStorageErrorState(root, `Local data restore failed: ${errorMessage(error)}`);
+  }
+}
+
+function applyStoredArchiveRecord(
+  root: HTMLElement,
+  record: StoredImportedArchiveRecord,
+): void {
+  try {
+    applyParsedCatalogState(root, parseDosPaCatalog(record.bytes), "restored", record);
+  } catch (error) {
+    root.dataset.serfboundDataState = "unsupported";
+    root.dataset.serfboundCatalogState = "invalid";
+    root.dataset.serfboundStorageState = "error";
+    const state = getDataStateElement(root);
+    const detail = getDataDetailElement(root);
+    state.textContent = "Stored catalog invalid";
+    detail.textContent = error instanceof Error ? error.message : "Unknown catalog parse error";
+    setSourceState(root, "Local storage");
+    setResetEnabled(root, true);
+  }
+}
+
+function applyParsedCatalogState(
+  root: HTMLElement,
+  catalog: DosPaCatalog,
+  source: "persisted" | "restored",
+  record?: StoredImportedArchiveRecord,
+): void {
+  const state = getDataStateElement(root);
+  const detail = getDataDetailElement(root);
+  root.dataset.serfboundDataState = "supported";
+  root.dataset.serfboundCatalogState = "parsed";
+  root.dataset.serfboundStorageState = "persisted";
+  state.textContent = "Catalog parsed";
+  detail.textContent =
+    source === "restored" && record !== undefined
+      ? `Restored ${record.normalizedName}: ${catalog.header.entryCount} entries, ${catalog.entrySummary.defined} defined`
+      : `${catalog.header.entryCount} entries, ${catalog.entrySummary.defined} defined, ${catalog.fixupSummary.count} fixups, persisted locally`;
+  setSourceState(root, source === "restored" ? "Local storage" : "Local file");
+  setResetEnabled(root, true);
+}
+
+async function clearSelectedArchive(
+  root: HTMLElement,
+  importedArchiveStore: ImportedArchiveStore,
+): Promise<void> {
+  const result = await clearImportedArchiveRecord(importedArchiveStore);
+  if (result.state === "error") {
+    applyStorageErrorState(root, `Could not clear local data: ${result.message}`);
+    return;
+  }
+
+  root.dataset.serfboundDataState = "missing";
+  root.dataset.serfboundCatalogState = "unread";
+  root.dataset.serfboundStorageState = "cleared";
+  getDataStateElement(root).textContent = "No game data imported";
+  getDataDetailElement(root).textContent = "Local data cleared. Select SPAU.PA from your local files.";
+  setSourceState(root, "Local file");
+  setResetEnabled(root, false);
+}
+
+function applyStorageErrorState(root: HTMLElement, message: string): void {
+  root.dataset.serfboundStorageState = "error";
+  getDataStateElement(root).textContent = "Storage error";
+  getDataDetailElement(root).textContent = message;
+  setSourceState(root, "Local storage");
+}
+
+function getDataStateElement(root: HTMLElement): HTMLElement {
+  const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
+  if (state === null) {
+    throw new Error("Serfbound shell data state did not mount.");
+  }
+
+  return state;
+}
+
+function getDataDetailElement(root: HTMLElement): HTMLElement {
+  const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
+  if (detail === null) {
+    throw new Error("Serfbound shell data detail did not mount.");
+  }
+
+  return detail;
+}
+
+function setSourceState(root: HTMLElement, text: string): void {
+  const sourceState = root.querySelector<HTMLElement>("[data-testid='source-state']");
+  if (sourceState === null) {
+    throw new Error("Serfbound shell source state did not mount.");
+  }
+
+  sourceState.textContent = text;
+}
+
+function setResetEnabled(root: HTMLElement, enabled: boolean): void {
+  const resetButton = root.querySelector<HTMLButtonElement>("[data-testid='data-reset-button']");
+  if (resetButton === null) {
+    throw new Error("Serfbound shell reset button did not mount.");
+  }
+
+  resetButton.disabled = !enabled;
 }
 
 function drawGeneratedTerrain(canvas: HTMLCanvasElement): void {

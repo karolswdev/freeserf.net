@@ -180,6 +180,9 @@ For Serfbound specifically, every implementation story must identify:
   `SPAU.PA` bytes in the browser, reads the size/count header and catalog table,
   applies DOS loader fixups, and compares selected facts to ignored local oracle
   metadata through opt-in local checks.
+- **Current browser asset persistence:** `@serfbound/app` persists the current
+  imported `SPAU.PA` record in IndexedDB after successful catalog parsing,
+  restores it on reload, and exposes a clear/reset flow.
 
 ## Glossary
 

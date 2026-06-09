@@ -30,7 +30,7 @@ engine without committing, hosting, or redistributing original files.
 
 - [x] Browser import accepts local `SPAU.PA` and detects it as a supported DOS
   source.
-- [ ] Imported data persists locally or has a documented no-persistence
+- [x] Imported data persists locally or has a documented no-persistence
   rationale.
 - [ ] Asset catalog lists at least map ground, objects, serf sprites, UI/font
   assets, sound effects, and music availability.
@@ -43,17 +43,18 @@ engine without committing, hosting, or redistributing original files.
 |---|---|---|---|---|
 | SB-4-01 | Implement browser data import boundary | done | story-01-browser-data-import-boundary.md | evidence-story-01.md |
 | SB-4-02 | Parse DOS PA resource catalog | done | story-02-parse-dos-pa-catalog.md | evidence-story-02.md |
-| SB-4-03 | Persist imported data locally | ready | story-03-persist-imported-data.md | — |
-| SB-4-04 | Expose typed asset catalog | backlog | story-04-typed-asset-catalog.md | — |
+| SB-4-03 | Persist imported data locally | done | story-03-persist-imported-data.md | evidence-story-03.md |
+| SB-4-04 | Expose typed asset catalog | ready | story-04-typed-asset-catalog.md | — |
 
 ## Where we are
 
 Phase 4 is in progress. SB-4-01 shipped the direct browser file-selection
-boundary, and SB-4-02 now parses DOS `.PA` catalog metadata through that browser
-boundary. The parser is metadata-only, data-free in CI, and proved against the
-ignored local `SPAU.PA` plus Phase 1 oracle metadata through an opt-in manual
-check. The next responsible move is SB-4-03: decide and implement local browser
-persistence for imported user data, or document a no-persistence rationale.
+boundary, SB-4-02 parses DOS `.PA` catalog metadata through that browser
+boundary, and SB-4-03 persists imported archive bytes in IndexedDB with reload
+restore and reset. The parser and persistence paths remain data-free in CI and
+were also proved manually with the ignored local `SPAU.PA`. The next responsible
+move is SB-4-04: expose a typed asset catalog boundary for renderer, UI, and
+audio consumers without leaking raw archive offsets.
 
 ## Active risks
 
@@ -71,6 +72,9 @@ persistence for imported user data, or document a no-persistence rationale.
 - 2026-06-09 — Parse DOS `.PA` catalogs natively in browser code, including the
   8-byte declared-size/count header, little-endian `size, offset` table rows,
   and inherited-entry fixups; payload decoding remains deferred — SB-4-02.
+- 2026-06-09 — Persist the current imported DOS archive in IndexedDB after
+  successful catalog parsing, restore it on reload, and provide a clear/reset
+  path; quota and migration hardening remain Phase 8 work — SB-4-03.
 
 ## Decisions deferred
 

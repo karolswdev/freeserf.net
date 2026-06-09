@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 4
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-4-01, SB-4-02
 - **Unblocks:** SB-7-01, SB-8-03
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,12 +22,12 @@ separate from tracked project files.
 
 ## Acceptance criteria
 
-- [ ] Imported file metadata and bytes are stored locally or the no-persistence
+- [x] Imported file metadata and bytes are stored locally or the no-persistence
   decision is documented.
-- [ ] Reload restores enough data to continue asset parsing.
-- [ ] User can clear/reset imported data.
-- [ ] Storage errors produce recoverable UI states.
-- [ ] Tests avoid storing original assets in tracked fixtures.
+- [x] Reload restores enough data to continue asset parsing.
+- [x] User can clear/reset imported data.
+- [x] Storage errors produce recoverable UI states.
+- [x] Tests avoid storing original assets in tracked fixtures.
 
 ## Test plan
 
@@ -39,5 +39,12 @@ separate from tracked project files.
 
 ## Notes / open questions
 
-Phase 8 will harden quotas and migrations. This story only proves the viable
-happy path and reset path.
+Shipped an IndexedDB-backed current archive store for the browser app shell.
+Generated CI tests prove record creation, byte cloning, save/load/clear, and
+recoverable storage errors. The browser smoke imports a generated `SPAU.PA`,
+persists it, reload-restores enough bytes to parse the catalog, clears it, and
+reloads back to the missing-data state.
+
+Manual/local proof imported the ignored local `SPAU.PA` in Chromium, parsed
+`4000 entries, 2749 defined, 255 fixups`, restored it after reload from
+IndexedDB, and cleared it. Phase 8 still owns quota/migration hardening.

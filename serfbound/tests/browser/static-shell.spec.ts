@@ -27,6 +27,7 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByRole("heading", { name: "Serfbound" })).toBeVisible();
   await expect(page.getByTestId("runtime-pill")).toHaveText("Browser runtime");
   await expect(page.getByTestId("data-state")).toHaveText("No game data imported");
+  await expect(page.getByTestId("data-reset-button")).toBeDisabled();
 
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-runtime",
@@ -58,8 +59,10 @@ test("static app shell renders without original data or a desktop companion", as
   });
   await expect(page.getByTestId("data-state")).toHaveText("Catalog parsed");
   await expect(page.getByTestId("data-detail")).toHaveText(
-    "2 entries, 2 defined, 0 fixups",
+    "2 entries, 2 defined, 0 fixups, persisted locally",
   );
+  await expect(page.getByTestId("source-state")).toHaveText("Local file");
+  await expect(page.getByTestId("data-reset-button")).toBeEnabled();
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-data-state",
     "supported",
@@ -67,6 +70,40 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-catalog-state",
     "parsed",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "persisted",
+  );
+
+  await page.reload();
+  await expect(page.getByTestId("data-state")).toHaveText("Catalog parsed");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "Restored SPAU.PA: 2 entries, 2 defined",
+  );
+  await expect(page.getByTestId("source-state")).toHaveText("Local storage");
+  await expect(page.getByTestId("data-reset-button")).toBeEnabled();
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "persisted",
+  );
+
+  await page.getByTestId("data-reset-button").click();
+  await expect(page.getByTestId("data-state")).toHaveText("No game data imported");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "Local data cleared. Select SPAU.PA from your local files.",
+  );
+  await expect(page.getByTestId("data-reset-button")).toBeDisabled();
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "cleared",
+  );
+
+  await page.reload();
+  await expect(page.getByTestId("data-state")).toHaveText("No game data imported");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "empty",
   );
 
   const nonBlankPixels = await page
