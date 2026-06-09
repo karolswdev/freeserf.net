@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-4-data-assets](./phase-4-data-assets/current-phase-status.md)
-**Status:** Phase 0, Phase 1, Phase 2, and Phase 3 complete; Phase 4 ready.
+**Status:** Phase 0, Phase 1, Phase 2, and Phase 3 complete; Phase 4 in progress.
 
 ## Vision
 
@@ -83,7 +83,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 1 | Capture trustworthy reference behavior before rewriting it | complete | [phase-1-reference-oracle](./phase-1-reference-oracle/) |
 | 2 | Establish the pure-browser workspace, runtime, and CI spine | complete | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
-| 4 | Import local user-owned DOS data and expose typed assets | ready | [phase-4-data-assets](./phase-4-data-assets/) |
+| 4 | Import local user-owned DOS data and expose typed assets | in-progress | [phase-4-data-assets](./phase-4-data-assets/) |
 | 5 | Build the map renderer, projection model, and visual asset path | planning | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
 | 6 | Build browser input, UI shell, and game interaction loops | planning | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
@@ -173,6 +173,9 @@ For Serfbound specifically, every implementation story must identify:
   `rng-fixed-seed-sequence.json` and `map-geometry-facts.json`, plus a
   source-derived `SerfboundGameState` tick/snapshot skeleton and combined
   engine parity proof.
+- **Current browser import boundary:** direct local `.PA` file selection accepts
+  `SPAU.PA`, rejects unsupported names recoverably, and keeps real local asset
+  checks opt-in/manual.
 
 ## Glossary
 

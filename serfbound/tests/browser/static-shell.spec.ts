@@ -23,7 +23,35 @@ test("static app shell renders without original data or a desktop companion", as
   );
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-data-state",
-    "missing-user-data",
+    "missing",
+  );
+
+  await page.screenshot({ fullPage: true, path: screenshotPath });
+
+  await page.getByTestId("data-import-input").setInputFiles({
+    name: "README.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("not a supported archive"),
+  });
+  await expect(page.getByTestId("data-state")).toHaveText("Unsupported data file");
+  await expect(page.getByTestId("data-detail")).toHaveText("README.txt is not accepted");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-data-state",
+    "unsupported",
+  );
+
+  await page.getByTestId("data-import-input").setInputFiles({
+    name: "SPAU.PA",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from([0x00, 0x01, 0x02, 0x03]),
+  });
+  await expect(page.getByTestId("data-state")).toHaveText("Game data selected");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "SPAU.PA ready for catalog parsing",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-data-state",
+    "supported",
   );
 
   const nonBlankPixels = await page
@@ -53,5 +81,4 @@ test("static app shell renders without original data or a desktop companion", as
     });
 
   expect(nonBlankPixels).toBeGreaterThan(120_000);
-  await page.screenshot({ fullPage: true, path: screenshotPath });
 });

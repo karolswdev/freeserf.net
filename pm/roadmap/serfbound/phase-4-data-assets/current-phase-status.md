@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** ready.
+**Status:** in progress.
 
 ## Goal
 
@@ -28,31 +28,33 @@ engine without committing, hosting, or redistributing original files.
 
 ## Exit criteria (evidence required)
 
-- [ ] Browser import accepts local `SPAU.PA` and detects it as a supported DOS
+- [x] Browser import accepts local `SPAU.PA` and detects it as a supported DOS
   source.
 - [ ] Imported data persists locally or has a documented no-persistence
   rationale.
 - [ ] Asset catalog lists at least map ground, objects, serf sprites, UI/font
   assets, sound effects, and music availability.
-- [ ] CI remains data-free; local asset checks are opt-in/manual.
-- [ ] Missing/invalid data produces a recoverable browser UI state.
+- [x] CI remains data-free; local asset checks are opt-in/manual.
+- [x] Missing/invalid data produces a recoverable browser UI state.
 
 ## Story status
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-4-01 | Implement browser data import boundary | ready | story-01-browser-data-import-boundary.md | — |
-| SB-4-02 | Parse DOS PA resource catalog | backlog | story-02-parse-dos-pa-catalog.md | — |
+| SB-4-01 | Implement browser data import boundary | done | story-01-browser-data-import-boundary.md | evidence-story-01.md |
+| SB-4-02 | Parse DOS PA resource catalog | ready | story-02-parse-dos-pa-catalog.md | — |
 | SB-4-03 | Persist imported data locally | backlog | story-03-persist-imported-data.md | — |
 | SB-4-04 | Expose typed asset catalog | backlog | story-04-typed-asset-catalog.md | — |
 
 ## Where we are
 
-Phase 4 is ready after Phase 3 completion. The ignored local `SPAU.PA` source
-exists and is inventoried in
+Phase 4 is in progress. SB-4-01 shipped the direct browser file-selection
+boundary, first `SPAU.PA` filename validation, recoverable missing/invalid UI
+states, generated-file browser smoke coverage, and opt-in local/manual check
+path. The ignored local `SPAU.PA` source exists and is inventoried in
 `pm/roadmap/serfbound/adoption/local-asset-inventory.md`. The next responsible
-move is SB-4-01: implement the browser data import boundary without committing
-or bundling original data.
+move is SB-4-02: parse DOS `.PA` catalog metadata without committing or
+bundling original data.
 
 ## Active risks
 
@@ -64,9 +66,11 @@ or bundling original data.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Start with direct `.PA` file selection and accept only `SPAU.PA`
+  at the import boundary; generated fake files prove browser behavior in CI,
+  while real local data remains opt-in/manual — SB-4-01.
 
 ## Decisions deferred
 
-- Direct `.PA` upload vs directory picker — resolve in SB-4-01 — default to
-  direct `.PA` import first because `SPAU.PA` is the known loader-relevant file.
+- Directory picker enhancement — defer until direct `.PA` import and catalog
+  parsing prove the core path — default remains direct `SPAU.PA` selection.

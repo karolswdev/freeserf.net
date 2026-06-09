@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 4
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-2-04, SB-0-05
 - **Unblocks:** SB-4-02, SB-4-03, SB-7-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ tracked project data or requiring a desktop helper.
 
 ## Acceptance criteria
 
-- [ ] Browser UI accepts a local `.PA` file selection.
-- [ ] `SPAU.PA` is accepted as a supported DOS source name.
-- [ ] Invalid or missing files produce recoverable UI state.
-- [ ] Local asset tests are opt-in and excluded from CI.
-- [ ] No original data is copied into tracked paths.
+- [x] Browser UI accepts a local `.PA` file selection.
+- [x] `SPAU.PA` is accepted as a supported DOS source name.
+- [x] Invalid or missing files produce recoverable UI state.
+- [x] Local asset tests are opt-in and excluded from CI.
+- [x] No original data is copied into tracked paths.
 
 ## Test plan
 
@@ -39,5 +39,10 @@ tracked project data or requiring a desktop helper.
 
 ## Notes / open questions
 
-Start with direct file import. Directory picker can follow if it clearly improves
-player ergonomics.
+Shipped direct file import in the browser shell. The UI accepts generated test
+files in default browser smoke tests, recognizes `SPAU.PA` as the first
+supported DOS archive name, rejects unsupported names recoverably, and keeps
+local/manual `SPAU.PA` checks behind `SERFBOUND_RUN_LOCAL_ASSET_TESTS=1`.
+
+This story does not parse archive bytes or persist imported data. SB-4-02 owns
+catalog parsing, and SB-4-03 owns persistence.

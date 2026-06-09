@@ -1,4 +1,8 @@
-import { assetImportBoundary } from "@serfbound/assets";
+import {
+  assetImportBoundary,
+  validateArchiveFileSelection,
+  type ArchiveValidationResult,
+} from "@serfbound/assets";
 import { engineBoundary, uint16 } from "@serfbound/engine";
 
 export type AppBootstrapSummary = {
@@ -6,7 +10,7 @@ export type AppBootstrapSummary = {
   readonly enginePackage: string;
   readonly assetSource: string;
   readonly uint16Sample: number;
-  readonly dataState: "missing-user-data";
+  readonly dataState: ArchiveValidationResult["state"];
 };
 
 export function bootstrapSummary(): AppBootstrapSummary {
@@ -15,7 +19,7 @@ export function bootstrapSummary(): AppBootstrapSummary {
     enginePackage: engineBoundary.name,
     assetSource: assetImportBoundary.source,
     uint16Sample: uint16(0x1ffff),
-    dataState: "missing-user-data",
+    dataState: "missing",
   };
 }
 
@@ -46,6 +50,7 @@ export function mountSerfbound(root: HTMLElement): void {
           <p class="status-panel__label">Data</p>
           <p class="status-panel__value" data-testid="data-state">No game data imported</p>
         </div>
+        <p class="status-panel__detail" data-testid="data-detail">Select SPAU.PA from your local files.</p>
         <div>
           <p class="status-panel__label">Source</p>
           <p class="status-panel__value">Local file</p>
@@ -54,7 +59,14 @@ export function mountSerfbound(root: HTMLElement): void {
           <p class="status-panel__label">Engine</p>
           <p class="status-panel__value">${summary.enginePackage}</p>
         </div>
-        <button class="primary-action" type="button" disabled>Import data</button>
+        <input
+          id="data-import"
+          class="import-input"
+          data-testid="data-import-input"
+          type="file"
+          accept=".PA,.pa"
+        />
+        <label class="primary-action" for="data-import">Import data</label>
       </aside>
     </main>
   `;
@@ -65,6 +77,40 @@ export function mountSerfbound(root: HTMLElement): void {
   }
 
   drawGeneratedTerrain(canvas);
+
+  const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
+  if (input === null) {
+    throw new Error("Serfbound shell import input did not mount.");
+  }
+
+  input.addEventListener("change", () => {
+    applyArchiveValidation(root, validateArchiveFileSelection(input.files?.item(0)));
+  });
+}
+
+function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResult): void {
+  const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
+  const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
+  if (state === null || detail === null) {
+    throw new Error("Serfbound shell data status did not mount.");
+  }
+
+  root.dataset.serfboundDataState = result.state;
+
+  switch (result.state) {
+    case "supported":
+      state.textContent = "Game data selected";
+      detail.textContent = `${result.normalizedName} ready for catalog parsing`;
+      break;
+    case "unsupported":
+      state.textContent = "Unsupported data file";
+      detail.textContent = `${result.fileName} is not accepted`;
+      break;
+    case "missing":
+      state.textContent = "No game data imported";
+      detail.textContent = "Select SPAU.PA from your local files.";
+      break;
+  }
 }
 
 function drawGeneratedTerrain(canvas: HTMLCanvasElement): void {
