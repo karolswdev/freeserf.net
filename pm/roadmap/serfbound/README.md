@@ -58,6 +58,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/oracle-targets.md` - selected Phase 1 oracle
   targets, source files/methods, data requirements, output shapes, and protected
   future phases.
+- `pm/roadmap/serfbound/adoption/oracle-fixture-contract.md` - v1 fixture
+  schema, directory policy, checksum rules, local/manual output rules, and
+  product-code boundary for oracle data.
 - `pm/roadmap/serfbound/reference-tools/` - isolated Phase 1 reference capture
   tooling that may inspect source behavior but is not Serfbound product code.
 - `pm/roadmap/serfbound/reference-fixtures/ci/` - committed CI-safe oracle

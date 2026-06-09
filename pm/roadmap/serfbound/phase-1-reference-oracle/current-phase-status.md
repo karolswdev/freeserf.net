@@ -44,18 +44,17 @@ product runtime.
 | SB-1-01 | Select first oracle targets | done | story-01-select-oracle-targets.md | evidence-story-01.md |
 | SB-1-02 | Capture data-free reference output | done | story-02-data-free-reference-output.md | evidence-story-02.md |
 | SB-1-03 | Capture local SPAU.PA resource output | done | story-03-local-spau-resource-output.md | evidence-story-03.md |
-| SB-1-04 | Define oracle fixture contract | ready | story-04-oracle-fixture-contract.md | — |
+| SB-1-04 | Define oracle fixture contract | done | story-04-oracle-fixture-contract.md | evidence-story-04.md |
 | SB-1-05 | Capture map geometry reference output | done | story-05-map-geometry-reference-output.md | evidence-story-05.md |
 
 ## Where we are
 
-Phase 1 now has three reference outputs: CI-safe RNG, local/manual `SPAU.PA`
-catalog metadata, and CI-safe map geometry facts. SB-1-05 captured
-`map.geometry-facts` into
-`pm/roadmap/serfbound/reference-fixtures/ci/map-geometry-facts.json`, covering
-direction cycles, wraparound, distances, render tile constants, and projection
-samples with synthetic heights. The next responsible move is SB-1-04: define
-the fixture contract and then audit Phase 1 for exit.
+Phase 1 stories are all shipped. SB-1-04 defined the v1 oracle fixture contract
+covering CI-safe fixtures, local/manual outputs, schema fields, checksum rules,
+source attribution, command policy, and the product-code boundary. The next
+responsible move is a Phase 1 final audit and `final-summary.md`; do not mark
+Phase 1 complete until that audit links every story, evidence file, command,
+known limitation, and deferred item.
 
 ## Active risks
 
@@ -92,15 +91,18 @@ the fixture contract and then audit Phase 1 for exit.
 - 2026-06-09 — Use `map.geometry-facts` as Phase 1's third output — it is
   data-free, small enough to review, and protects Phase 3 map primitives,
   Phase 5 projection, and Phase 6 pointer-to-map interaction — SB-1-05 capture.
+- 2026-06-09 — Adopt v1 oracle fixture contract — CI-safe fixtures live under
+  `pm/roadmap/serfbound/reference-fixtures/ci/`, local/manual outputs stay
+  ignored under `serfbound-local-data/reference-output/`, product code may read
+  fixture data but must not import or execute reference helpers — SB-1-04.
 
 ## Decisions deferred
 
-- Exact fixture schema fields — resolve in SB-1-04 — default to the schema
-  baseline from `parity-harness-design.md` and target details from
-  `oracle-targets.md`.
 - Whether to repair local Node before Phase 2 starts — resolve before SB-2-01 —
   SB-1-02 could use Python because it is reference tooling only, but product
   implementation still needs a working browser-native toolchain.
-- Whether SB-1-04 should codify source-derived Python helpers as temporary
-  Phase 1-only tooling, or require future C# cross-checks when a C# toolchain is
-  available.
+- Whether to add C# cross-checks for source-derived Python fixtures when a C#
+  toolchain is available — not required for Phase 1 exit, but required before
+  Phase 3 claims full simulation parity.
+- Phase 1 final audit — create `final-summary.md`, re-check every exit
+  criterion, and update the project README phase index before starting Phase 2.

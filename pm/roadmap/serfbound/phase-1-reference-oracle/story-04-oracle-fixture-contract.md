@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 1
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-1-02, SB-1-03
 - **Unblocks:** SB-2-02, SB-3-04, SB-4-02
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,12 +22,12 @@ asset checks and prevents reference tooling from becoming product architecture.
 
 ## Acceptance criteria
 
-- [ ] `pm/roadmap/serfbound/adoption/oracle-fixture-contract.md` exists.
-- [ ] The contract defines where CI-safe fixtures live.
-- [ ] The contract defines where local/manual outputs live or how they are
+- [x] `pm/roadmap/serfbound/adoption/oracle-fixture-contract.md` exists.
+- [x] The contract defines where CI-safe fixtures live.
+- [x] The contract defines where local/manual outputs live or how they are
   ignored.
-- [ ] The contract forbids product code importing .NET capture helpers.
-- [ ] The contract includes validation rules for fixture schema version,
+- [x] The contract forbids product code importing .NET capture helpers.
+- [x] The contract includes validation rules for fixture schema version,
   checksum, source target, and local-data requirement.
 
 ## Test plan
@@ -39,5 +39,5 @@ asset checks and prevents reference tooling from becoming product architecture.
 
 ## Notes / open questions
 
-This contract should be boring and strict. Later phases should not invent new
-fixture conventions unless they update this file.
+Shipped `pm/roadmap/serfbound/adoption/oracle-fixture-contract.md` as the Phase
+1 v1 fixture contract. Phase 2 must consume fixture data, not reference tooling.

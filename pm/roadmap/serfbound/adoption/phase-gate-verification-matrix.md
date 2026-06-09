@@ -30,7 +30,7 @@ artifacts, or manual verification notes.
 | Phase | Gate | Required proof | Current status |
 |---|---|---|---|
 | 0 | Rewrite discovery is credible | Roadmap, source inventory, runtime decision, parity design, asset boundary, and phase plan exist | Complete |
-| 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | In progress; three reference outputs captured, fixture contract pending |
+| 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | In progress; stories shipped, final audit pending |
 | 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | Not started |
 | 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | Not started |
 | 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Not started |
@@ -78,6 +78,7 @@ all phases have status files and all referenced Phase 1 through Phase 9 story
 files exist. Phase 0 is complete and documented in
 `pm/roadmap/serfbound/phase-0-setup/final-summary.md`. Phase 1 has started with
 SB-1-01 target selection, SB-1-02's first CI-safe RNG fixture, SB-1-03's
-local/manual `SPAU.PA` metadata output, and SB-1-05's CI-safe map geometry
-fixture. The product is not complete. Phase 1 still needs SB-1-04's fixture
-contract and a final phase audit before its exit criteria can pass.
+local/manual `SPAU.PA` metadata output, SB-1-05's CI-safe map geometry fixture,
+and SB-1-04's fixture contract. The product is not complete. Phase 1 still
+needs a final phase audit and `final-summary.md` before it can be marked
+complete.
