@@ -29,9 +29,9 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 - [x] CI can run without local assets.
 - [ ] The app shell opens in a browser and proves the deployment model is static
   or otherwise pure browser.
-- [ ] Runtime boundaries are documented: engine, assets, rendering, UI, audio,
+- [x] Runtime boundaries are documented: engine, assets, rendering, UI, audio,
   persistence, worker boundary.
-- [ ] No desktop wrapper or .NET runtime appears in product dependencies.
+- [x] No desktop wrapper or .NET runtime appears in product dependencies.
 
 ## Story status
 
@@ -39,18 +39,18 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 |---|---|---|---|---|
 | SB-2-01 | Scaffold pure-browser workspace | done | story-01-scaffold-browser-workspace.md | evidence-story-01.md |
 | SB-2-02 | Add CI-safe test spine | done | story-02-ci-safe-test-spine.md | evidence-story-02.md |
-| SB-2-03 | Define runtime module boundaries | backlog | story-03-runtime-module-boundaries.md | — |
+| SB-2-03 | Define runtime module boundaries | done | story-03-runtime-module-boundaries.md | evidence-story-03.md |
 | SB-2-04 | Prove static browser app shell | backlog | story-04-static-browser-shell.md | — |
 
 ## Where we are
 
 Phase 2 is in progress. SB-2-01 created the `serfbound/` TypeScript npm
 workspace with app, engine, assets, and test-support package boundaries.
-SB-2-02 added the default CI-safe test spine: `npm test` builds the workspace,
-validates committed oracle fixture headers, and consumes RNG/map fixture facts
-without local asset environment variables. The next responsible move is SB-2-03:
-define runtime module boundaries before deeper engine, asset, renderer, UI,
-audio, persistence, and worker work spreads out.
+SB-2-02 added the default CI-safe test spine. SB-2-03 documented runtime module
+boundaries for engine, asset import, decoded catalog, renderer/projection,
+UI/input, audio, persistence, worker/threading, oracle fixtures/tests, and app
+shell. The next responsible move is SB-2-04: prove the static browser app shell
+and deployment model.
 
 ## Active risks
 
@@ -75,6 +75,8 @@ audio, persistence, and worker work spreads out.
 - 2026-06-09 — Use Node's built-in test runner for the first CI-safe test spine
   and keep local/manual asset checks under separately named opt-in commands —
   SB-2-02.
+- 2026-06-09 — Keep `@serfbound/test-support` test-only and document runtime
+  module boundaries before Phase 3-6 implementation starts — SB-2-03.
 
 ## Decisions deferred
 

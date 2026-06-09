@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 2
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-2-01, SB-0-02, SB-0-03
 - **Unblocks:** SB-3-01, SB-4-01, SB-5-01, SB-6-02
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,12 +22,12 @@ that are strict enough to protect determinism but light enough to build.
 
 ## Acceptance criteria
 
-- [ ] `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md` exists.
-- [ ] Every boundary names allowed dependencies and forbidden dependencies.
-- [ ] The engine boundary has no direct DOM, canvas, WebAudio, or storage
+- [x] `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md` exists.
+- [x] Every boundary names allowed dependencies and forbidden dependencies.
+- [x] The engine boundary has no direct DOM, canvas, WebAudio, or storage
   dependency unless explicitly justified.
-- [ ] Asset import distinguishes browser file APIs from decoded asset catalogs.
-- [ ] Worker/threading boundary is either defined or explicitly deferred to
+- [x] Asset import distinguishes browser file APIs from decoded asset catalogs.
+- [x] Worker/threading boundary is either defined or explicitly deferred to
   Phase 8 with a stop signal.
 
 ## Test plan
@@ -40,5 +40,9 @@ that are strict enough to protect determinism but light enough to build.
 
 ## Notes / open questions
 
-The boundary document should be revised when implementation evidence contradicts
-it. Treat it as a guardrail, not a law of physics.
+Shipped `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md` as the
+Phase 2 baseline. The document covers engine, asset import, decoded catalog,
+renderer/projection, UI/input, audio, persistence, worker/threading, oracle
+fixtures/tests, and app shell boundaries. It also records the Phase 3-6 story
+review and adds a mechanical boundary check that product packages cannot depend
+on `@serfbound/test-support`.

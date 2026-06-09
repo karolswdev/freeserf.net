@@ -61,6 +61,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/oracle-fixture-contract.md` - v1 fixture
   schema, directory policy, checksum rules, local/manual output rules, and
   product-code boundary for oracle data.
+- `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md` - Phase 2
+  boundary baseline for engine, assets, renderer, UI/input, audio, persistence,
+  worker/threading, oracle fixtures/tests, and app shell.
 - `pm/roadmap/serfbound/reference-tools/` - isolated Phase 1 reference capture
   tooling that may inspect source behavior but is not Serfbound product code.
 - `pm/roadmap/serfbound/reference-fixtures/ci/` - committed CI-safe oracle
@@ -159,6 +162,8 @@ For Serfbound specifically, every implementation story must identify:
 - **Current CI-safe browser command:** `npm test` from `serfbound/` builds the
   workspace and runs Node's built-in test runner against committed Phase 1
   fixture data without `serfbound-local-data/`.
+- **Current runtime boundary baseline:**
+  `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
 
 ## Glossary
 

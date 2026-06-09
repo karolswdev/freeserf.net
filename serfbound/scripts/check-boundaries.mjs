@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const workspaceRoot = new URL("..", import.meta.url).pathname;
+const packagesRoot = join(workspaceRoot, "packages");
 const forbiddenDependencyPattern =
   /(^|[/@-])(electron|tauri|dotnet|mono|blazor|edge-js|node-gyp|nativefier)([/@-]|$)/i;
 const forbiddenAssetPathPattern =
@@ -14,11 +15,10 @@ function readJson(path) {
 }
 
 function packageJsonPaths() {
-  const packagesDir = join(workspaceRoot, "packages");
   return [
     join(workspaceRoot, "package.json"),
-    ...readdirSync(packagesDir)
-      .map((name) => join(packagesDir, name, "package.json"))
+    ...readdirSync(packagesRoot)
+      .map((name) => join(packagesRoot, name, "package.json"))
       .filter((path) => statSync(path).isFile()),
   ];
 }
@@ -61,6 +61,16 @@ for (const path of packageJsonPaths()) {
       if (forbiddenDependencyPattern.test(dependencyName)) {
         violations.push(`${path}: forbidden dependency ${dependencyName}`);
       }
+
+      if (
+        manifest.name !== "@serfbound/test-support" &&
+        path.startsWith(packagesRoot) &&
+        dependencyName === "@serfbound/test-support"
+      ) {
+        violations.push(
+          `${path}: product packages must not depend on @serfbound/test-support`,
+        );
+      }
     }
   }
 
@@ -70,7 +80,7 @@ for (const path of packageJsonPaths()) {
   }
 }
 
-for (const path of sourceFilePaths(join(workspaceRoot, "packages"))) {
+for (const path of sourceFilePaths(packagesRoot)) {
   if (productSourceForbiddenPattern.test(readFileSync(path, "utf8"))) {
     violations.push(
       `${path}: product package source must not reference local data or reference tools`,
