@@ -1,8 +1,8 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-09.
-**Current phase:** [phase-4-data-assets](./phase-4-data-assets/current-phase-status.md)
-**Status:** Phase 0, Phase 1, Phase 2, and Phase 3 complete; Phase 4 in progress.
+**Current phase:** [phase-5-renderer-projection](./phase-5-renderer-projection/current-phase-status.md)
+**Status:** Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 complete; Phase 5 ready.
 
 ## Vision
 
@@ -83,8 +83,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 1 | Capture trustworthy reference behavior before rewriting it | complete | [phase-1-reference-oracle](./phase-1-reference-oracle/) |
 | 2 | Establish the pure-browser workspace, runtime, and CI spine | complete | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
-| 4 | Import local user-owned DOS data and expose typed assets | in-progress | [phase-4-data-assets](./phase-4-data-assets/) |
-| 5 | Build the map renderer, projection model, and visual asset path | planning | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
+| 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
+| 5 | Build the map renderer, projection model, and visual asset path | ready | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
 | 6 | Build browser input, UI shell, and game interaction loops | planning | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
@@ -183,6 +183,9 @@ For Serfbound specifically, every implementation story must identify:
 - **Current browser asset persistence:** `@serfbound/app` persists the current
   imported `SPAU.PA` record in IndexedDB after successful catalog parsing,
   restores it on reload, and exposes a clear/reset flow.
+- **Current typed asset catalog:** `@serfbound/assets` exposes terrain,
+  object, serf, UI, and audio resource groups plus renderer/UI/audio request
+  handles while keeping raw archive offsets behind asset internals.
 
 ## Glossary
 

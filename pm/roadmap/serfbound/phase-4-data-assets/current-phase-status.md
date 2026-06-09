@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** in progress.
+**Status:** complete; Phase 5 ready.
 
 ## Goal
 
@@ -32,7 +32,7 @@ engine without committing, hosting, or redistributing original files.
   source.
 - [x] Imported data persists locally or has a documented no-persistence
   rationale.
-- [ ] Asset catalog lists at least map ground, objects, serf sprites, UI/font
+- [x] Asset catalog lists at least map ground, objects, serf sprites, UI/font
   assets, sound effects, and music availability.
 - [x] CI remains data-free; local asset checks are opt-in/manual.
 - [x] Missing/invalid data produces a recoverable browser UI state.
@@ -44,17 +44,13 @@ engine without committing, hosting, or redistributing original files.
 | SB-4-01 | Implement browser data import boundary | done | story-01-browser-data-import-boundary.md | evidence-story-01.md |
 | SB-4-02 | Parse DOS PA resource catalog | done | story-02-parse-dos-pa-catalog.md | evidence-story-02.md |
 | SB-4-03 | Persist imported data locally | done | story-03-persist-imported-data.md | evidence-story-03.md |
-| SB-4-04 | Expose typed asset catalog | ready | story-04-typed-asset-catalog.md | — |
+| SB-4-04 | Expose typed asset catalog | done | story-04-typed-asset-catalog.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 4 is in progress. SB-4-01 shipped the direct browser file-selection
-boundary, SB-4-02 parses DOS `.PA` catalog metadata through that browser
-boundary, and SB-4-03 persists imported archive bytes in IndexedDB with reload
-restore and reset. The parser and persistence paths remain data-free in CI and
-were also proved manually with the ignored local `SPAU.PA`. The next responsible
-move is SB-4-04: expose a typed asset catalog boundary for renderer, UI, and
-audio consumers without leaking raw archive offsets.
+Phase 4 is complete. The final audit is recorded in `final-summary.md` and links
+every shipped story, evidence file, command, known limitation, and deferred
+item. Phase 5 is ready to start with SB-5-01: choose the browser renderer API.
 
 ## Active risks
 
@@ -75,6 +71,9 @@ audio consumers without leaking raw archive offsets.
 - 2026-06-09 — Persist the current imported DOS archive in IndexedDB after
   successful catalog parsing, restore it on reload, and provide a clear/reset
   path; quota and migration hardening remain Phase 8 work — SB-4-03.
+- 2026-06-09 — Expose typed terrain, object, serf, UI, and audio asset catalog
+  groups with renderer/UI/audio request handles; payload decoding remains
+  deferred to renderer/audio stories — SB-4-04.
 
 ## Decisions deferred
 

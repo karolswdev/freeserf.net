@@ -147,6 +147,90 @@ export type DosPaCatalog = {
   readonly resources: Readonly<Record<number, DosPaResourceCatalogEntry>>;
 };
 
+export type TypedAssetCatalogSource = {
+  readonly archiveFormat: DosPaCatalog["format"];
+  readonly entryCount: number;
+  readonly definedArchiveEntries: number;
+  readonly fixupCount: number;
+};
+
+export type TypedAssetGroupKey = "terrain" | "objects" | "serfs" | "ui" | "audio";
+
+export type TypedAssetAvailabilityStatus = "available" | "partial" | "missing" | "empty";
+
+export type TypedAssetDecoderStatus =
+  | "sprite-decoder-deferred"
+  | "animation-decoder-deferred"
+  | "sound-decoder-deferred"
+  | "music-decoder-deferred"
+  | "unknown-decoder-deferred";
+
+export type TypedAssetPaletteStatus = "available" | "missing" | "not-applicable";
+
+export type TypedAssetResourceReference = {
+  readonly source: "dos-pa-resource";
+  readonly resourceIndex: number;
+  readonly name: string;
+  readonly dosIndex: number;
+  readonly count: number;
+};
+
+export type TypedAssetResource = {
+  readonly name: string;
+  readonly resourceIndex: number;
+  readonly type: DosPaResourceCatalogEntry["type"];
+  readonly spriteType: DosPaResourceCatalogEntry["spriteType"];
+  readonly groupKeys: readonly TypedAssetGroupKey[];
+  readonly availability: {
+    readonly status: TypedAssetAvailabilityStatus;
+    readonly availableCount: number;
+    readonly missingCount: number;
+    readonly totalCount: number;
+    readonly firstAvailableIndex: number | null;
+    readonly lastAvailableIndex: number | null;
+  };
+  readonly palette: {
+    readonly status: TypedAssetPaletteStatus;
+    readonly dosPalette: number;
+  };
+  readonly decoderStatus: TypedAssetDecoderStatus;
+  readonly decoderPath: string;
+  readonly reference: TypedAssetResourceReference;
+};
+
+export type TypedAssetGroup = {
+  readonly key: TypedAssetGroupKey;
+  readonly label: string;
+  readonly resources: readonly TypedAssetResource[];
+  readonly missingResourceNames: readonly string[];
+};
+
+export type TypedAssetCatalog = {
+  readonly source: TypedAssetCatalogSource;
+  readonly groups: Readonly<Record<TypedAssetGroupKey, TypedAssetGroup>>;
+  readonly resources: readonly TypedAssetResource[];
+  readonly resourcesByName: Readonly<Record<string, TypedAssetResource>>;
+  readonly requests: {
+    readonly renderer: {
+      readonly mapGround: TypedAssetResource;
+      readonly pathGround: TypedAssetResource;
+      readonly mapObjects: TypedAssetResource;
+      readonly gameObjects: TypedAssetResource;
+      readonly mapShadows: TypedAssetResource;
+    };
+    readonly ui: {
+      readonly font: TypedAssetResource;
+      readonly fontShadow: TypedAssetResource;
+      readonly icons: TypedAssetResource;
+      readonly cursor: TypedAssetResource;
+    };
+    readonly audio: {
+      readonly soundEffects: TypedAssetResource;
+      readonly music: TypedAssetResource;
+    };
+  };
+};
+
 export class DosPaCatalogParseError extends Error {
   public constructor(message: string) {
     super(message);
@@ -203,6 +287,62 @@ const dosResourceDefinitions: readonly DosResourceDefinition[] = [
 const selectedEntryIndices = [
   1, 2, 3, 4, 5, 60, 321, 750, 1250, 2500, 3150, 3880, 3900, 3990, 3997, 3998, 3999,
 ] as const;
+
+const typedAssetGroupDefinitions = [
+  {
+    key: "terrain",
+    label: "Terrain and map masks",
+    resourceNames: [
+      "art_landscape",
+      "map_mask_up",
+      "map_mask_down",
+      "path_mask",
+      "map_ground",
+      "path_ground",
+      "map_waves",
+    ],
+  },
+  {
+    key: "objects",
+    label: "Map and game objects",
+    resourceNames: ["game_object", "map_object", "map_shadow", "art_flag", "art_box"],
+  },
+  {
+    key: "serfs",
+    label: "Serf sprites and shadows",
+    resourceNames: ["serf_shadow", "serf_torso", "serf_head"],
+  },
+  {
+    key: "ui",
+    label: "Interface, fonts, cursors, and frames",
+    resourceNames: [
+      "dotted_lines",
+      "credits_bg",
+      "logo",
+      "symbol",
+      "frame_top",
+      "map_border",
+      "frame_popup",
+      "indicator",
+      "font",
+      "font_shadow",
+      "icon",
+      "panel_button",
+      "frame_bottom",
+      "frame_split",
+      "cursor",
+    ],
+  },
+  {
+    key: "audio",
+    label: "Sound effects and music",
+    resourceNames: ["sound", "music"],
+  },
+] as const satisfies readonly {
+  readonly key: TypedAssetGroupKey;
+  readonly label: string;
+  readonly resourceNames: readonly string[];
+}[];
 
 function toDataView(input: ArrayBuffer | ArrayBufferView): DataView {
   if (input instanceof ArrayBuffer) {
@@ -452,4 +592,184 @@ export function parseDosPaCatalog(input: ArrayBuffer | ArrayBufferView): DosPaCa
     }),
     resources: buildResourceCatalog(entries),
   };
+}
+
+export function buildTypedAssetCatalog(catalog: DosPaCatalog): TypedAssetCatalog {
+  const groups = createEmptyTypedAssetGroups();
+  const resources: TypedAssetResource[] = [];
+  const resourcesByName: Record<string, TypedAssetResource> = {};
+
+  dosResourceDefinitions.forEach((definition, resourceIndex) => {
+    const resource = catalog.resources[resourceIndex];
+    if (resource === undefined) {
+      return;
+    }
+
+    const groupKeys = groupsForResource(definition.name);
+    const typedResource: TypedAssetResource = {
+      name: definition.name,
+      resourceIndex,
+      type: resource.type,
+      spriteType: resource.spriteType,
+      groupKeys,
+      availability: {
+        status: availabilityStatus(resource),
+        availableCount: resource.availableCount,
+        missingCount: resource.missingCount,
+        totalCount: resource.count,
+        firstAvailableIndex: resource.firstAvailableIndex,
+        lastAvailableIndex: resource.lastAvailableIndex,
+      },
+      palette: {
+        status: paletteStatus(resource),
+        dosPalette: resource.dosPalette,
+      },
+      decoderStatus: decoderStatus(resource),
+      decoderPath: `dos-pa:${resource.type.toLowerCase()}:${resource.name}`,
+      reference: {
+        source: "dos-pa-resource",
+        resourceIndex,
+        name: resource.name,
+        dosIndex: resource.dosIndex,
+        count: resource.count,
+      },
+    };
+
+    resources.push(typedResource);
+    resourcesByName[typedResource.name] = typedResource;
+    for (const groupKey of groupKeys) {
+      groups[groupKey].resources.push(typedResource);
+    }
+  });
+
+  return {
+    source: {
+      archiveFormat: catalog.format,
+      entryCount: catalog.header.entryCount,
+      definedArchiveEntries: catalog.entrySummary.defined,
+      fixupCount: catalog.fixupSummary.count,
+    },
+    groups: finalizeTypedAssetGroups(groups),
+    resources,
+    resourcesByName,
+    requests: {
+      renderer: {
+        mapGround: requireTypedAssetResource(resourcesByName, "map_ground"),
+        pathGround: requireTypedAssetResource(resourcesByName, "path_ground"),
+        mapObjects: requireTypedAssetResource(resourcesByName, "map_object"),
+        gameObjects: requireTypedAssetResource(resourcesByName, "game_object"),
+        mapShadows: requireTypedAssetResource(resourcesByName, "map_shadow"),
+      },
+      ui: {
+        font: requireTypedAssetResource(resourcesByName, "font"),
+        fontShadow: requireTypedAssetResource(resourcesByName, "font_shadow"),
+        icons: requireTypedAssetResource(resourcesByName, "icon"),
+        cursor: requireTypedAssetResource(resourcesByName, "cursor"),
+      },
+      audio: {
+        soundEffects: requireTypedAssetResource(resourcesByName, "sound"),
+        music: requireTypedAssetResource(resourcesByName, "music"),
+      },
+    },
+  };
+}
+
+export function lookupTypedAssetResource(
+  catalog: TypedAssetCatalog,
+  name: string,
+): TypedAssetResource | undefined {
+  return catalog.resourcesByName[name];
+}
+
+type MutableTypedAssetGroup = Omit<TypedAssetGroup, "resources" | "missingResourceNames"> & {
+  readonly resources: TypedAssetResource[];
+};
+
+function createEmptyTypedAssetGroups(): Record<TypedAssetGroupKey, MutableTypedAssetGroup> {
+  return {
+    terrain: { key: "terrain", label: "Terrain and map masks", resources: [] },
+    objects: { key: "objects", label: "Map and game objects", resources: [] },
+    serfs: { key: "serfs", label: "Serf sprites and shadows", resources: [] },
+    ui: { key: "ui", label: "Interface, fonts, cursors, and frames", resources: [] },
+    audio: { key: "audio", label: "Sound effects and music", resources: [] },
+  };
+}
+
+function finalizeTypedAssetGroups(
+  groups: Record<TypedAssetGroupKey, MutableTypedAssetGroup>,
+): Record<TypedAssetGroupKey, TypedAssetGroup> {
+  return {
+    terrain: finalizeTypedAssetGroup(groups.terrain),
+    objects: finalizeTypedAssetGroup(groups.objects),
+    serfs: finalizeTypedAssetGroup(groups.serfs),
+    ui: finalizeTypedAssetGroup(groups.ui),
+    audio: finalizeTypedAssetGroup(groups.audio),
+  };
+}
+
+function finalizeTypedAssetGroup(group: MutableTypedAssetGroup): TypedAssetGroup {
+  return {
+    ...group,
+    resources: group.resources,
+    missingResourceNames: group.resources
+      .filter((resource) => resource.availability.status === "missing")
+      .map((resource) => resource.name),
+  };
+}
+
+function groupsForResource(name: string): TypedAssetGroupKey[] {
+  return typedAssetGroupDefinitions.flatMap((group) =>
+    (group.resourceNames as readonly string[]).includes(name) ? [group.key] : [],
+  );
+}
+
+function availabilityStatus(resource: DosPaResourceCatalogEntry): TypedAssetAvailabilityStatus {
+  if (resource.count === 0) {
+    return "empty";
+  }
+
+  if (resource.availableCount === 0) {
+    return "missing";
+  }
+
+  if (resource.missingCount === 0) {
+    return "available";
+  }
+
+  return "partial";
+}
+
+function paletteStatus(resource: DosPaResourceCatalogEntry): TypedAssetPaletteStatus {
+  if (resource.paletteAvailable === null) {
+    return "not-applicable";
+  }
+
+  return resource.paletteAvailable ? "available" : "missing";
+}
+
+function decoderStatus(resource: DosPaResourceCatalogEntry): TypedAssetDecoderStatus {
+  switch (resource.type) {
+    case "Sprite":
+      return "sprite-decoder-deferred";
+    case "Animation":
+      return "animation-decoder-deferred";
+    case "Sound":
+      return "sound-decoder-deferred";
+    case "Music":
+      return "music-decoder-deferred";
+    case "Unknown":
+      return "unknown-decoder-deferred";
+  }
+}
+
+function requireTypedAssetResource(
+  resourcesByName: Readonly<Record<string, TypedAssetResource>>,
+  name: string,
+): TypedAssetResource {
+  const resource = resourcesByName[name];
+  if (resource === undefined) {
+    throw new Error(`Typed asset resource '${name}' is missing from the DOS catalog.`);
+  }
+
+  return resource;
 }

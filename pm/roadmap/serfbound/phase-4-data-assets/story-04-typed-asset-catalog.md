@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 4
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-4-02, SB-4-03
 - **Unblocks:** SB-5-03, SB-6-03, SB-7-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ request them.
 
 ## Acceptance criteria
 
-- [ ] Catalog exposes semantic groups aligned with `Freeserf.Core/Data/Data.cs`.
-- [ ] Catalog can be built from generated CI fixtures and local `SPAU.PA`.
-- [ ] Missing groups are represented explicitly.
-- [ ] Renderer stories can request map and object assets through the catalog.
-- [ ] Audio/UI consumers have placeholder catalog paths even if decoding is
+- [x] Catalog exposes semantic groups aligned with `Freeserf.Core/Data/Data.cs`.
+- [x] Catalog can be built from generated CI fixtures and local `SPAU.PA`.
+- [x] Missing groups are represented explicitly.
+- [x] Renderer stories can request map and object assets through the catalog.
+- [x] Audio/UI consumers have placeholder catalog paths even if decoding is
   deferred.
 
 ## Test plan
@@ -39,4 +39,10 @@ request them.
 
 ## Notes / open questions
 
-The catalog is an API boundary. Keep raw archive details behind it.
+Shipped `buildTypedAssetCatalog`, which maps parsed DOS catalog resources into
+terrain, objects, serfs, UI, and audio groups. Consumer-facing references use
+semantic DOS resource handles and intentionally hide raw archive offsets.
+
+Renderer requests now have named handles for map ground, path ground, map
+objects, game objects, and map shadows. UI and audio placeholders expose fonts,
+icons, cursor, sound effects, and music while decoding remains deferred.

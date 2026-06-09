@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 5
-- **Status:** backlog
+- **Status:** ready
 - **Depends on:** SB-2-04, SB-4-04
 - **Unblocks:** SB-5-02, SB-5-03
 - **Owner:** unassigned

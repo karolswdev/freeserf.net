@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** ready.
+
 ## Goal
 
 Render the first real map scene in the browser with a projection and layer model
@@ -39,15 +41,16 @@ that can support gameplay interactions.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-5-01 | Choose browser renderer API | backlog | story-01-browser-renderer-api.md | — |
+| SB-5-01 | Choose browser renderer API | ready | story-01-browser-renderer-api.md | — |
 | SB-5-02 | Implement map projection transform | backlog | story-02-map-projection-transform.md | — |
 | SB-5-03 | Build first render-layer scene | backlog | story-03-first-render-layer-scene.md | — |
 | SB-5-04 | Verify viewport framing | backlog | story-04-viewport-framing-verification.md | — |
 
 ## Where we are
 
-Phase 5 is not started. It depends on asset catalog output from Phase 4 and
-engine/map primitives from Phase 3.
+Phase 5 is ready after the Phase 4 completion audit. It can start with SB-5-01:
+choose the browser renderer API against Phase 3 engine/map primitives and Phase
+4 typed asset catalog output.
 
 ## Active risks
 

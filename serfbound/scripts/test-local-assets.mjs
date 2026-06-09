@@ -36,9 +36,10 @@ if (!existsSync(configuredPath)) {
   process.exit(1);
 }
 
+let buildTypedAssetCatalog;
 let parseDosPaCatalog;
 try {
-  ({ parseDosPaCatalog } = await import("../packages/assets/dist/index.js"));
+  ({ buildTypedAssetCatalog, parseDosPaCatalog } = await import("../packages/assets/dist/index.js"));
 } catch (error) {
   console.error(
     "serfbound-local-asset-tests-failed: build @serfbound/assets before running local asset tests.",
@@ -64,6 +65,7 @@ const [archiveBytes, oracleBytes] = await Promise.all([
   readFile(oracleUrl, "utf8"),
 ]);
 const catalog = parseDosPaCatalog(archiveBytes);
+const typedCatalog = buildTypedAssetCatalog(catalog);
 const oracle = JSON.parse(oracleBytes);
 
 assert.deepEqual(catalog.header, oracle.archive.header);
@@ -95,6 +97,33 @@ for (const resourceIndex of [1, 2, 10, 15, 24, 28, 29, 31, 32, 33]) {
   assert.deepEqual(catalog.resources[resourceIndex], oracle.resources[String(resourceIndex)]);
 }
 
+const typedExpectations = [
+  ["renderer.mapGround", typedCatalog.requests.renderer.mapGround, "map_ground", "available"],
+  ["renderer.mapObjects", typedCatalog.requests.renderer.mapObjects, "map_object", "partial"],
+  ["renderer.gameObjects", typedCatalog.requests.renderer.gameObjects, "game_object", "partial"],
+  ["renderer.mapShadows", typedCatalog.requests.renderer.mapShadows, "map_shadow", "partial"],
+  ["ui.font", typedCatalog.requests.ui.font, "font", "available"],
+  ["ui.icons", typedCatalog.requests.ui.icons, "icon", "available"],
+  ["ui.cursor", typedCatalog.requests.ui.cursor, "cursor", "available"],
+  ["audio.soundEffects", typedCatalog.requests.audio.soundEffects, "sound", "partial"],
+  ["audio.music", typedCatalog.requests.audio.music, "music", "partial"],
+];
+
+for (const [label, resource, expectedName, expectedStatus] of typedExpectations) {
+  assert.equal(resource.name, expectedName, `${label} name`);
+  assert.equal(resource.availability.status, expectedStatus, `${label} status`);
+  assert.equal("offset" in resource.reference, false, `${label} hides archive offsets`);
+}
+
+assert.equal(
+  typedCatalog.groups.serfs.resources.some((resource) => resource.name === "serf_torso"),
+  true,
+);
+assert.equal(
+  typedCatalog.groups.audio.resources.some((resource) => resource.name === "music"),
+  true,
+);
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog and matched Phase 1 oracle metadata.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog and matched Phase 1 oracle metadata plus typed catalog facts.`,
 );
