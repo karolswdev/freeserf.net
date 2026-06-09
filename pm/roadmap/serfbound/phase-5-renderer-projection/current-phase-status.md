@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** ready.
+**Status:** in progress.
 
 ## Goal
 
@@ -41,16 +41,18 @@ that can support gameplay interactions.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-5-01 | Choose browser renderer API | ready | story-01-browser-renderer-api.md | — |
-| SB-5-02 | Implement map projection transform | backlog | story-02-map-projection-transform.md | — |
+| SB-5-01 | Choose browser renderer API | done | story-01-browser-renderer-api.md | evidence-story-01.md |
+| SB-5-02 | Implement map projection transform | ready | story-02-map-projection-transform.md | — |
 | SB-5-03 | Build first render-layer scene | backlog | story-03-first-render-layer-scene.md | — |
 | SB-5-04 | Verify viewport framing | backlog | story-04-viewport-framing-verification.md | — |
 
 ## Where we are
 
-Phase 5 is ready after the Phase 4 completion audit. It can start with SB-5-01:
-choose the browser renderer API against Phase 3 engine/map primitives and Phase
-4 typed asset catalog output.
+Phase 5 is in progress. SB-5-01 chose a small first-party WebGL2 renderer as
+the baseline in `pm/roadmap/serfbound/adoption/renderer-api-decision.md`.
+Canvas2D remains available for generated debug/test paths, WebGPU is deferred as
+a later accelerator, and desktop/native renderer reuse is rejected. The next
+responsible move is SB-5-02: implement the shared map projection transform.
 
 ## Active risks
 
@@ -62,9 +64,13 @@ choose the browser renderer API against Phase 3 engine/map primitives and Phase
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Use a small first-party WebGL2 renderer as the Phase 5 baseline;
+  keep Canvas2D for debug/test paths, defer WebGPU as a later accelerator, and
+  reject desktop/native renderer reuse — SB-5-01.
 
 ## Decisions deferred
 
-- WebGL2 vs WebGPU — resolve in SB-5-01 — default to WebGL2 unless evidence
-  shows WebGPU materially lowers complexity.
+- WebGPU accelerator path — revisit only if browser support and measured scene
+  costs justify it.
+- Third-party renderer library — defer until first scene evidence shows a
+  focused dependency removes more code than it adds.

@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-5-renderer-projection](./phase-5-renderer-projection/current-phase-status.md)
-**Status:** Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 complete; Phase 5 ready.
+**Status:** Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 complete; Phase 5 in progress.
 
 ## Vision
 
@@ -84,7 +84,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 2 | Establish the pure-browser workspace, runtime, and CI spine | complete | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
-| 5 | Build the map renderer, projection model, and visual asset path | ready | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
+| 5 | Build the map renderer, projection model, and visual asset path | in-progress | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
 | 6 | Build browser input, UI shell, and game interaction loops | planning | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
@@ -186,6 +186,9 @@ For Serfbound specifically, every implementation story must identify:
 - **Current typed asset catalog:** `@serfbound/assets` exposes terrain,
   object, serf, UI, and audio resource groups plus renderer/UI/audio request
   handles while keeping raw archive offsets behind asset internals.
+- **Current renderer API baseline:** Phase 5 selected a small first-party WebGL2
+  renderer as the baseline, with Canvas2D reserved for generated debug/test
+  paths and WebGPU deferred as a later accelerator.
 
 ## Glossary
 

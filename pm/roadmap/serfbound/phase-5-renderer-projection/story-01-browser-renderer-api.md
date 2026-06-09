@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 5
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-2-04, SB-4-04
 - **Unblocks:** SB-5-02, SB-5-03
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -23,11 +23,11 @@ not novelty.
 
 ## Acceptance criteria
 
-- [ ] Renderer decision artifact exists under `pm/roadmap/serfbound/adoption/`.
-- [ ] Decision names chosen API and rejected alternatives.
-- [ ] Decision includes browser support and testing implications.
-- [ ] Decision keeps normal play pure browser with no desktop/native renderer.
-- [ ] Stop signal for changing renderer approach is explicit.
+- [x] Renderer decision artifact exists under `pm/roadmap/serfbound/adoption/`.
+- [x] Decision names chosen API and rejected alternatives.
+- [x] Decision includes browser support and testing implications.
+- [x] Decision keeps normal play pure browser with no desktop/native renderer.
+- [x] Stop signal for changing renderer approach is explicit.
 
 ## Test plan
 
@@ -39,5 +39,9 @@ not novelty.
 
 ## Notes / open questions
 
-Default bias remains WebGL2 unless evidence shows Canvas2D is enough or WebGPU
-substantially lowers complexity.
+Decision shipped in
+`pm/roadmap/serfbound/adoption/renderer-api-decision.md`: use a small
+first-party WebGL2 renderer as the Phase 5 baseline. Canvas2D remains available
+for generated debug/test paths, WebGPU is deferred as a later accelerator, and
+third-party render libraries stay deferred until the first scene proves they
+remove more code than they add.
