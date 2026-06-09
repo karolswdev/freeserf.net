@@ -1,0 +1,77 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { buildTypedAssetCatalog, parseDosPaCatalog } from "@serfbound/assets";
+import { createFirstRenderLayerScene, renderLayerOrder } from "@serfbound/app";
+
+function createGeneratedPaArchive(entryCount, entryFacts) {
+  const tableStart = 8;
+  const tableEnd = tableStart + entryCount * 8;
+  const payloadEnd = Math.max(
+    tableEnd,
+    ...entryFacts.map((entry) => entry.offset + entry.size),
+  );
+  const bytes = new Uint8Array(payloadEnd);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, payloadEnd, true);
+  view.setUint32(4, entryCount, true);
+
+  for (const entry of entryFacts) {
+    const tableOffset = tableStart + (entry.index - 1) * 8;
+    view.setUint32(tableOffset, entry.size, true);
+    view.setUint32(tableOffset + 4, entry.offset, true);
+  }
+
+  return bytes;
+}
+
+test("first render-layer scene is generated, layered, sorted, and engine-backed", () => {
+  const scene = createFirstRenderLayerScene();
+
+  assert.equal(scene.renderer, "webgl2");
+  assert.equal(scene.mapSize, 3);
+  assert.deepEqual(
+    scene.layers.map((layer) => layer.key),
+    Array.from(renderLayerOrder),
+  );
+  assert.equal(scene.assetSummary.source, "generated-fixture");
+  assert.equal(scene.assetSummary.mapGroundStatus, "generated-fixture");
+  assert.equal(scene.layers.every((layer) => layer.primitiveCount > 0), true);
+  assert.equal(scene.tilePrimitiveCount > 100, true);
+
+  for (let index = 1; index < scene.primitives.length; index += 1) {
+    const previous = scene.primitives[index - 1];
+    const current = scene.primitives[index];
+    const previousLayer = renderLayerOrder.indexOf(previous.layer);
+    const currentLayer = renderLayerOrder.indexOf(current.layer);
+    assert.equal(previousLayer <= currentLayer, true, `primitive ${index} layer order`);
+  }
+
+  assert.equal(
+    scene.primitives.some((primitive) => primitive.assetRole === "renderer.mapGround"),
+    true,
+  );
+  assert.equal(
+    scene.primitives.some((primitive) => primitive.assetRole === "renderer.mapObjects"),
+    true,
+  );
+});
+
+test("first render-layer scene records typed DOS catalog renderer asset status", () => {
+  const archive = createGeneratedPaArchive(4000, [
+    { index: 260, offset: 32008, size: 16 },
+    { index: 261, offset: 32024, size: 16 },
+    { index: 300, offset: 32040, size: 16 },
+    { index: 1250, offset: 32056, size: 16 },
+    { index: 1500, offset: 32072, size: 16 },
+  ]);
+  const typedCatalog = buildTypedAssetCatalog(parseDosPaCatalog(archive));
+  const scene = createFirstRenderLayerScene({ typedAssetCatalog: typedCatalog });
+
+  assert.equal(scene.assetSummary.source, "dos-pa-catalog");
+  assert.equal(scene.assetSummary.definedArchiveEntries, 5);
+  assert.equal(scene.assetSummary.mapGroundStatus, "partial:2/33");
+  assert.equal(scene.assetSummary.pathGroundStatus, "partial:1/10");
+  assert.equal(scene.assetSummary.mapObjectsStatus, "partial:1/194");
+  assert.equal(scene.assetSummary.mapShadowsStatus, "partial:1/194");
+});

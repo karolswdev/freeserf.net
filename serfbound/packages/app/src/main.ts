@@ -1,5 +1,6 @@
 import {
   assetImportBoundary,
+  buildTypedAssetCatalog,
   parseDosPaCatalog,
   validateArchiveFileSelection,
   type ArchiveValidationResult,
@@ -15,6 +16,11 @@ import {
   type ImportedArchiveStore,
   type StoredImportedArchiveRecord,
 } from "./imported-data-store.js";
+import {
+  createFirstRenderLayerScene,
+  renderFirstRenderLayerScene,
+  type FirstRenderLayerScene,
+} from "./render-layer-scene.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -30,6 +36,17 @@ export {
   type StoredImportedArchiveMetadata,
   type StoredImportedArchiveRecord,
 } from "./imported-data-store.js";
+export {
+  createFirstRenderLayerScene,
+  renderFirstRenderLayerScene,
+  renderLayerOrder,
+  type FirstRenderLayerScene,
+  type RenderLayerKey,
+  type RenderSceneAssetSummary,
+  type RenderSceneLayer,
+  type RenderScenePrimitive,
+  type RenderSceneSource,
+} from "./render-layer-scene.js";
 
 export type AppBootstrapSummary = {
   readonly runtime: "browser";
@@ -76,7 +93,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           data-testid="terrain-preview"
           width="960"
           height="540"
-          aria-label="Generated terrain preview"
+          aria-label="First Serfbound render-layer scene"
         ></canvas>
       </section>
       <aside class="status-panel" aria-label="Serfbound status">
@@ -93,6 +110,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           <p class="status-panel__label">Engine</p>
           <p class="status-panel__value">${summary.enginePackage}</p>
         </div>
+        <div>
+          <p class="status-panel__label">Scene</p>
+          <p class="status-panel__value" data-testid="scene-state">Generated layers</p>
+        </div>
+        <p class="status-panel__detail" data-testid="scene-detail">WebGL2, generated fixture assets</p>
         <input
           id="data-import"
           class="import-input"
@@ -116,7 +138,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     throw new Error("Serfbound shell canvas did not mount.");
   }
 
-  drawGeneratedTerrain(canvas);
+  renderScene(root, createFirstRenderLayerScene());
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -166,6 +188,7 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
       detail.textContent = `${result.fileName} is not accepted`;
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
+      renderScene(root, createFirstRenderLayerScene());
       setSourceState(root, "Local file");
       setResetEnabled(root, false);
       break;
@@ -174,6 +197,7 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
       detail.textContent = "Select SPAU.PA from your local files.";
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
+      renderScene(root, createFirstRenderLayerScene());
       setSourceState(root, "Local file");
       setResetEnabled(root, false);
       break;
@@ -198,6 +222,9 @@ async function importSelectedArchive(
   try {
     const bytes = await file.arrayBuffer();
     const catalog = parseDosPaCatalog(bytes);
+    renderScene(root, createFirstRenderLayerScene({
+      typedAssetCatalog: buildTypedAssetCatalog(catalog),
+    }));
     const record = createStoredImportedArchiveRecord({
       fileName: validation.fileName,
       normalizedName: validation.normalizedName,
@@ -220,6 +247,7 @@ async function importSelectedArchive(
   } catch (error) {
     root.dataset.serfboundCatalogState = "invalid";
     root.dataset.serfboundStorageState = "empty";
+    renderScene(root, createFirstRenderLayerScene());
     state.textContent = "Catalog parse failed";
     detail.textContent = error instanceof Error ? error.message : "Unknown catalog parse error";
     setSourceState(root, "Local file");
@@ -251,11 +279,16 @@ function applyStoredArchiveRecord(
   record: StoredImportedArchiveRecord,
 ): void {
   try {
-    applyParsedCatalogState(root, parseDosPaCatalog(record.bytes), "restored", record);
+    const catalog = parseDosPaCatalog(record.bytes);
+    renderScene(root, createFirstRenderLayerScene({
+      typedAssetCatalog: buildTypedAssetCatalog(catalog),
+    }));
+    applyParsedCatalogState(root, catalog, "restored", record);
   } catch (error) {
     root.dataset.serfboundDataState = "unsupported";
     root.dataset.serfboundCatalogState = "invalid";
     root.dataset.serfboundStorageState = "error";
+    renderScene(root, createFirstRenderLayerScene());
     const state = getDataStateElement(root);
     const detail = getDataDetailElement(root);
     state.textContent = "Stored catalog invalid";
@@ -298,6 +331,7 @@ async function clearSelectedArchive(
   root.dataset.serfboundDataState = "missing";
   root.dataset.serfboundCatalogState = "unread";
   root.dataset.serfboundStorageState = "cleared";
+  renderScene(root, createFirstRenderLayerScene());
   getDataStateElement(root).textContent = "No game data imported";
   getDataDetailElement(root).textContent = "Local data cleared. Select SPAU.PA from your local files.";
   setSourceState(root, "Local file");
@@ -309,6 +343,32 @@ function applyStorageErrorState(root: HTMLElement, message: string): void {
   getDataStateElement(root).textContent = "Storage error";
   getDataDetailElement(root).textContent = message;
   setSourceState(root, "Local storage");
+}
+
+function renderScene(root: HTMLElement, scene: FirstRenderLayerScene): void {
+  const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
+  if (canvas === null) {
+    throw new Error("Serfbound shell canvas did not mount.");
+  }
+
+  renderFirstRenderLayerScene(canvas, scene);
+  root.dataset.serfboundRenderer = scene.renderer;
+  root.dataset.serfboundSceneSource = scene.assetSummary.source;
+  root.dataset.serfboundLayerCount = String(scene.layers.length);
+  root.dataset.serfboundPrimitiveCount = String(scene.primitives.length);
+
+  const sceneState = root.querySelector<HTMLElement>("[data-testid='scene-state']");
+  const sceneDetail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
+  if (sceneState === null || sceneDetail === null) {
+    throw new Error("Serfbound shell scene status did not mount.");
+  }
+
+  sceneState.textContent =
+    scene.assetSummary.source === "dos-pa-catalog" ? "Catalog layers" : "Generated layers";
+  sceneDetail.textContent =
+    scene.assetSummary.source === "dos-pa-catalog"
+      ? `WebGL2, ${scene.assetSummary.definedArchiveEntries ?? 0} defined archive entries`
+      : "WebGL2, generated fixture assets";
 }
 
 function getDataStateElement(root: HTMLElement): HTMLElement {
@@ -345,93 +405,4 @@ function setResetEnabled(root: HTMLElement, enabled: boolean): void {
   }
 
   resetButton.disabled = !enabled;
-}
-
-function drawGeneratedTerrain(canvas: HTMLCanvasElement): void {
-  const context = canvas.getContext("2d");
-  if (context === null) {
-    throw new Error("Serfbound shell requires a 2D canvas context.");
-  }
-
-  const width = canvas.width;
-  const height = canvas.height;
-  context.fillStyle = "#18211d";
-  context.fillRect(0, 0, width, height);
-
-  const tileWidth = 88;
-  const tileHeight = 44;
-  const originX = width / 2;
-  const originY = 76;
-  const terrain = ["#315f47", "#4b7a52", "#6d884d", "#8b7442", "#3e6a69"];
-
-  for (let row = 0; row < 9; row += 1) {
-    for (let column = 0; column < 9; column += 1) {
-      const x = originX + (column - row) * (tileWidth / 2);
-      const y = originY + (column + row) * (tileHeight / 2);
-      const colorIndex = (column * 3 + row * 5 + (column ^ row)) % terrain.length;
-      drawDiamond(
-        context,
-        x,
-        y,
-        tileWidth,
-        tileHeight,
-        terrain[colorIndex] ?? "#315f47",
-      );
-    }
-  }
-
-  context.strokeStyle = "#dbc477";
-  context.lineWidth = 8;
-  context.lineCap = "round";
-  context.beginPath();
-  context.moveTo(originX - 176, originY + 220);
-  context.lineTo(originX - 88, originY + 264);
-  context.lineTo(originX + 10, originY + 218);
-  context.lineTo(originX + 122, originY + 278);
-  context.stroke();
-
-  drawMarker(context, originX - 178, originY + 194, "#d7ecf2");
-  drawMarker(context, originX + 10, originY + 188, "#f3d177");
-  drawMarker(context, originX + 148, originY + 254, "#c74d3d");
-}
-
-function drawDiamond(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  fill: string,
-): void {
-  context.beginPath();
-  context.moveTo(x, y);
-  context.lineTo(x + width / 2, y + height / 2);
-  context.lineTo(x, y + height);
-  context.lineTo(x - width / 2, y + height / 2);
-  context.closePath();
-  context.fillStyle = fill;
-  context.fill();
-  context.strokeStyle = "rgba(250, 242, 209, 0.16)";
-  context.lineWidth = 1;
-  context.stroke();
-}
-
-function drawMarker(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  color: string,
-): void {
-  context.fillStyle = "rgba(0, 0, 0, 0.26)";
-  context.beginPath();
-  context.ellipse(x + 6, y + 36, 24, 8, 0, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = color;
-  context.beginPath();
-  context.moveTo(x, y);
-  context.lineTo(x + 18, y + 42);
-  context.lineTo(x - 18, y + 42);
-  context.closePath();
-  context.fill();
 }

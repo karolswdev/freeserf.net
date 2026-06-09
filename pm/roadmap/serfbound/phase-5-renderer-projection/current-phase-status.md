@@ -27,12 +27,12 @@ that can support gameplay interactions.
 
 ## Exit criteria (evidence required)
 
-- [ ] A browser scene renders a map-like view from typed assets or generated
+- [x] A browser scene renders a map-like view from typed assets or generated
   fixtures.
 - [x] Projection/coordinate conversion is documented and tested.
-- [ ] Render layers map back to `Freeserf.Core/Rendering.txt` concepts or
+- [x] Render layers map back to `Freeserf.Core/Rendering.txt` concepts or
   intentionally replace them.
-- [ ] The renderer can run without original data using generated fixtures and
+- [x] The renderer can run without original data using generated fixtures and
   can run locally with imported `SPAU.PA`.
 - [ ] Screenshots or pixel checks prove the scene is nonblank and correctly
   framed on desktop and mobile viewport sizes.
@@ -43,18 +43,20 @@ that can support gameplay interactions.
 |---|---|---|---|---|
 | SB-5-01 | Choose browser renderer API | done | story-01-browser-renderer-api.md | evidence-story-01.md |
 | SB-5-02 | Implement map projection transform | done | story-02-map-projection-transform.md | evidence-story-02.md |
-| SB-5-03 | Build first render-layer scene | ready | story-03-first-render-layer-scene.md | — |
-| SB-5-04 | Verify viewport framing | backlog | story-04-viewport-framing-verification.md | — |
+| SB-5-03 | Build first render-layer scene | done | story-03-first-render-layer-scene.md | evidence-story-03.md |
+| SB-5-04 | Verify viewport framing | ready | story-04-viewport-framing-verification.md | — |
 
 ## Where we are
 
 Phase 5 is in progress. SB-5-01 chose a small first-party WebGL2 renderer as
 the baseline in `pm/roadmap/serfbound/adoption/renderer-api-decision.md`.
 SB-5-02 added a browser-neutral `MapProjectionTransform` in `@serfbound/engine`
-for shared map/tile/view/screen conversion. Canvas2D remains available for
-generated debug/test paths, WebGPU is deferred as a later accelerator, and
-desktop/native renderer reuse is rejected. The next responsible move is
-SB-5-03: build the first render-layer scene.
+for shared map/tile/view/screen conversion. SB-5-03 added the first WebGL2
+render-layer scene, backed by generated CI-safe map primitives and typed
+renderer asset request metadata after `SPAU.PA` catalog import or restore.
+Canvas2D remains available for debug/test paths, WebGPU is deferred as a later
+accelerator, and desktop/native renderer reuse is rejected. The next responsible
+move is SB-5-04: verify viewport framing across desktop and mobile sizes.
 
 ## Active risks
 
@@ -73,6 +75,11 @@ SB-5-03: build the first render-layer scene.
   engine code via `MapProjectionTransform`; preserve virtual-screen
   letterboxing and resize behavior, and reuse fixture-backed `MapGeometry`
   projection math — SB-5-02.
+- 2026-06-09 — Model the first browser render scene as ordered triangle
+  primitives assigned to `terrain`, `paths`, `shadows`, `objects`, and
+  `markers` layers; render them with WebGL2 and rebuild scene metadata from
+  typed DOS catalog renderer asset requests when local data is imported —
+  SB-5-03.
 
 ## Decisions deferred
 

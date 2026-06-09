@@ -37,12 +37,14 @@ if (!existsSync(configuredPath)) {
 }
 
 let buildTypedAssetCatalog;
+let createFirstRenderLayerScene;
 let parseDosPaCatalog;
 try {
   ({ buildTypedAssetCatalog, parseDosPaCatalog } = await import("../packages/assets/dist/index.js"));
+  ({ createFirstRenderLayerScene } = await import("../packages/app/dist/main.js"));
 } catch (error) {
   console.error(
-    "serfbound-local-asset-tests-failed: build @serfbound/assets before running local asset tests.",
+    "serfbound-local-asset-tests-failed: build @serfbound/assets and @serfbound/app before running local asset tests.",
   );
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
@@ -124,6 +126,15 @@ assert.equal(
   true,
 );
 
+const scene = createFirstRenderLayerScene({ typedAssetCatalog: typedCatalog });
+assert.equal(scene.renderer, "webgl2");
+assert.equal(scene.assetSummary.source, "dos-pa-catalog");
+assert.equal(scene.assetSummary.definedArchiveEntries, typedCatalog.source.definedArchiveEntries);
+assert.equal(scene.assetSummary.mapGroundStatus.startsWith("available:"), true);
+assert.equal(scene.assetSummary.mapObjectsStatus.startsWith("partial:"), true);
+assert.equal(scene.layers.length, 5);
+assert.equal(scene.primitives.length > 100, true);
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog and matched Phase 1 oracle metadata plus typed catalog facts.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog and matched Phase 1 oracle metadata plus typed catalog and render-layer scene facts.`,
 );

@@ -4,6 +4,8 @@ import { dirname } from "node:path";
 
 const screenshotPath =
   "../pm/roadmap/serfbound/phase-2-browser-foundation/artifacts/story-04-app-shell-desktop.png";
+const renderSceneScreenshotPath =
+  "../pm/roadmap/serfbound/phase-5-renderer-projection/artifacts/story-03-render-layer-scene-desktop.png";
 
 function createGeneratedPaArchive(): Buffer {
   const bytes = Buffer.alloc(32);
@@ -20,6 +22,7 @@ test("static app shell renders without original data or a desktop companion", as
   page,
 }) => {
   await mkdir(dirname(screenshotPath), { recursive: true });
+  await mkdir(dirname(renderSceneScreenshotPath), { recursive: true });
   await page.goto("/");
 
   const shell = page.getByTestId("serfbound-shell");
@@ -27,6 +30,10 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByRole("heading", { name: "Serfbound" })).toBeVisible();
   await expect(page.getByTestId("runtime-pill")).toHaveText("Browser runtime");
   await expect(page.getByTestId("data-state")).toHaveText("No game data imported");
+  await expect(page.getByTestId("scene-state")).toHaveText("Generated layers");
+  await expect(page.getByTestId("scene-detail")).toHaveText(
+    "WebGL2, generated fixture assets",
+  );
   await expect(page.getByTestId("data-reset-button")).toBeDisabled();
 
   await expect(page.locator("#app")).toHaveAttribute(
@@ -37,8 +44,15 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-data-state",
     "missing",
   );
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-renderer", "webgl2");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-scene-source",
+    "generated-fixture",
+  );
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-layer-count", "5");
 
   await page.screenshot({ fullPage: true, path: screenshotPath });
+  await page.screenshot({ fullPage: true, path: renderSceneScreenshotPath });
 
   await page.getByTestId("data-import-input").setInputFiles({
     name: "README.txt",
@@ -62,6 +76,10 @@ test("static app shell renders without original data or a desktop companion", as
     "2 entries, 2 defined, 0 fixups, persisted locally",
   );
   await expect(page.getByTestId("source-state")).toHaveText("Local file");
+  await expect(page.getByTestId("scene-state")).toHaveText("Catalog layers");
+  await expect(page.getByTestId("scene-detail")).toHaveText(
+    "WebGL2, 2 defined archive entries",
+  );
   await expect(page.getByTestId("data-reset-button")).toBeEnabled();
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-data-state",
@@ -75,6 +93,10 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-storage-state",
     "persisted",
   );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-scene-source",
+    "dos-pa-catalog",
+  );
 
   await page.reload();
   await expect(page.getByTestId("data-state")).toHaveText("Catalog parsed");
@@ -82,6 +104,7 @@ test("static app shell renders without original data or a desktop companion", as
     "Restored SPAU.PA: 2 entries, 2 defined",
   );
   await expect(page.getByTestId("source-state")).toHaveText("Local storage");
+  await expect(page.getByTestId("scene-state")).toHaveText("Catalog layers");
   await expect(page.getByTestId("data-reset-button")).toBeEnabled();
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-storage-state",
@@ -94,9 +117,14 @@ test("static app shell renders without original data or a desktop companion", as
     "Local data cleared. Select SPAU.PA from your local files.",
   );
   await expect(page.getByTestId("data-reset-button")).toBeDisabled();
+  await expect(page.getByTestId("scene-state")).toHaveText("Generated layers");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-storage-state",
     "cleared",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-scene-source",
+    "generated-fixture",
   );
 
   await page.reload();
@@ -113,17 +141,26 @@ test("static app shell renders without original data or a desktop companion", as
         return 0;
       }
 
-      const context = canvas.getContext("2d");
+      const context = canvas.getContext("webgl2");
       if (context === null) {
         return 0;
       }
 
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+      context.readPixels(
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+        context.RGBA,
+        context.UNSIGNED_BYTE,
+        pixels,
+      );
       let count = 0;
-      for (let index = 0; index < imageData.data.length; index += 4) {
-        const red = imageData.data[index] ?? 0;
-        const green = imageData.data[index + 1] ?? 0;
-        const blue = imageData.data[index + 2] ?? 0;
+      for (let index = 0; index < pixels.length; index += 4) {
+        const red = pixels[index] ?? 0;
+        const green = pixels[index + 1] ?? 0;
+        const blue = pixels[index + 2] ?? 0;
         if (red > 40 || green > 40 || blue > 40) {
           count += 1;
         }
@@ -132,5 +169,5 @@ test("static app shell renders without original data or a desktop companion", as
       return count;
     });
 
-  expect(nonBlankPixels).toBeGreaterThan(120_000);
+  expect(nonBlankPixels).toBeGreaterThan(80_000);
 });
