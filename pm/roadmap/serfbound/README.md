@@ -160,10 +160,13 @@ For Serfbound specifically, every implementation story must identify:
 - **Current browser workspace:** `serfbound/` is an npm/TypeScript workspace
   with app, engine, assets, and test-support package boundaries.
 - **Current CI-safe browser command:** `npm test` from `serfbound/` builds the
-  workspace and runs Node's built-in test runner against committed Phase 1
-  fixture data without `serfbound-local-data/`.
+  workspace, runs Node's built-in test runner against committed Phase 1 fixture
+  data, builds the static browser shell, and runs the Playwright smoke test
+  without `serfbound-local-data/`.
 - **Current runtime boundary baseline:**
   `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
+- **Current static shell proof:**
+  `pm/roadmap/serfbound/phase-2-browser-foundation/artifacts/story-04-app-shell-desktop.png`.
 
 ## Glossary
 

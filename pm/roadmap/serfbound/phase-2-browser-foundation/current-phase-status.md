@@ -27,7 +27,7 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 
 - [x] `npm`/web-tooling commands build and test the browser workspace.
 - [x] CI can run without local assets.
-- [ ] The app shell opens in a browser and proves the deployment model is static
+- [x] The app shell opens in a browser and proves the deployment model is static
   or otherwise pure browser.
 - [x] Runtime boundaries are documented: engine, assets, rendering, UI, audio,
   persistence, worker boundary.
@@ -40,17 +40,14 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 | SB-2-01 | Scaffold pure-browser workspace | done | story-01-scaffold-browser-workspace.md | evidence-story-01.md |
 | SB-2-02 | Add CI-safe test spine | done | story-02-ci-safe-test-spine.md | evidence-story-02.md |
 | SB-2-03 | Define runtime module boundaries | done | story-03-runtime-module-boundaries.md | evidence-story-03.md |
-| SB-2-04 | Prove static browser app shell | backlog | story-04-static-browser-shell.md | — |
+| SB-2-04 | Prove static browser app shell | done | story-04-static-browser-shell.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 2 is in progress. SB-2-01 created the `serfbound/` TypeScript npm
-workspace with app, engine, assets, and test-support package boundaries.
-SB-2-02 added the default CI-safe test spine. SB-2-03 documented runtime module
-boundaries for engine, asset import, decoded catalog, renderer/projection,
-UI/input, audio, persistence, worker/threading, oracle fixtures/tests, and app
-shell. The next responsible move is SB-2-04: prove the static browser app shell
-and deployment model.
+Phase 2 implementation stories are complete. SB-2-04 added the static Vite
+browser shell, Playwright smoke test, and screenshot evidence. All Phase 2 exit
+criteria have direct evidence. The next responsible move is the Phase 2 final
+audit and `final-summary.md`; after that, Phase 3 can start with SB-3-01.
 
 ## Active risks
 
@@ -77,6 +74,8 @@ and deployment model.
   SB-2-02.
 - 2026-06-09 — Keep `@serfbound/test-support` test-only and document runtime
   module boundaries before Phase 3-6 implementation starts — SB-2-03.
+- 2026-06-09 — Use Vite for the static browser shell and Playwright Chromium
+  for the browser smoke/screenshot proof — SB-2-04.
 
 ## Decisions deferred
 

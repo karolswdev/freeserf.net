@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 2
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-2-01, SB-2-02
 - **Unblocks:** SB-5-03, SB-6-03, SB-9-02
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ launcher, or hidden local executable.
 
 ## Acceptance criteria
 
-- [ ] A browser shell page loads from the chosen workspace.
-- [ ] The shell has a smoke test or screenshot proving it renders.
-- [ ] The shell does not require original game data.
-- [ ] The shell does not require a desktop companion for normal play semantics.
-- [ ] The startup path is documented for future agents.
+- [x] A browser shell page loads from the chosen workspace.
+- [x] The shell has a smoke test or screenshot proving it renders.
+- [x] The shell does not require original game data.
+- [x] The shell does not require a desktop companion for normal play semantics.
+- [x] The startup path is documented for future agents.
 
 ## Test plan
 
@@ -38,5 +38,8 @@ launcher, or hidden local executable.
 
 ## Notes / open questions
 
-A local dev server is acceptable for development. It must not become a normal
-play dependency after static packaging.
+Shipped a Vite-built static shell at `serfbound/index.html` with a generated
+non-original terrain preview and visible missing-data state. `npm test` now
+runs both CI-safe fixture tests and a Playwright Chromium smoke test against
+`vite preview`. The screenshot proof is committed at
+`artifacts/story-04-app-shell-desktop.png`.

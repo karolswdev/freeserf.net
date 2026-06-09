@@ -44,6 +44,8 @@ dlldata.c
 project.lock.json
 project.fragment.lock.json
 artifacts/
+!pm/roadmap/**/artifacts/
+!pm/roadmap/**/artifacts/**
 
 *_i.c
 *_p.c
@@ -197,6 +199,9 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+serfbound/dist/
+serfbound/playwright-report/
+serfbound/test-results/
 orleans.codegen.cs
 
 # Since there are multiple workflows, uncomment next line to ignore bower_components
