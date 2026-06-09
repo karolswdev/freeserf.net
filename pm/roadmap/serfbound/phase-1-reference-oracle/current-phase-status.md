@@ -28,7 +28,7 @@ product runtime.
 
 - [ ] At least three reference outputs are captured from real source files and
   documented with commands.
-- [ ] At least one output is data-free and can run in CI.
+- [x] At least one output is data-free and can run in CI.
 - [ ] At least one output uses the ignored local `SPAU.PA` source and is marked
   local/manual.
 - [ ] Reference outputs have stable, reviewable formats such as JSON/text/binary
@@ -41,17 +41,18 @@ product runtime.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-1-01 | Select first oracle targets | done | story-01-select-oracle-targets.md | evidence-story-01.md |
-| SB-1-02 | Capture data-free reference output | ready | story-02-data-free-reference-output.md | — |
+| SB-1-02 | Capture data-free reference output | done | story-02-data-free-reference-output.md | evidence-story-02.md |
 | SB-1-03 | Capture local SPAU.PA resource output | ready | story-03-local-spau-resource-output.md | — |
 | SB-1-04 | Define oracle fixture contract | ready | story-04-oracle-fixture-contract.md | — |
 
 ## Where we are
 
-Phase 1 has started. SB-1-01 selected four oracle targets:
-`rng.fixed-seed-sequence`, `map.geometry-facts`, `serializer.state-fixtures`,
-and local/manual `dos.spau-catalog-metadata`. The next responsible move is
-SB-1-02: capture the first data-free reference output, starting with the RNG
-target.
+Phase 1 has a first CI-safe reference fixture. SB-1-02 captured
+`rng.fixed-seed-sequence` from `Freeserf.Core/Random.cs` into
+`pm/roadmap/serfbound/reference-fixtures/ci/rng-fixed-seed-sequence.json`.
+The fixture is deterministic across two consecutive runs and contains no
+original game asset payload. The next responsible move is SB-1-03: capture
+local/manual `SPAU.PA` catalog metadata without committing original asset bytes.
 
 ## Active risks
 
@@ -73,9 +74,16 @@ target.
 - 2026-06-09 — Treat `dos.spau-catalog-metadata` as local/manual only —
   `SPAU.PA` protects Phase 4 parser work but remains ignored and metadata-only
   in committed evidence — SB-1-01 target selection.
+- 2026-06-09 — Use isolated Python reference tooling for the first RNG fixture
+  because local `dotnet` and Node toolchains are unavailable/broken in this
+  environment; the helper lives under `pm/roadmap/serfbound/reference-tools/`
+  and is not product code — SB-1-02 capture.
 
 ## Decisions deferred
 
 - Exact fixture schema fields — resolve in SB-1-04 — default to the schema
   baseline from `parity-harness-design.md` and target details from
   `oracle-targets.md`.
+- Whether to repair local Node before Phase 2 starts — resolve before SB-2-01 —
+  SB-1-02 could use Python because it is reference tooling only, but product
+  implementation still needs a working browser-native toolchain.

@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 1
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-1-01
 - **Unblocks:** SB-1-04, SB-3-01, SB-3-02
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -23,11 +23,11 @@ test independent of local assets.
 
 ## Acceptance criteria
 
-- [ ] A command captures the chosen data-free oracle output.
-- [ ] The command and output location are documented in Phase 1 evidence notes.
-- [ ] The fixture is deterministic across two consecutive runs.
-- [ ] The fixture contains no original game asset payload.
-- [ ] The capture helper is isolated from final browser product code.
+- [x] A command captures the chosen data-free oracle output.
+- [x] The command and output location are documented in Phase 1 evidence notes.
+- [x] The fixture is deterministic across two consecutive runs.
+- [x] The fixture contains no original game asset payload.
+- [x] The capture helper is isolated from final browser product code.
 
 ## Test plan
 
@@ -39,5 +39,8 @@ test independent of local assets.
 
 ## Notes / open questions
 
-Prefer JSON or plain text for first fixtures. Binary fixtures are acceptable
-only when byte layout is the behavior under test.
+Shipped `rng.fixed-seed-sequence` as JSON:
+`pm/roadmap/serfbound/reference-fixtures/ci/rng-fixed-seed-sequence.json`.
+The capture helper is isolated under
+`pm/roadmap/serfbound/reference-tools/capture-rng-oracle.py` and is not product
+code.

@@ -1,0 +1,853 @@
+{
+  "cases": [
+    {
+      "constructor": {
+        "kind": "Random(ushort)",
+        "value": 0
+      },
+      "id": "word-seed-0000",
+      "initialState": [
+        0,
+        0,
+        0
+      ],
+      "initialToString": "1111111111111111",
+      "steps": [
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 1,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 2,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 3,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 4,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 5,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 6,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 7,
+          "toStringAfter": "1111111111111111"
+        },
+        {
+          "after": [
+            0,
+            0,
+            0
+          ],
+          "before": [
+            0,
+            0,
+            0
+          ],
+          "next": 0,
+          "step": 8,
+          "toStringAfter": "1111111111111111"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "kind": "Random(ushort)",
+        "value": 1
+      },
+      "id": "word-seed-0001",
+      "initialState": [
+        1,
+        1,
+        1
+      ],
+      "initialToString": "2111131111511111",
+      "steps": [
+        {
+          "after": [
+            3,
+            32769,
+            1
+          ],
+          "before": [
+            1,
+            1,
+            1
+          ],
+          "next": 3,
+          "step": 1,
+          "toStringAfter": "4111131111711111"
+        },
+        {
+          "after": [
+            32773,
+            32769,
+            16385
+          ],
+          "before": [
+            3,
+            32769,
+            1
+          ],
+          "next": 32773,
+          "step": 2,
+          "toStringAfter": "6111141111711113"
+        },
+        {
+          "after": [
+            16391,
+            40961,
+            24577
+          ],
+          "before": [
+            32773,
+            32769,
+            16385
+          ],
+          "next": 16391,
+          "step": 3,
+          "toStringAfter": "8111531115711114"
+        },
+        {
+          "after": [
+            32777,
+            53249,
+            1
+          ],
+          "before": [
+            16391,
+            40961,
+            24577
+          ],
+          "next": 32777,
+          "step": 4,
+          "toStringAfter": "2211141113811111"
+        },
+        {
+          "after": [
+            20491,
+            32769,
+            26625
+          ],
+          "before": [
+            32777,
+            53249,
+            1
+          ],
+          "next": 20491,
+          "step": 5,
+          "toStringAfter": "4211631111711134"
+        },
+        {
+          "after": [
+            47117,
+            46081,
+            29697
+          ],
+          "before": [
+            20491,
+            32769,
+            26625
+          ],
+          "next": 47117,
+          "step": 6,
+          "toStringAfter": "6215441157711164"
+        },
+        {
+          "after": [
+            6159,
+            52737,
+            5121
+          ],
+          "before": [
+            47117,
+            46081,
+            29697
+          ],
+          "next": 6159,
+          "step": 7,
+          "toStringAfter": "8215231172811161"
+        },
+        {
+          "after": [
+            61969,
+            38401,
+            28929
+          ],
+          "before": [
+            6159,
+            52737,
+            5121
+          ],
+          "next": 61969,
+          "step": 8,
+          "toStringAfter": "2312841173711354"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "kind": "Random(ushort)",
+        "value": 65535
+      },
+      "id": "word-seed-ffff",
+      "initialState": [
+        65535,
+        65535,
+        65535
+      ],
+      "initialToString": "8888888888888888",
+      "steps": [
+        {
+          "after": [
+            1,
+            32768,
+            32767
+          ],
+          "before": [
+            65535,
+            65535,
+            65535
+          ],
+          "next": 1,
+          "step": 1,
+          "toStringAfter": "2111111111788884"
+        },
+        {
+          "after": [
+            65534,
+            49151,
+            65535
+          ],
+          "before": [
+            1,
+            32768,
+            32767
+          ],
+          "next": 65534,
+          "step": 2,
+          "toStringAfter": "7888888888788888"
+        },
+        {
+          "after": [
+            16386,
+            32768,
+            24575
+          ],
+          "before": [
+            65534,
+            49151,
+            65535
+          ],
+          "next": 16386,
+          "step": 3,
+          "toStringAfter": "3111511111788883"
+        },
+        {
+          "after": [
+            40957,
+            45055,
+            61439
+          ],
+          "before": [
+            16386,
+            32768,
+            24575
+          ],
+          "next": 40957,
+          "step": 4,
+          "toStringAfter": "6888288886788848"
+        },
+        {
+          "after": [
+            40963,
+            38912,
+            20479
+          ],
+          "before": [
+            40957,
+            45055,
+            61439
+          ],
+          "next": 40963,
+          "step": 5,
+          "toStringAfter": "4111321114788843"
+        },
+        {
+          "after": [
+            30716,
+            49151,
+            62463
+          ],
+          "before": [
+            40963,
+            38912,
+            20479
+          ],
+          "next": 30716,
+          "step": 6,
+          "toStringAfter": "5884878888788858"
+        },
+        {
+          "after": [
+            50180,
+            34304,
+            23039
+          ],
+          "before": [
+            30716,
+            49151,
+            62463
+          ],
+          "next": 50180,
+          "step": 7,
+          "toStringAfter": "5113521171788473"
+        },
+        {
+          "after": [
+            5115,
+            44287,
+            61439
+          ],
+          "before": [
+            50180,
+            34304,
+            23039
+          ],
+          "next": 5115,
+          "step": 8,
+          "toStringAfter": "4882278856788848"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "kind": "Random(ushort, ushort, ushort)",
+        "values": [
+          1,
+          32768,
+          65535
+        ]
+      },
+      "id": "base-triplet-edge",
+      "initialState": [
+        1,
+        32768,
+        65535
+      ],
+      "initialToString": "2111111111788888",
+      "steps": [
+        {
+          "after": [
+            32766,
+            65535,
+            49151
+          ],
+          "before": [
+            1,
+            32768,
+            65535
+          ],
+          "next": 32766,
+          "step": 1,
+          "toStringAfter": "7888878888888886"
+        },
+        {
+          "after": [
+            49154,
+            40960,
+            24575
+          ],
+          "before": [
+            32766,
+            65535,
+            49151
+          ],
+          "next": 49154,
+          "step": 2,
+          "toStringAfter": "3111521115788883"
+        },
+        {
+          "after": [
+            16381,
+            45055,
+            65535
+          ],
+          "before": [
+            49154,
+            40960,
+            24575
+          ],
+          "next": 16381,
+          "step": 3,
+          "toStringAfter": "6888478886788888"
+        },
+        {
+          "after": [
+            4099,
+            32768,
+            22527
+          ],
+          "before": [
+            16381,
+            45055,
+            65535
+          ],
+          "next": 4099,
+          "step": 4,
+          "toStringAfter": "4111211111788863"
+        },
+        {
+          "after": [
+            51196,
+            44031,
+            60415
+          ],
+          "before": [
+            4099,
+            32768,
+            22527
+          ],
+          "next": 51196,
+          "step": 5,
+          "toStringAfter": "5884588846788838"
+        },
+        {
+          "after": [
+            38916,
+            40448,
+            19455
+          ],
+          "before": [
+            51196,
+            44031,
+            60415
+          ],
+          "next": 38916,
+          "step": 6,
+          "toStringAfter": "5115221174788833"
+        },
+        {
+          "after": [
+            32251,
+            48127,
+            62719
+          ],
+          "before": [
+            38916,
+            40448,
+            19455
+          ],
+          "next": 32251,
+          "step": 7,
+          "toStringAfter": "4887878848788268"
+        },
+        {
+          "after": [
+            52485,
+            34176,
+            22655
+          ],
+          "before": [
+            32251,
+            48127,
+            62719
+          ],
+          "next": 52485,
+          "step": 8,
+          "toStringAfter": "6157521561788173"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "kind": "Random(string)",
+        "value": "1234567812345678"
+      },
+      "id": "string-seed-1234567812345678",
+      "initialState": [
+        50824,
+        35066,
+        64198
+      ],
+      "initialToString": "1234567812345678",
+      "steps": [
+        {
+          "after": [
+            46404,
+            1437,
+            16864
+          ],
+          "before": [
+            50824,
+            35066,
+            64198
+          ],
+          "next": 46404,
+          "step": 1,
+          "toStringAfter": "5163448561117413"
+        },
+        {
+          "after": [
+            64257,
+            8560,
+            41918
+          ],
+          "before": [
+            46404,
+            1437,
+            16864
+          ],
+          "next": 64257,
+          "step": 2,
+          "toStringAfter": "2156825425184816"
+        },
+        {
+          "after": [
+            49103,
+            29231,
+            25239
+          ],
+          "before": [
+            64257,
+            8560,
+            41918
+          ],
+          "next": 49103,
+          "step": 3,
+          "toStringAfter": "8288484237642614"
+        },
+        {
+          "after": [
+            21353,
+            54132,
+            27235
+          ],
+          "before": [
+            49103,
+            29231,
+            25239
+          ],
+          "next": 21353,
+          "step": 4,
+          "toStringAfter": "2662616443827534"
+        },
+        {
+          "after": [
+            19646,
+            63313,
+            40683
+          ],
+          "before": [
+            21353,
+            54132,
+            27235
+          ],
+          "next": 19646,
+          "step": 5,
+          "toStringAfter": "7837535387867685"
+        },
+        {
+          "after": [
+            56036,
+            45238,
+            19230
+          ],
+          "before": [
+            19646,
+            63313,
+            40683
+          ],
+          "next": 56036,
+          "step": 6,
+          "toStringAfter": "5546666617382733"
+        },
+        {
+          "after": [
+            49284,
+            9649,
+            32234
+          ],
+          "before": [
+            56036,
+            45238,
+            19230
+          ],
+          "next": 49284,
+          "step": 7,
+          "toStringAfter": "5131545665167484"
+        },
+        {
+          "after": [
+            39903,
+            17173,
+            53709
+          ],
+          "before": [
+            49284,
+            9649,
+            32234
+          ],
+          "next": 39903,
+          "step": 8,
+          "toStringAfter": "8486246141675457"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "kind": "Random.operator ^",
+        "leftState": [
+          1,
+          32768,
+          65535
+        ],
+        "rightState": [
+          50824,
+          35066,
+          64198
+        ],
+        "values": [
+          53782,
+          55888,
+          38878
+        ]
+      },
+      "id": "xor-base-triplet-with-string",
+      "initialState": [
+        50825,
+        2298,
+        1337
+      ],
+      "initialToString": "2234567812554321",
+      "steps": [
+        {
+          "after": [
+            51898,
+            33636,
+            34585
+          ],
+          "before": [
+            50825,
+            2298,
+            1337
+          ],
+          "next": 51898,
+          "step": 1,
+          "toStringAfter": "3836522441752725"
+        },
+        {
+          "after": [
+            51463,
+            50316,
+            34110
+          ],
+          "before": [
+            51898,
+            33636,
+            34585
+          ],
+          "next": 51463,
+          "step": 2,
+          "toStringAfter": "8155524551484325"
+        },
+        {
+          "after": [
+            2221,
+            18083,
+            9445
+          ],
+          "before": [
+            51463,
+            50316,
+            34110
+          ],
+          "next": 2221,
+          "step": 3,
+          "toStringAfter": "6635171671637222"
+        },
+        {
+          "after": [
+            27573,
+            38549,
+            13764
+          ],
+          "before": [
+            2221,
+            18083,
+            9445
+          ],
+          "next": 27573,
+          "step": 4,
+          "toStringAfter": "6776736573335462"
+        },
+        {
+          "after": [
+            14222,
+            11622,
+            58924
+          ],
+          "before": [
+            27573,
+            38549,
+            13764
+          ],
+          "next": 14222,
+          "step": 5,
+          "toStringAfter": "7274452466173528"
+        },
+        {
+          "after": [
+            33496,
+            8058,
+            2505
+          ],
+          "before": [
+            14222,
+            11622,
+            58924
+          ],
+          "next": 33496,
+          "step": 6,
+          "toStringAfter": "1442167484555431"
+        },
+        {
+          "after": [
+            43931,
+            39708,
+            38049
+          ],
+          "before": [
+            33496,
+            8058,
+            2505
+          ],
+          "next": 43931,
+          "step": 7,
+          "toStringAfter": "4476328144713265"
+        },
+        {
+          "after": [
+            53782,
+            55888,
+            38878
+          ],
+          "before": [
+            43931,
+            39708,
+            38049
+          ],
+          "next": 53782,
+          "step": 8,
+          "toStringAfter": "7312625334486865"
+        }
+      ]
+    }
+  ],
+  "dataRequirement": "data-free / CI-safe",
+  "generation": {
+    "command": "python3 pm/roadmap/serfbound/reference-tools/capture-rng-oracle.py --output pm/roadmap/serfbound/reference-fixtures/ci/rng-fixed-seed-sequence.json",
+    "notes": "Temporary Phase 1 reference tooling; not product code and not imported by browser runtime.",
+    "tool": "pm/roadmap/serfbound/reference-tools/capture-rng-oracle.py"
+  },
+  "schemaVersion": 1,
+  "source": {
+    "file": "Freeserf.Core/Random.cs",
+    "lastCommit": "75c1392cab7f7964cf0dc38944e454f80f92c532",
+    "methods": [
+      "Freeserf.Random(ushort)",
+      "Freeserf.Random(string)",
+      "Freeserf.Random(ushort base0, ushort base1, ushort base2)",
+      "Freeserf.Random.Next()",
+      "Freeserf.Random.ToString()",
+      "Freeserf.Random.operator ^"
+    ],
+    "sha256": "e5d5bf442139173a3cb1598436d8708171354c3c6989911e432cd57f4985dbae"
+  },
+  "targetId": "rng.fixed-seed-sequence"
+}
