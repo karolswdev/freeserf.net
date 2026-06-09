@@ -36,15 +36,17 @@ oracle fixtures.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-3-01 | Port deterministic numeric/random rules | backlog | story-01-numeric-random-rules.md | — |
+| SB-3-01 | Port deterministic numeric/random rules | ready | story-01-numeric-random-rules.md | — |
 | SB-3-02 | Port map geometry primitive | backlog | story-02-map-geometry-primitive.md | — |
 | SB-3-03 | Add state and tick skeleton | backlog | story-03-state-tick-skeleton.md | — |
 | SB-3-04 | Prove first simulation parity | backlog | story-04-first-simulation-parity.md | — |
 
 ## Where we are
 
-Phase 3 is not started. It depends on Phase 1 reference outputs and Phase 2
-test infrastructure.
+Phase 3 is ready. Phase 1 produced the RNG and map geometry oracle fixtures,
+and Phase 2 completed the browser workspace, CI-safe test spine, runtime
+boundaries, and static browser shell. The next responsible move is SB-3-01:
+port deterministic numeric/random rules inside the engine boundary.
 
 ## Active risks
 
@@ -56,7 +58,9 @@ test infrastructure.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Start Phase 3 after the Phase 2 final audit — use
+  `rng-fixed-seed-sequence.json` as the first parity target and keep
+  implementation inside `@serfbound/engine` — Phase 2 completion audit.
 
 ## Decisions deferred
 

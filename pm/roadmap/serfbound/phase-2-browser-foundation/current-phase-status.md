@@ -44,10 +44,10 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 
 ## Where we are
 
-Phase 2 implementation stories are complete. SB-2-04 added the static Vite
-browser shell, Playwright smoke test, and screenshot evidence. All Phase 2 exit
-criteria have direct evidence. The next responsible move is the Phase 2 final
-audit and `final-summary.md`; after that, Phase 3 can start with SB-3-01.
+Phase 2 is complete. The final audit is recorded in `final-summary.md` and
+links every shipped story, evidence file, command, known limitation, and
+deferred item. Phase 3 is ready to start with SB-3-01: port deterministic
+numeric/random rules against the RNG oracle fixture.
 
 ## Active risks
 
