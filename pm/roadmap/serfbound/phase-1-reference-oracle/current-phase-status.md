@@ -49,12 +49,10 @@ product runtime.
 
 ## Where we are
 
-Phase 1 stories are all shipped. SB-1-04 defined the v1 oracle fixture contract
-covering CI-safe fixtures, local/manual outputs, schema fields, checksum rules,
-source attribution, command policy, and the product-code boundary. The next
-responsible move is a Phase 1 final audit and `final-summary.md`; do not mark
-Phase 1 complete until that audit links every story, evidence file, command,
-known limitation, and deferred item.
+Phase 1 is complete. The final audit is recorded in `final-summary.md` and links
+every shipped story, evidence file, command, known limitation, and deferred
+item. Phase 2 is ready to start with SB-2-01: scaffold the pure-browser
+workspace and restore a working browser-native toolchain.
 
 ## Active risks
 
@@ -104,5 +102,5 @@ known limitation, and deferred item.
 - Whether to add C# cross-checks for source-derived Python fixtures when a C#
   toolchain is available — not required for Phase 1 exit, but required before
   Phase 3 claims full simulation parity.
-- Phase 1 final audit — create `final-summary.md`, re-check every exit
-  criterion, and update the project README phase index before starting Phase 2.
+- Phase 2 browser toolchain repair — local Node/npm are currently broken and
+  must be fixed or replaced before SB-2-01 can prove build/test commands.

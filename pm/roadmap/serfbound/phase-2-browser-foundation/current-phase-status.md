@@ -37,15 +37,18 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-2-01 | Scaffold pure-browser workspace | backlog | story-01-scaffold-browser-workspace.md | — |
+| SB-2-01 | Scaffold pure-browser workspace | ready | story-01-scaffold-browser-workspace.md | — |
 | SB-2-02 | Add CI-safe test spine | backlog | story-02-ci-safe-test-spine.md | — |
 | SB-2-03 | Define runtime module boundaries | backlog | story-03-runtime-module-boundaries.md | — |
 | SB-2-04 | Prove static browser app shell | backlog | story-04-static-browser-shell.md | — |
 
 ## Where we are
 
-Phase 2 is not started. It depends on Phase 0 runtime decision and Phase 1
-oracle fixture contract.
+Phase 2 is ready. Phase 0 selected the TypeScript-first browser runtime, and
+Phase 1 completed the oracle target list, CI-safe fixtures, local/manual
+metadata output, and fixture contract. The next responsible move is SB-2-01:
+scaffold the pure-browser workspace and repair or replace the broken local
+Node/npm toolchain.
 
 ## Active risks
 
@@ -57,9 +60,13 @@ oracle fixture contract.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Start Phase 2 after Phase 1 final audit — use Phase 1 fixtures
+  and `oracle-fixture-contract.md` as test-spine inputs; SB-2-01 is the first
+  ready story.
 
 ## Decisions deferred
 
 - Monorepo package names — resolve during SB-2-01 — default to names under
   `serfbound/*` until publishability matters.
+- Local browser toolchain repair — resolve during SB-2-01 — Homebrew `node` and
+  `npm` currently fail to load `libllhttp.9.3.dylib`.
