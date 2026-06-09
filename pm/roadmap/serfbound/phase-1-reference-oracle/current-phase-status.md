@@ -40,16 +40,18 @@ product runtime.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-1-01 | Select first oracle targets | ready | story-01-select-oracle-targets.md | — |
+| SB-1-01 | Select first oracle targets | done | story-01-select-oracle-targets.md | evidence-story-01.md |
 | SB-1-02 | Capture data-free reference output | ready | story-02-data-free-reference-output.md | — |
 | SB-1-03 | Capture local SPAU.PA resource output | ready | story-03-local-spau-resource-output.md | — |
 | SB-1-04 | Define oracle fixture contract | ready | story-04-oracle-fixture-contract.md | — |
 
 ## Where we are
 
-Phase 1 is ready to start. Phase 0 shipped the source inventory, runtime
-decision, parity harness design, and asset/legal boundary. Start with SB-1-01 so
-the target list can turn the Phase 0 parity baseline into executable oracle work.
+Phase 1 has started. SB-1-01 selected four oracle targets:
+`rng.fixed-seed-sequence`, `map.geometry-facts`, `serializer.state-fixtures`,
+and local/manual `dos.spau-catalog-metadata`. The next responsible move is
+SB-1-02: capture the first data-free reference output, starting with the RNG
+target.
 
 ## Active risks
 
@@ -64,8 +66,16 @@ the target list can turn the Phase 0 parity baseline into executable oracle work
 - 2026-06-09 — Use Phase 0 parity and asset-boundary docs as Phase 1 input —
   oracle targets must separate CI-safe data-free fixtures from local/manual
   `SPAU.PA` metadata — Phase 0 completion audit.
+- 2026-06-09 — Capture RNG first, then expand only if fixtures stay small —
+  `rng.fixed-seed-sequence` is the first data-free target; map geometry and
+  serializer targets are selected but should not bloat SB-1-02 — SB-1-01 target
+  selection.
+- 2026-06-09 — Treat `dos.spau-catalog-metadata` as local/manual only —
+  `SPAU.PA` protects Phase 4 parser work but remains ignored and metadata-only
+  in committed evidence — SB-1-01 target selection.
 
 ## Decisions deferred
 
-- Exact first oracle targets — resolve in SB-1-01 — default to map/random,
-  resource catalog, and serialization/state checks.
+- Exact fixture schema fields — resolve in SB-1-04 — default to the schema
+  baseline from `parity-harness-design.md` and target details from
+  `oracle-targets.md`.

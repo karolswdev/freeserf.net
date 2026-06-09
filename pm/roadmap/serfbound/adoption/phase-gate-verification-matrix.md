@@ -30,7 +30,7 @@ artifacts, or manual verification notes.
 | Phase | Gate | Required proof | Current status |
 |---|---|---|---|
 | 0 | Rewrite discovery is credible | Roadmap, source inventory, runtime decision, parity design, asset boundary, and phase plan exist | Complete |
-| 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | Ready |
+| 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | In progress |
 | 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | Not started |
 | 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | Not started |
 | 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Not started |
@@ -76,6 +76,7 @@ Before marking the whole Serfbound goal complete:
 As of 2026-06-09, the PMO scaffold is materially stronger than the initial plan:
 all phases have status files and all referenced Phase 1 through Phase 9 story
 files exist. Phase 0 is complete and documented in
-`pm/roadmap/serfbound/phase-0-setup/final-summary.md`. The product is not
-complete. The next evidence-producing work is Phase 1 story SB-1-01, selecting
-the first oracle targets.
+`pm/roadmap/serfbound/phase-0-setup/final-summary.md`. Phase 1 has started with
+SB-1-01 target selection. The product is not complete. The next
+evidence-producing work is SB-1-02, capturing the first data-free reference
+output.

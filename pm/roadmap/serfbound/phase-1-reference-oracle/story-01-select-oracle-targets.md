@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 1
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-0-02, SB-0-04
 - **Unblocks:** SB-1-02, SB-1-03, SB-1-04
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -23,11 +23,11 @@ cover simulation, resources, and serialization risk.
 
 ## Acceptance criteria
 
-- [ ] `pm/roadmap/serfbound/adoption/oracle-targets.md` exists.
-- [ ] At least one target is data-free and suitable for CI.
-- [ ] At least one target uses local `SPAU.PA` and is marked local/manual.
-- [ ] Every target names exact source files and methods/classes to inspect.
-- [ ] Every target states the future Serfbound phase it protects.
+- [x] `pm/roadmap/serfbound/adoption/oracle-targets.md` exists.
+- [x] At least one target is data-free and suitable for CI.
+- [x] At least one target uses local `SPAU.PA` and is marked local/manual.
+- [x] Every target names exact source files and methods/classes to inspect.
+- [x] Every target states the future Serfbound phase it protects.
 
 ## Test plan
 

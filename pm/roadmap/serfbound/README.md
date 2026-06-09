@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-1-reference-oracle](./phase-1-reference-oracle/current-phase-status.md)
-**Status:** Phase 0 complete; Phase 1 ready.
+**Status:** Phase 0 complete; Phase 1 in progress.
 
 ## Vision
 
@@ -55,6 +55,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
   consumption boundary for parity work.
 - `pm/roadmap/serfbound/adoption/asset-and-legal-boundary.md` - browser import,
   storage, test-data, and redistribution boundary for original DOS/Amiga data.
+- `pm/roadmap/serfbound/adoption/oracle-targets.md` - selected Phase 1 oracle
+  targets, source files/methods, data requirements, output shapes, and protected
+  future phases.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.
@@ -64,7 +67,7 @@ and either prove the new behavior intentionally or defer the decision.
 | Phase | Goal (one line) | Status | Folder |
 |---|---|---|---|
 | 0 | Prove the rewrite shape before implementation starts | complete | [phase-0-setup](./phase-0-setup/) |
-| 1 | Capture trustworthy reference behavior before rewriting it | ready | [phase-1-reference-oracle](./phase-1-reference-oracle/) |
+| 1 | Capture trustworthy reference behavior before rewriting it | in-progress | [phase-1-reference-oracle](./phase-1-reference-oracle/) |
 | 2 | Establish the pure-browser workspace, runtime, and CI spine | planning | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | planning | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | planning | [phase-4-data-assets](./phase-4-data-assets/) |
