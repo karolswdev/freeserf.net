@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** complete; Phase 4 ready.
+
 ## Goal
 
 Port the first deterministic gameplay primitives and prove them against Phase 1
@@ -30,7 +32,7 @@ oracle fixtures.
 - [x] Map/coordinate primitives have focused unit tests.
 - [x] State/tick skeleton has at least one deterministic round-trip or snapshot
   comparison.
-- [ ] Known divergences from `Freeserf.Core` are documented with rationale.
+- [x] Known divergences from `Freeserf.Core` are documented with rationale.
 
 ## Story status
 
@@ -39,18 +41,18 @@ oracle fixtures.
 | SB-3-01 | Port deterministic numeric/random rules | done | story-01-numeric-random-rules.md | evidence-story-01.md |
 | SB-3-02 | Port map geometry primitive | done | story-02-map-geometry-primitive.md | evidence-story-02.md |
 | SB-3-03 | Add state and tick skeleton | done | story-03-state-tick-skeleton.md | evidence-story-03.md |
-| SB-3-04 | Prove first simulation parity | ready | story-04-first-simulation-parity.md | — |
+| SB-3-04 | Prove first simulation parity | done | story-04-first-simulation-parity.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 3 is in progress. SB-3-01 ported the deterministic numeric helpers and
+Phase 3 is complete. SB-3-01 ported deterministic numeric helpers and
 `FreeserfRandom` into `@serfbound/engine`, with tests matching every case in
 the Phase 1 RNG fixture. SB-3-02 ported direction, wrapped map position,
 movement, distance, and pure projection primitives against
 `map-geometry-facts.json`. SB-3-03 added a deterministic state/tick skeleton
 with stable snapshot/restore behavior and source-derived clock/counter rules.
-The next responsible move is SB-3-04: prove the first combined simulation
-parity slice and close Phase 3 with a final summary if the exit criteria hold.
+SB-3-04 added the first combined engine parity proof over RNG, map movement,
+and tick advancement. Phase 4 is ready to begin with local browser data import.
 
 ## Active risks
 
@@ -76,6 +78,10 @@ parity slice and close Phase 3 with a final summary if the exit criteria hold.
   preserves source-derived tick/time/counter behavior and stable snapshots while
   deferring full map/player/serializer parity until dedicated evidence exists —
   SB-3-03.
+- 2026-06-09 — Treat the first combined engine parity proof as a fixture-backed
+  integration gate over RNG, map movement, and tick advancement; no intentional
+  behavior divergence exists for the protected surface, while full gameplay,
+  asset import, and serializer parity remain later phases — SB-3-04.
 
 ## Decisions deferred
 

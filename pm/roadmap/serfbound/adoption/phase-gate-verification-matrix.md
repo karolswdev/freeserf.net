@@ -32,8 +32,8 @@ artifacts, or manual verification notes.
 | 0 | Rewrite discovery is credible | Roadmap, source inventory, runtime decision, parity design, asset boundary, and phase plan exist | Complete |
 | 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | Complete |
 | 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | Complete |
-| 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | In progress; RNG, map geometry, and state/tick tests pass |
-| 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Not started |
+| 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | Complete |
+| 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Ready |
 | 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Not started |
 | 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Not started |
 | 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Not started |
@@ -79,8 +79,8 @@ files exist. Phase 0 is complete and documented in
 `pm/roadmap/serfbound/phase-0-setup/final-summary.md`. Phase 1 is complete and
 documented in `pm/roadmap/serfbound/phase-1-reference-oracle/final-summary.md`.
 The product is not complete. Phase 2 is complete and documented in
-`pm/roadmap/serfbound/phase-2-browser-foundation/final-summary.md`. Phase 3 has
-started with SB-3-01's deterministic numeric/RNG implementation, SB-3-02's map
-geometry/projection primitive, and SB-3-03's deterministic state/tick skeleton.
-The next gap is SB-3-04: a combined first simulation parity proof and Phase 3
-completion audit.
+`pm/roadmap/serfbound/phase-2-browser-foundation/final-summary.md`. Phase 3 is
+complete and documented in
+`pm/roadmap/serfbound/phase-3-core-simulation/final-summary.md`. The next gap
+is SB-4-01: browser-local `.PA` import boundary with recoverable missing/invalid
+data states and no tracked original assets.

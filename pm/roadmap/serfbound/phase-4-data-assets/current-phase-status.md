@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** ready.
+
 ## Goal
 
 Import local user-owned DOS data in the browser and expose typed assets to the
@@ -39,15 +41,18 @@ engine without committing, hosting, or redistributing original files.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-4-01 | Implement browser data import boundary | backlog | story-01-browser-data-import-boundary.md | — |
+| SB-4-01 | Implement browser data import boundary | ready | story-01-browser-data-import-boundary.md | — |
 | SB-4-02 | Parse DOS PA resource catalog | backlog | story-02-parse-dos-pa-catalog.md | — |
 | SB-4-03 | Persist imported data locally | backlog | story-03-persist-imported-data.md | — |
 | SB-4-04 | Expose typed asset catalog | backlog | story-04-typed-asset-catalog.md | — |
 
 ## Where we are
 
-Phase 4 is not started. The ignored local `SPAU.PA` source exists and is
-inventoried in `pm/roadmap/serfbound/adoption/local-asset-inventory.md`.
+Phase 4 is ready after Phase 3 completion. The ignored local `SPAU.PA` source
+exists and is inventoried in
+`pm/roadmap/serfbound/adoption/local-asset-inventory.md`. The next responsible
+move is SB-4-01: implement the browser data import boundary without committing
+or bundling original data.
 
 ## Active risks
 

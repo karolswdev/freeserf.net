@@ -123,6 +123,10 @@ export class SerfboundGameState {
     return this.#random.clone();
   }
 
+  nextRandomInt(): number {
+    return this.#random.next();
+  }
+
   advanceTick(): readonly SerfboundTickEvent[] {
     this.#constTick = this.#constTick === 0xffffffff ? 0 : uint32(this.#constTick + 1);
 

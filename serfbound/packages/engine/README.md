@@ -76,6 +76,8 @@ source-visible tick and save-facing fields from `Freeserf.Core/GameState.cs`,
 - 16-bit `Tick` wrapping and 32-bit `ConstTick` wrapping;
 - `GameTimeTicksOfSecond`, `GameTime`, and `NextGameTime` progression;
 - the source `tickDifference` overflow formula used by `Game.Update()`;
+- source-owned random mutation through `nextRandomInt()`, matching
+  `Game.RandomInt()`;
 - the first scheduling counters for knight morale and inventory dispatch;
 - a stable JSON snapshot with map dimensions, clock fields, RNG state/string,
   and counters.
@@ -84,3 +86,14 @@ Known skeleton boundary: this does not port `Map.Update()`, players, AI,
 visuals, stats/history, savegame text/binary compatibility, dirty-state
 serialization, or local asset-backed initialization. Those systems require
 their own fixtures or later phase evidence.
+
+## Combined Parity Policy
+
+`engine-simulation-parity.test.mjs` is the first combined engine slice. It
+drives one `SerfboundGameState` through source-owned RNG mutation, map movement,
+and tick advancement while consuming the Phase 1 RNG and map geometry fixtures.
+
+This proof protects the integration boundary between deterministic primitives.
+It is not full gameplay parity: there is still no terrain mutation, economy,
+pathfinding, player AI, rendering, asset-backed initialization, or savegame
+serializer parity.

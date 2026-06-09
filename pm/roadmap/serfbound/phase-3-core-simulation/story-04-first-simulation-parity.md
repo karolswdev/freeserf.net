@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 3
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-3-01, SB-3-02, SB-3-03, SB-2-02
 - **Unblocks:** SB-5-03, SB-7-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,12 +22,12 @@ match known behavior.
 
 ## Acceptance criteria
 
-- [ ] A parity test consumes at least one Phase 1 CI-safe fixture.
-- [ ] The test passes locally and is suitable for default CI.
-- [ ] Any mismatch is either fixed or recorded as an intentional divergence with
+- [x] A parity test consumes at least one Phase 1 CI-safe fixture.
+- [x] The test passes locally and is suitable for default CI.
+- [x] Any mismatch is either fixed or recorded as an intentional divergence with
   user-visible consequences.
-- [ ] Phase 3 status records what behavior is now protected.
-- [ ] Later renderer/playable stories can name the protected engine behavior.
+- [x] Phase 3 status records what behavior is now protected.
+- [x] Later renderer/playable stories can name the protected engine behavior.
 
 ## Test plan
 
@@ -39,4 +39,12 @@ match known behavior.
 
 ## Notes / open questions
 
-One strong parity test is better than several broad shallow assertions.
+Shipped `engine-simulation-parity.test.mjs` as the first combined engine proof.
+It consumes both Phase 1 CI-safe fixtures, drives a single `SerfboundGameState`
+through RNG mutation, map movement, and tick advancement, and compares RNG/map
+facts against captured oracle data.
+
+No intentional behavior divergence exists for the protected fixture-backed
+surface. Scope boundaries remain explicit: this is not full gameplay parity,
+asset import, terrain mutation, pathfinding, player AI, rendering, savegame
+serializer parity, or a playable loop.
