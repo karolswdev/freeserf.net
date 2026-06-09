@@ -62,3 +62,394 @@ export function validateArchiveFileSelection(
     byteLength: file.size,
   };
 }
+
+export type DosPaCatalogEntrySource = "catalog" | "fixup";
+
+export type DosPaCatalogEntry = {
+  readonly index: number;
+  readonly offset: number;
+  readonly size: number;
+  readonly defined: boolean;
+  readonly source: DosPaCatalogEntrySource;
+  readonly inheritedFrom?: number;
+};
+
+export type DosPaCatalogHeader = {
+  readonly declaredSize: number;
+  readonly declaredSizeMatchesFileSize: boolean;
+  readonly entryCount: number;
+  readonly tableStart: 8;
+  readonly tableSize: number;
+  readonly tableEnd: number;
+};
+
+export type DosPaCatalogInvalidBound = {
+  readonly index: number;
+  readonly offset: number;
+  readonly size: number;
+  readonly reason: "entry-before-payload-table-end" | "entry-exceeds-file-size";
+};
+
+export type DosPaCatalogOverlap = {
+  readonly leftIndex: number;
+  readonly rightIndex: number;
+};
+
+export type DosPaCatalogEntrySummary = {
+  readonly defined: number;
+  readonly undefined: number;
+  readonly totalWithPlaceholder: number;
+  readonly invalidBounds: readonly DosPaCatalogInvalidBound[];
+  readonly invalidBoundsCount: number;
+  readonly overlapCount: number;
+  readonly overlapSamples: readonly DosPaCatalogOverlap[];
+  readonly sizeStats: {
+    readonly min: number;
+    readonly max: number;
+    readonly totalDeclaredPayloadBytes: number;
+  };
+  readonly largestEntries: readonly Pick<DosPaCatalogEntry, "index" | "offset" | "size">[];
+};
+
+export type DosPaCatalogFixup = {
+  readonly source: number;
+  readonly target: number;
+};
+
+export type DosPaCatalogFixupSummary = {
+  readonly count: number;
+  readonly samples: readonly DosPaCatalogFixup[];
+};
+
+export type DosPaResourceCatalogEntry = {
+  readonly availableCount: number;
+  readonly count: number;
+  readonly dosIndex: number;
+  readonly dosPalette: number;
+  readonly firstArchiveIndex: number | null;
+  readonly firstAvailableIndex: number | null;
+  readonly lastArchiveIndex: number | null;
+  readonly lastAvailableIndex: number | null;
+  readonly missingCount: number;
+  readonly name: string;
+  readonly paletteAvailable: boolean | null;
+  readonly spriteType: "Unknown" | "Solid" | "Transparent" | "Overlay" | "Mask";
+  readonly type: "Unknown" | "Sprite" | "Animation" | "Sound" | "Music";
+};
+
+export type DosPaCatalog = {
+  readonly format: "DOS PA catalog, little-endian uint32 metadata";
+  readonly header: DosPaCatalogHeader;
+  readonly entries: readonly DosPaCatalogEntry[];
+  readonly entrySummary: DosPaCatalogEntrySummary;
+  readonly fixupSummary: DosPaCatalogFixupSummary;
+  readonly selectedEntries: readonly DosPaCatalogEntry[];
+  readonly resources: Readonly<Record<number, DosPaResourceCatalogEntry>>;
+};
+
+export class DosPaCatalogParseError extends Error {
+  public constructor(message: string) {
+    super(message);
+    this.name = "DosPaCatalogParseError";
+  }
+}
+
+type DosResourceDefinition = {
+  readonly name: string;
+  readonly type: DosPaResourceCatalogEntry["type"];
+  readonly count: number;
+  readonly dosIndex: number;
+  readonly dosPalette: number;
+  readonly spriteType: DosPaResourceCatalogEntry["spriteType"];
+};
+
+const dosResourceDefinitions: readonly DosResourceDefinition[] = [
+  { name: "none", type: "Unknown", count: 0, dosIndex: 0, dosPalette: 0, spriteType: "Unknown" },
+  { name: "art_landscape", type: "Sprite", count: 1, dosIndex: 1, dosPalette: 3997, spriteType: "Solid" },
+  { name: "animation", type: "Animation", count: 200, dosIndex: 2, dosPalette: 0, spriteType: "Unknown" },
+  { name: "serf_shadow", type: "Sprite", count: 1, dosIndex: 4, dosPalette: 3, spriteType: "Overlay" },
+  { name: "dotted_lines", type: "Sprite", count: 7, dosIndex: 5, dosPalette: 3, spriteType: "Solid" },
+  { name: "art_flag", type: "Sprite", count: 7, dosIndex: 15, dosPalette: 3997, spriteType: "Solid" },
+  { name: "art_box", type: "Sprite", count: 14, dosIndex: 25, dosPalette: 3, spriteType: "Solid" },
+  { name: "credits_bg", type: "Sprite", count: 1, dosIndex: 40, dosPalette: 3998, spriteType: "Solid" },
+  { name: "logo", type: "Sprite", count: 1, dosIndex: 41, dosPalette: 3998, spriteType: "Solid" },
+  { name: "symbol", type: "Sprite", count: 16, dosIndex: 42, dosPalette: 3, spriteType: "Solid" },
+  { name: "map_mask_up", type: "Sprite", count: 81, dosIndex: 60, dosPalette: 3, spriteType: "Mask" },
+  { name: "map_mask_down", type: "Sprite", count: 81, dosIndex: 141, dosPalette: 3, spriteType: "Mask" },
+  { name: "path_mask", type: "Sprite", count: 27, dosIndex: 230, dosPalette: 3, spriteType: "Mask" },
+  { name: "map_ground", type: "Sprite", count: 33, dosIndex: 260, dosPalette: 3, spriteType: "Solid" },
+  { name: "path_ground", type: "Sprite", count: 10, dosIndex: 300, dosPalette: 3, spriteType: "Solid" },
+  { name: "game_object", type: "Sprite", count: 279, dosIndex: 321, dosPalette: 3, spriteType: "Transparent" },
+  { name: "frame_top", type: "Sprite", count: 4, dosIndex: 600, dosPalette: 3, spriteType: "Solid" },
+  { name: "map_border", type: "Sprite", count: 10, dosIndex: 610, dosPalette: 3, spriteType: "Transparent" },
+  { name: "map_waves", type: "Sprite", count: 16, dosIndex: 630, dosPalette: 3, spriteType: "Transparent" },
+  { name: "frame_popup", type: "Sprite", count: 4, dosIndex: 660, dosPalette: 3, spriteType: "Solid" },
+  { name: "indicator", type: "Sprite", count: 8, dosIndex: 670, dosPalette: 3, spriteType: "Solid" },
+  { name: "font", type: "Sprite", count: 44, dosIndex: 750, dosPalette: 3, spriteType: "Transparent" },
+  { name: "font_shadow", type: "Sprite", count: 44, dosIndex: 810, dosPalette: 3, spriteType: "Transparent" },
+  { name: "icon", type: "Sprite", count: 318, dosIndex: 870, dosPalette: 3, spriteType: "Solid" },
+  { name: "map_object", type: "Sprite", count: 194, dosIndex: 1250, dosPalette: 3, spriteType: "Transparent" },
+  { name: "map_shadow", type: "Sprite", count: 194, dosIndex: 1500, dosPalette: 3, spriteType: "Overlay" },
+  { name: "panel_button", type: "Sprite", count: 25, dosIndex: 1750, dosPalette: 3, spriteType: "Solid" },
+  { name: "frame_bottom", type: "Sprite", count: 26, dosIndex: 1780, dosPalette: 3, spriteType: "Solid" },
+  { name: "serf_torso", type: "Sprite", count: 541, dosIndex: 2500, dosPalette: 3, spriteType: "Transparent" },
+  { name: "serf_head", type: "Sprite", count: 630, dosIndex: 3150, dosPalette: 3, spriteType: "Transparent" },
+  { name: "frame_split", type: "Sprite", count: 3, dosIndex: 3880, dosPalette: 3, spriteType: "Solid" },
+  { name: "sound", type: "Sound", count: 90, dosIndex: 3900, dosPalette: 0, spriteType: "Unknown" },
+  { name: "music", type: "Music", count: 7, dosIndex: 3990, dosPalette: 0, spriteType: "Unknown" },
+  { name: "cursor", type: "Sprite", count: 1, dosIndex: 3999, dosPalette: 3, spriteType: "Transparent" },
+];
+
+const selectedEntryIndices = [
+  1, 2, 3, 4, 5, 60, 321, 750, 1250, 2500, 3150, 3880, 3900, 3990, 3997, 3998, 3999,
+] as const;
+
+function toDataView(input: ArrayBuffer | ArrayBufferView): DataView {
+  if (input instanceof ArrayBuffer) {
+    return new DataView(input);
+  }
+
+  return new DataView(input.buffer as ArrayBuffer, input.byteOffset, input.byteLength);
+}
+
+function isDefinedEntry(entry: Pick<DosPaCatalogEntry, "offset" | "size">): boolean {
+  return entry.offset !== 0 && entry.size !== 0;
+}
+
+function createEntry(
+  index: number,
+  offset: number,
+  size: number,
+  source: DosPaCatalogEntrySource,
+  inheritedFrom?: number,
+): DosPaCatalogEntry {
+  const base = {
+    index,
+    offset,
+    size,
+    defined: isDefinedEntry({ offset, size }),
+    source,
+  };
+
+  return inheritedFrom === undefined ? base : { ...base, inheritedFrom };
+}
+
+function collectDosPaFixups(entries: DosPaCatalogEntry[]): DosPaCatalogFixup[] {
+  const fixups: DosPaCatalogFixup[] = [];
+  const copyEntry = (source: number, target: number): void => {
+    if (source >= entries.length || target >= entries.length) {
+      return;
+    }
+
+    const sourceEntry = entries[source];
+    if (sourceEntry === undefined) {
+      return;
+    }
+
+    entries[target] = createEntry(target, sourceEntry.offset, sourceEntry.size, "fixup", source);
+    fixups.push({ source, target });
+  };
+
+  for (let i = 0; i < 48; i += 1) {
+    for (let j = 1; j < 6; j += 1) {
+      copyEntry(3450 + 6 * i, 3450 + 6 * i + j);
+    }
+  }
+
+  for (let i = 0; i < 3; i += 1) {
+    copyEntry(3762 + i, 3765 + i);
+  }
+
+  for (let i = 0; i < 6; i += 1) {
+    copyEntry(1352, 1363 + i);
+    copyEntry(1602, 1613 + i);
+  }
+
+  return fixups;
+}
+
+function summarizeEntries(
+  entries: readonly DosPaCatalogEntry[],
+  tableEnd: number,
+  byteLength: number,
+): DosPaCatalogEntrySummary {
+  const definedEntries = entries.filter((entry) => entry.defined);
+  const invalidBounds: DosPaCatalogInvalidBound[] = [];
+
+  for (const entry of definedEntries) {
+    const end = entry.offset + entry.size;
+    if (entry.offset < tableEnd) {
+      invalidBounds.push({
+        index: entry.index,
+        offset: entry.offset,
+        size: entry.size,
+        reason: "entry-before-payload-table-end",
+      });
+    } else if (end > byteLength) {
+      invalidBounds.push({
+        index: entry.index,
+        offset: entry.offset,
+        size: entry.size,
+        reason: "entry-exceeds-file-size",
+      });
+    }
+  }
+
+  const overlapSamples: DosPaCatalogOverlap[] = [];
+  let overlapCount = 0;
+  const byRange = new Map<string, number[]>();
+  for (const entry of definedEntries) {
+    const key = `${entry.offset}:${entry.size}`;
+    const indices = byRange.get(key);
+    if (indices === undefined) {
+      byRange.set(key, [entry.index]);
+    } else {
+      indices.push(entry.index);
+    }
+  }
+
+  for (const indices of byRange.values()) {
+    if (indices.length < 2) {
+      continue;
+    }
+
+    indices.sort((left, right) => left - right);
+    overlapCount += indices.length - 1;
+    for (let index = 1; index < indices.length && overlapSamples.length < 20; index += 1) {
+      const leftIndex = indices[index - 1];
+      const rightIndex = indices[index];
+      if (leftIndex !== undefined && rightIndex !== undefined) {
+        overlapSamples.push({ leftIndex, rightIndex });
+      }
+    }
+  }
+
+  const sizes = definedEntries.map((entry) => entry.size);
+  const largestEntries = [...definedEntries]
+    .sort((left, right) => right.size - left.size || left.index - right.index)
+    .slice(0, 12)
+    .map(({ index, offset, size }) => ({ index, offset, size }));
+
+  return {
+    defined: definedEntries.length,
+    undefined: entries.length - definedEntries.length,
+    totalWithPlaceholder: entries.length,
+    invalidBounds,
+    invalidBoundsCount: invalidBounds.length,
+    overlapCount,
+    overlapSamples,
+    sizeStats: {
+      min: sizes.length === 0 ? 0 : Math.min(...sizes),
+      max: sizes.length === 0 ? 0 : Math.max(...sizes),
+      totalDeclaredPayloadBytes: sizes.reduce((total, size) => total + size, 0),
+    },
+    largestEntries,
+  };
+}
+
+function buildResourceCatalog(
+  entries: readonly DosPaCatalogEntry[],
+): Readonly<Record<number, DosPaResourceCatalogEntry>> {
+  const resources: Record<number, DosPaResourceCatalogEntry> = {};
+  const entryAt = (index: number): DosPaCatalogEntry | undefined => entries[index];
+
+  dosResourceDefinitions.forEach((definition, resourceIndex) => {
+    const archiveIndices = Array.from({ length: definition.count }, (_, index) => definition.dosIndex + index);
+    const availableArchiveIndices = archiveIndices.filter((index) => entryAt(index)?.defined === true);
+    const firstArchiveIndex = archiveIndices[0] ?? null;
+    const lastArchiveIndex = archiveIndices.at(-1) ?? null;
+    const firstAvailableIndex = availableArchiveIndices[0] ?? null;
+    const lastAvailableIndex = availableArchiveIndices.at(-1) ?? null;
+    const paletteAvailable =
+      definition.dosPalette === 0 ? null : entryAt(definition.dosPalette)?.defined === true;
+
+    resources[resourceIndex] = {
+      availableCount: availableArchiveIndices.length,
+      count: definition.count,
+      dosIndex: definition.dosIndex,
+      dosPalette: definition.dosPalette,
+      firstArchiveIndex,
+      firstAvailableIndex,
+      lastArchiveIndex,
+      lastAvailableIndex,
+      missingCount: definition.count - availableArchiveIndices.length,
+      name: definition.name,
+      paletteAvailable,
+      spriteType: definition.spriteType,
+      type: definition.type,
+    };
+  });
+
+  return resources;
+}
+
+export function parseDosPaCatalog(input: ArrayBuffer | ArrayBufferView): DosPaCatalog {
+  const view = toDataView(input);
+  const byteLength = view.byteLength;
+
+  if (byteLength < 8) {
+    throw new DosPaCatalogParseError(
+      `DOS PA catalog header is truncated: expected at least 8 bytes, received ${byteLength}.`,
+    );
+  }
+
+  const declaredSize = view.getUint32(0, true);
+  const entryCount = view.getUint32(4, true);
+  const tableStart = 8;
+  const tableSize = entryCount * 8;
+  const tableEnd = tableStart + tableSize;
+
+  if (declaredSize !== byteLength) {
+    throw new DosPaCatalogParseError(
+      `DOS PA declared size ${declaredSize} does not match file size ${byteLength}.`,
+    );
+  }
+
+  if (tableEnd > byteLength) {
+    throw new DosPaCatalogParseError(
+      `DOS PA catalog table exceeds file size: table ends at ${tableEnd}, file has ${byteLength} bytes.`,
+    );
+  }
+
+  const entries: DosPaCatalogEntry[] = [createEntry(0, 0, 0, "catalog")];
+
+  for (let index = 1; index <= entryCount; index += 1) {
+    const tableOffset = tableStart + (index - 1) * 8;
+    const size = view.getUint32(tableOffset, true);
+    const offset = view.getUint32(tableOffset + 4, true);
+    entries.push(createEntry(index, offset, size, "catalog"));
+  }
+
+  const fixups = collectDosPaFixups(entries);
+  const entrySummary = summarizeEntries(entries, tableEnd, byteLength);
+
+  if (entrySummary.invalidBounds.length > 0) {
+    const firstInvalid = entrySummary.invalidBounds[0];
+    throw new DosPaCatalogParseError(
+      `DOS PA catalog entry ${firstInvalid?.index ?? "unknown"} has invalid bounds (${firstInvalid?.reason ?? "unknown"}).`,
+    );
+  }
+
+  return {
+    format: "DOS PA catalog, little-endian uint32 metadata",
+    header: {
+      declaredSize,
+      declaredSizeMatchesFileSize: declaredSize === byteLength,
+      entryCount,
+      tableStart,
+      tableSize,
+      tableEnd,
+    },
+    entries,
+    entrySummary,
+    fixupSummary: {
+      count: fixups.length,
+      samples: fixups.slice(0, 12),
+    },
+    selectedEntries: selectedEntryIndices.flatMap((index) => {
+      const entry = entries[index];
+      return entry === undefined ? [] : [entry];
+    }),
+    resources: buildResourceCatalog(entries),
+  };
+}

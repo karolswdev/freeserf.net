@@ -1,5 +1,6 @@
 import {
   assetImportBoundary,
+  parseDosPaCatalog,
   validateArchiveFileSelection,
   type ArchiveValidationResult,
 } from "@serfbound/assets";
@@ -84,7 +85,13 @@ export function mountSerfbound(root: HTMLElement): void {
   }
 
   input.addEventListener("change", () => {
-    applyArchiveValidation(root, validateArchiveFileSelection(input.files?.item(0)));
+    const file = input.files?.item(0);
+    const validation = validateArchiveFileSelection(file);
+    applyArchiveValidation(root, validation);
+
+    if (validation.state === "supported" && file !== null && file !== undefined) {
+      void parseSelectedArchive(root, file);
+    }
   });
 }
 
@@ -101,15 +108,40 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
     case "supported":
       state.textContent = "Game data selected";
       detail.textContent = `${result.normalizedName} ready for catalog parsing`;
+      root.dataset.serfboundCatalogState = "ready";
       break;
     case "unsupported":
       state.textContent = "Unsupported data file";
       detail.textContent = `${result.fileName} is not accepted`;
+      root.dataset.serfboundCatalogState = "unread";
       break;
     case "missing":
       state.textContent = "No game data imported";
       detail.textContent = "Select SPAU.PA from your local files.";
+      root.dataset.serfboundCatalogState = "unread";
       break;
+  }
+}
+
+async function parseSelectedArchive(root: HTMLElement, file: File): Promise<void> {
+  const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
+  const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
+  if (state === null || detail === null) {
+    throw new Error("Serfbound shell data status did not mount.");
+  }
+
+  root.dataset.serfboundCatalogState = "parsing";
+  detail.textContent = "Parsing local DOS PA catalog";
+
+  try {
+    const catalog = parseDosPaCatalog(await file.arrayBuffer());
+    root.dataset.serfboundCatalogState = "parsed";
+    state.textContent = "Catalog parsed";
+    detail.textContent = `${catalog.header.entryCount} entries, ${catalog.entrySummary.defined} defined, ${catalog.fixupSummary.count} fixups`;
+  } catch (error) {
+    root.dataset.serfboundCatalogState = "invalid";
+    state.textContent = "Catalog parse failed";
+    detail.textContent = error instanceof Error ? error.message : "Unknown catalog parse error";
   }
 }
 

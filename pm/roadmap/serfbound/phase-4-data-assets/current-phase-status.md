@@ -42,19 +42,18 @@ engine without committing, hosting, or redistributing original files.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-4-01 | Implement browser data import boundary | done | story-01-browser-data-import-boundary.md | evidence-story-01.md |
-| SB-4-02 | Parse DOS PA resource catalog | ready | story-02-parse-dos-pa-catalog.md | — |
-| SB-4-03 | Persist imported data locally | backlog | story-03-persist-imported-data.md | — |
+| SB-4-02 | Parse DOS PA resource catalog | done | story-02-parse-dos-pa-catalog.md | evidence-story-02.md |
+| SB-4-03 | Persist imported data locally | ready | story-03-persist-imported-data.md | — |
 | SB-4-04 | Expose typed asset catalog | backlog | story-04-typed-asset-catalog.md | — |
 
 ## Where we are
 
 Phase 4 is in progress. SB-4-01 shipped the direct browser file-selection
-boundary, first `SPAU.PA` filename validation, recoverable missing/invalid UI
-states, generated-file browser smoke coverage, and opt-in local/manual check
-path. The ignored local `SPAU.PA` source exists and is inventoried in
-`pm/roadmap/serfbound/adoption/local-asset-inventory.md`. The next responsible
-move is SB-4-02: parse DOS `.PA` catalog metadata without committing or
-bundling original data.
+boundary, and SB-4-02 now parses DOS `.PA` catalog metadata through that browser
+boundary. The parser is metadata-only, data-free in CI, and proved against the
+ignored local `SPAU.PA` plus Phase 1 oracle metadata through an opt-in manual
+check. The next responsible move is SB-4-03: decide and implement local browser
+persistence for imported user data, or document a no-persistence rationale.
 
 ## Active risks
 
@@ -69,6 +68,9 @@ bundling original data.
 - 2026-06-09 — Start with direct `.PA` file selection and accept only `SPAU.PA`
   at the import boundary; generated fake files prove browser behavior in CI,
   while real local data remains opt-in/manual — SB-4-01.
+- 2026-06-09 — Parse DOS `.PA` catalogs natively in browser code, including the
+  8-byte declared-size/count header, little-endian `size, offset` table rows,
+  and inherited-entry fixups; payload decoding remains deferred — SB-4-02.
 
 ## Decisions deferred
 

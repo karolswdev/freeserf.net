@@ -5,6 +5,17 @@ import { dirname } from "node:path";
 const screenshotPath =
   "../pm/roadmap/serfbound/phase-2-browser-foundation/artifacts/story-04-app-shell-desktop.png";
 
+function createGeneratedPaArchive(): Buffer {
+  const bytes = Buffer.alloc(32);
+  bytes.writeUInt32LE(bytes.length, 0);
+  bytes.writeUInt32LE(2, 4);
+  bytes.writeUInt32LE(4, 8);
+  bytes.writeUInt32LE(24, 12);
+  bytes.writeUInt32LE(4, 16);
+  bytes.writeUInt32LE(28, 20);
+  return bytes;
+}
+
 test("static app shell renders without original data or a desktop companion", async ({
   page,
 }) => {
@@ -43,15 +54,19 @@ test("static app shell renders without original data or a desktop companion", as
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",
     mimeType: "application/octet-stream",
-    buffer: Buffer.from([0x00, 0x01, 0x02, 0x03]),
+    buffer: createGeneratedPaArchive(),
   });
-  await expect(page.getByTestId("data-state")).toHaveText("Game data selected");
+  await expect(page.getByTestId("data-state")).toHaveText("Catalog parsed");
   await expect(page.getByTestId("data-detail")).toHaveText(
-    "SPAU.PA ready for catalog parsing",
+    "2 entries, 2 defined, 0 fixups",
   );
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-data-state",
     "supported",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-catalog-state",
+    "parsed",
   );
 
   const nonBlankPixels = await page

@@ -176,6 +176,10 @@ For Serfbound specifically, every implementation story must identify:
 - **Current browser import boundary:** direct local `.PA` file selection accepts
   `SPAU.PA`, rejects unsupported names recoverably, and keeps real local asset
   checks opt-in/manual.
+- **Current DOS asset catalog parser:** `@serfbound/assets` parses user-selected
+  `SPAU.PA` bytes in the browser, reads the size/count header and catalog table,
+  applies DOS loader fixups, and compares selected facts to ignored local oracle
+  metadata through opt-in local checks.
 
 ## Glossary
 
