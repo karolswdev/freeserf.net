@@ -272,3 +272,11 @@ sounds
 
 # macOS resource files
 .DS_Store
+
+# pmo-roadmap pre-commit contract scratch
+.tmp/
+
+# Serfbound local/user-provided original game data. These files may be used for
+# development and play, but must not be committed or redistributed.
+serfbound-local-data/
+pm/roadmap/serfbound/local-data/
