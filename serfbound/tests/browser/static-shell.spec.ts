@@ -6,6 +6,10 @@ const screenshotPath =
   "../pm/roadmap/serfbound/phase-2-browser-foundation/artifacts/story-04-app-shell-desktop.png";
 const renderSceneScreenshotPath =
   "../pm/roadmap/serfbound/phase-5-renderer-projection/artifacts/story-03-render-layer-scene-desktop.png";
+const framingDesktopScreenshotPath =
+  "../pm/roadmap/serfbound/phase-5-renderer-projection/artifacts/story-04-framing-desktop.png";
+const framingMobileScreenshotPath =
+  "../pm/roadmap/serfbound/phase-5-renderer-projection/artifacts/story-04-framing-mobile.png";
 
 function createGeneratedPaArchive(): Buffer {
   const bytes = Buffer.alloc(32);
@@ -134,40 +138,156 @@ test("static app shell renders without original data or a desktop companion", as
     "empty",
   );
 
-  const nonBlankPixels = await page
-    .getByTestId("terrain-preview")
-    .evaluate((canvas) => {
-      if (!(canvas instanceof HTMLCanvasElement)) {
-        return 0;
-      }
-
-      const context = canvas.getContext("webgl2");
-      if (context === null) {
-        return 0;
-      }
-
-      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-      context.readPixels(
-        0,
-        0,
-        canvas.width,
-        canvas.height,
-        context.RGBA,
-        context.UNSIGNED_BYTE,
-        pixels,
-      );
-      let count = 0;
-      for (let index = 0; index < pixels.length; index += 4) {
-        const red = pixels[index] ?? 0;
-        const green = pixels[index + 1] ?? 0;
-        const blue = pixels[index + 2] ?? 0;
-        if (red > 40 || green > 40 || blue > 40) {
-          count += 1;
-        }
-      }
-
-      return count;
-    });
+  const nonBlankPixels = await countWebglNonBlankPixels(page);
 
   expect(nonBlankPixels).toBeGreaterThan(80_000);
 });
+
+test("render layer scene stays framed on desktop and mobile viewports", async ({
+  page,
+}) => {
+  await mkdir(dirname(framingDesktopScreenshotPath), { recursive: true });
+
+  for (const viewport of [
+    {
+      name: "desktop",
+      size: { width: 1280, height: 720 },
+      screenshotPath: framingDesktopScreenshotPath,
+      minimumNonBlankPixels: 80_000,
+    },
+    {
+      name: "mobile",
+      size: { width: 390, height: 844 },
+      screenshotPath: framingMobileScreenshotPath,
+      minimumNonBlankPixels: 18_000,
+    },
+  ] as const) {
+    await page.setViewportSize(viewport.size);
+    await page.goto("/");
+    await expect(page.getByTestId("scene-state")).toHaveText("Generated layers");
+    await expect(page.locator("#app")).toHaveAttribute("data-serfbound-renderer", "webgl2");
+    await waitForCanvasResize(page);
+    await assertSceneLayoutIsFramed(page, viewport.name);
+    expect(await countWebglNonBlankPixels(page)).toBeGreaterThan(
+      viewport.minimumNonBlankPixels,
+    );
+    await page.screenshot({ fullPage: true, path: viewport.screenshotPath });
+  }
+});
+
+async function waitForCanvasResize(page) {
+  await page.waitForFunction(() => {
+    const canvas = document.querySelector("[data-testid='terrain-preview']");
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      return false;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    return (
+      canvas.width === Math.max(1, Math.round(rect.width)) &&
+      canvas.height === Math.max(1, Math.round(rect.height))
+    );
+  });
+}
+
+async function assertSceneLayoutIsFramed(page, viewportName) {
+  const layout = await page.evaluate(() => {
+    const scene = document.querySelector(".scene");
+    const statusPanel = document.querySelector(".status-panel");
+    const canvas = document.querySelector("[data-testid='terrain-preview']");
+    if (
+      !(scene instanceof HTMLElement) ||
+      !(statusPanel instanceof HTMLElement) ||
+      !(canvas instanceof HTMLCanvasElement)
+    ) {
+      throw new Error("Serfbound framing elements are missing.");
+    }
+
+    const rectOf = (element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        bottom: rect.bottom,
+        height: rect.height,
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        width: rect.width,
+      };
+    };
+    const canvasRect = rectOf(canvas);
+
+    return {
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      scene: rectOf(scene),
+      statusPanel: rectOf(statusPanel),
+      canvas: {
+        ...canvasRect,
+        backingWidth: canvas.width,
+        backingHeight: canvas.height,
+      },
+    };
+  });
+
+  expect(layout.canvas.width, `${viewportName} canvas width`).toBeGreaterThan(280);
+  expect(layout.canvas.height, `${viewportName} canvas height`).toBeGreaterThan(260);
+  expect(
+    Math.abs(layout.canvas.backingWidth - Math.round(layout.canvas.width)),
+    `${viewportName} canvas backing width`,
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(layout.canvas.backingHeight - Math.round(layout.canvas.height)),
+    `${viewportName} canvas backing height`,
+  ).toBeLessThanOrEqual(1);
+  expect(layout.canvas.left, `${viewportName} canvas left`).toBeGreaterThanOrEqual(0);
+  expect(layout.canvas.right, `${viewportName} canvas right`).toBeLessThanOrEqual(
+    layout.viewport.width + 1,
+  );
+  expect(layout.canvas.top, `${viewportName} canvas top`).toBeGreaterThanOrEqual(0);
+
+  if (layout.viewport.width <= 760) {
+    expect(
+      layout.statusPanel.top,
+      `${viewportName} status panel stacks below scene`,
+    ).toBeGreaterThanOrEqual(layout.scene.bottom - 1);
+  } else {
+    expect(
+      layout.statusPanel.left,
+      `${viewportName} status panel sits beside scene`,
+    ).toBeGreaterThanOrEqual(layout.scene.right - 1);
+  }
+}
+
+async function countWebglNonBlankPixels(page) {
+  return page.getByTestId("terrain-preview").evaluate((canvas) => {
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      return 0;
+    }
+
+    const context = canvas.getContext("webgl2");
+    if (context === null) {
+      return 0;
+    }
+
+    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+    context.readPixels(
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+      context.RGBA,
+      context.UNSIGNED_BYTE,
+      pixels,
+    );
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index] ?? 0;
+      const green = pixels[index + 1] ?? 0;
+      const blue = pixels[index + 2] ?? 0;
+      if (red > 40 || green > 40 || blue > 40) {
+        count += 1;
+      }
+    }
+
+    return count;
+  });
+}

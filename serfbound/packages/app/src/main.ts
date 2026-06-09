@@ -5,6 +5,7 @@ import {
   validateArchiveFileSelection,
   type ArchiveValidationResult,
   type DosPaCatalog,
+  type TypedAssetCatalog,
 } from "@serfbound/assets";
 import { engineBoundary, uint16 } from "@serfbound/engine";
 import {
@@ -19,7 +20,6 @@ import {
 import {
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
-  type FirstRenderLayerScene,
 } from "./render-layer-scene.js";
 
 export {
@@ -69,6 +69,9 @@ export function bootstrapSummary(): AppBootstrapSummary {
 export type MountSerfboundOptions = {
   readonly importedArchiveStore?: ImportedArchiveStore;
 };
+
+type SceneRenderGenerated = () => void;
+type SceneRenderCatalog = (typedAssetCatalog: TypedAssetCatalog) => void;
 
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
@@ -138,7 +141,21 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     throw new Error("Serfbound shell canvas did not mount.");
   }
 
-  renderScene(root, createFirstRenderLayerScene());
+  let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
+  const renderCurrentScene = () => {
+    renderScene(root, currentTypedAssetCatalog);
+  };
+  const renderGeneratedScene = () => {
+    currentTypedAssetCatalog = undefined;
+    renderCurrentScene();
+  };
+  const renderCatalogScene = (typedAssetCatalog: TypedAssetCatalog) => {
+    currentTypedAssetCatalog = typedAssetCatalog;
+    renderCurrentScene();
+  };
+
+  renderGeneratedScene();
+  observeSceneResize(canvas, renderCurrentScene);
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -148,10 +165,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   input.addEventListener("change", () => {
     const file = input.files?.item(0);
     const validation = validateArchiveFileSelection(file);
-    applyArchiveValidation(root, validation);
+    applyArchiveValidation(root, validation, renderGeneratedScene);
 
     if (validation.state === "supported" && file !== null && file !== undefined) {
-      void importSelectedArchive(root, file, validation, importedArchiveStore);
+      void importSelectedArchive(
+        root,
+        file,
+        validation,
+        importedArchiveStore,
+        renderCatalogScene,
+        renderGeneratedScene,
+      );
     }
   });
 
@@ -161,13 +185,22 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   }
 
   resetButton.addEventListener("click", () => {
-    void clearSelectedArchive(root, importedArchiveStore);
+    void clearSelectedArchive(root, importedArchiveStore, renderGeneratedScene);
   });
 
-  void restorePersistedArchive(root, importedArchiveStore);
+  void restorePersistedArchive(
+    root,
+    importedArchiveStore,
+    renderCatalogScene,
+    renderGeneratedScene,
+  );
 }
 
-function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResult): void {
+function applyArchiveValidation(
+  root: HTMLElement,
+  result: ArchiveValidationResult,
+  renderGeneratedScene: SceneRenderGenerated,
+): void {
   const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
   const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
   if (state === null || detail === null) {
@@ -188,7 +221,7 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
       detail.textContent = `${result.fileName} is not accepted`;
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
-      renderScene(root, createFirstRenderLayerScene());
+      renderGeneratedScene();
       setSourceState(root, "Local file");
       setResetEnabled(root, false);
       break;
@@ -197,7 +230,7 @@ function applyArchiveValidation(root: HTMLElement, result: ArchiveValidationResu
       detail.textContent = "Select SPAU.PA from your local files.";
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
-      renderScene(root, createFirstRenderLayerScene());
+      renderGeneratedScene();
       setSourceState(root, "Local file");
       setResetEnabled(root, false);
       break;
@@ -209,6 +242,8 @@ async function importSelectedArchive(
   file: File,
   validation: Extract<ArchiveValidationResult, { readonly state: "supported" }>,
   importedArchiveStore: ImportedArchiveStore,
+  renderCatalogScene: SceneRenderCatalog,
+  renderGeneratedScene: SceneRenderGenerated,
 ): Promise<void> {
   const state = root.querySelector<HTMLElement>("[data-testid='data-state']");
   const detail = root.querySelector<HTMLElement>("[data-testid='data-detail']");
@@ -222,9 +257,7 @@ async function importSelectedArchive(
   try {
     const bytes = await file.arrayBuffer();
     const catalog = parseDosPaCatalog(bytes);
-    renderScene(root, createFirstRenderLayerScene({
-      typedAssetCatalog: buildTypedAssetCatalog(catalog),
-    }));
+    renderCatalogScene(buildTypedAssetCatalog(catalog));
     const record = createStoredImportedArchiveRecord({
       fileName: validation.fileName,
       normalizedName: validation.normalizedName,
@@ -247,7 +280,7 @@ async function importSelectedArchive(
   } catch (error) {
     root.dataset.serfboundCatalogState = "invalid";
     root.dataset.serfboundStorageState = "empty";
-    renderScene(root, createFirstRenderLayerScene());
+    renderGeneratedScene();
     state.textContent = "Catalog parse failed";
     detail.textContent = error instanceof Error ? error.message : "Unknown catalog parse error";
     setSourceState(root, "Local file");
@@ -258,6 +291,8 @@ async function importSelectedArchive(
 async function restorePersistedArchive(
   root: HTMLElement,
   importedArchiveStore: ImportedArchiveStore,
+  renderCatalogScene: SceneRenderCatalog,
+  renderGeneratedScene: SceneRenderGenerated,
 ): Promise<void> {
   root.dataset.serfboundStorageState = "loading";
 
@@ -268,7 +303,7 @@ async function restorePersistedArchive(
       return;
     }
 
-    applyStoredArchiveRecord(root, record);
+    applyStoredArchiveRecord(root, record, renderCatalogScene, renderGeneratedScene);
   } catch (error) {
     applyStorageErrorState(root, `Local data restore failed: ${errorMessage(error)}`);
   }
@@ -277,18 +312,18 @@ async function restorePersistedArchive(
 function applyStoredArchiveRecord(
   root: HTMLElement,
   record: StoredImportedArchiveRecord,
+  renderCatalogScene: SceneRenderCatalog,
+  renderGeneratedScene: SceneRenderGenerated,
 ): void {
   try {
     const catalog = parseDosPaCatalog(record.bytes);
-    renderScene(root, createFirstRenderLayerScene({
-      typedAssetCatalog: buildTypedAssetCatalog(catalog),
-    }));
+    renderCatalogScene(buildTypedAssetCatalog(catalog));
     applyParsedCatalogState(root, catalog, "restored", record);
   } catch (error) {
     root.dataset.serfboundDataState = "unsupported";
     root.dataset.serfboundCatalogState = "invalid";
     root.dataset.serfboundStorageState = "error";
-    renderScene(root, createFirstRenderLayerScene());
+    renderGeneratedScene();
     const state = getDataStateElement(root);
     const detail = getDataDetailElement(root);
     state.textContent = "Stored catalog invalid";
@@ -321,6 +356,7 @@ function applyParsedCatalogState(
 async function clearSelectedArchive(
   root: HTMLElement,
   importedArchiveStore: ImportedArchiveStore,
+  renderGeneratedScene: SceneRenderGenerated,
 ): Promise<void> {
   const result = await clearImportedArchiveRecord(importedArchiveStore);
   if (result.state === "error") {
@@ -331,7 +367,7 @@ async function clearSelectedArchive(
   root.dataset.serfboundDataState = "missing";
   root.dataset.serfboundCatalogState = "unread";
   root.dataset.serfboundStorageState = "cleared";
-  renderScene(root, createFirstRenderLayerScene());
+  renderGeneratedScene();
   getDataStateElement(root).textContent = "No game data imported";
   getDataDetailElement(root).textContent = "Local data cleared. Select SPAU.PA from your local files.";
   setSourceState(root, "Local file");
@@ -345,17 +381,25 @@ function applyStorageErrorState(root: HTMLElement, message: string): void {
   setSourceState(root, "Local storage");
 }
 
-function renderScene(root: HTMLElement, scene: FirstRenderLayerScene): void {
+function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | undefined): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
     throw new Error("Serfbound shell canvas did not mount.");
   }
+
+  const size = resizeCanvasToDisplayedSize(canvas);
+  const scene =
+    typedAssetCatalog === undefined
+      ? createFirstRenderLayerScene({ size })
+      : createFirstRenderLayerScene({ size, typedAssetCatalog });
 
   renderFirstRenderLayerScene(canvas, scene);
   root.dataset.serfboundRenderer = scene.renderer;
   root.dataset.serfboundSceneSource = scene.assetSummary.source;
   root.dataset.serfboundLayerCount = String(scene.layers.length);
   root.dataset.serfboundPrimitiveCount = String(scene.primitives.length);
+  root.dataset.serfboundCanvasWidth = String(canvas.width);
+  root.dataset.serfboundCanvasHeight = String(canvas.height);
 
   const sceneState = root.querySelector<HTMLElement>("[data-testid='scene-state']");
   const sceneDetail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
@@ -369,6 +413,43 @@ function renderScene(root: HTMLElement, scene: FirstRenderLayerScene): void {
     scene.assetSummary.source === "dos-pa-catalog"
       ? `WebGL2, ${scene.assetSummary.definedArchiveEntries ?? 0} defined archive entries`
       : "WebGL2, generated fixture assets";
+}
+
+function observeSceneResize(canvas: HTMLCanvasElement, renderCurrentScene: () => void): void {
+  if (typeof ResizeObserver === "undefined") {
+    globalThis.addEventListener("resize", renderCurrentScene);
+    return;
+  }
+
+  let animationFrame = 0;
+  const observer = new ResizeObserver(() => {
+    if (animationFrame !== 0) {
+      cancelAnimationFrame(animationFrame);
+    }
+
+    animationFrame = requestAnimationFrame(() => {
+      animationFrame = 0;
+      renderCurrentScene();
+    });
+  });
+
+  observer.observe(canvas);
+}
+
+function resizeCanvasToDisplayedSize(canvas: HTMLCanvasElement) {
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width));
+  const height = Math.max(1, Math.round(rect.height));
+
+  if (canvas.width !== width) {
+    canvas.width = width;
+  }
+
+  if (canvas.height !== height) {
+    canvas.height = height;
+  }
+
+  return { width, height };
 }
 
 function getDataStateElement(root: HTMLElement): HTMLElement {

@@ -1,8 +1,8 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-09.
-**Current phase:** [phase-5-renderer-projection](./phase-5-renderer-projection/current-phase-status.md)
-**Status:** Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 complete; Phase 5 in progress.
+**Current phase:** [phase-6-ui-input-shell](./phase-6-ui-input-shell/current-phase-status.md)
+**Status:** Phase 0 through Phase 5 complete; Phase 6 ready.
 
 ## Vision
 
@@ -84,8 +84,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 2 | Establish the pure-browser workspace, runtime, and CI spine | complete | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
-| 5 | Build the map renderer, projection model, and visual asset path | in-progress | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
-| 6 | Build browser input, UI shell, and game interaction loops | planning | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
+| 5 | Build the map renderer, projection model, and visual asset path | complete | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
+| 6 | Build browser input, UI shell, and game interaction loops | ready | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | planning | [phase-9-release-operations](./phase-9-release-operations/) |
@@ -189,6 +189,11 @@ For Serfbound specifically, every implementation story must identify:
 - **Current renderer API baseline:** Phase 5 selected a small first-party WebGL2
   renderer as the baseline, with Canvas2D reserved for generated debug/test
   paths and WebGPU deferred as a later accelerator.
+- **Current render-layer proof:** `@serfbound/app` renders a WebGL2 map-like
+  scene from generated CI-safe primitives, rebuilds scene metadata from typed
+  `SPAU.PA` catalog requests after import/restore, resizes the canvas backing
+  buffer to the displayed CSS size, and has desktop/mobile Playwright framing
+  screenshots under `phase-5-renderer-projection/artifacts/`.
 
 ## Glossary
 

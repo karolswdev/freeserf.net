@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 5
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-5-03
 - **Unblocks:** SB-6-01, SB-7-04, SB-8-04
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -21,12 +21,12 @@ early evidence that the map is framed coherently across realistic browser sizes.
 
 ## Acceptance criteria
 
-- [ ] Automated or scripted checks cover at least one desktop and one mobile
+- [x] Automated or scripted checks cover at least one desktop and one mobile
   viewport.
-- [ ] Checks prove the canvas/scene is nonblank.
-- [ ] Map scene remains framed without incoherent overlap from shell UI.
-- [ ] Resize behavior is documented or intentionally deferred.
-- [ ] Evidence artifacts are referenced from the story evidence when shipped.
+- [x] Checks prove the canvas/scene is nonblank.
+- [x] Map scene remains framed without incoherent overlap from shell UI.
+- [x] Resize behavior is documented or intentionally deferred.
+- [x] Evidence artifacts are referenced from the story evidence when shipped.
 
 ## Test plan
 
@@ -37,5 +37,9 @@ early evidence that the map is framed coherently across realistic browser sizes.
 - **Design handoff:** Screenshot evidence required.
 
 ## Notes / open questions
+
+Shipped with automated desktop and mobile Playwright framing checks. The canvas
+backing buffer now follows the displayed canvas size, and the render-layer scene
+is regenerated for that virtual size on resize.
 
 This is a technical framing check, not a visual redesign pass.

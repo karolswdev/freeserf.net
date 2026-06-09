@@ -40,3 +40,18 @@ asset requests. Sprite decoding and texture atlas packing remain later work.
   WebGL2 scene without original data, switches to catalog-backed scene metadata
   after importing generated `SPAU.PA`, restores that state from IndexedDB, and
   proves nonblank pixels through `WebGL2RenderingContext.readPixels()`.
+
+## Resize Contract
+
+The app treats the displayed canvas rectangle as the render view's virtual
+screen. On mount and resize:
+
+- the canvas backing width and height are set to the rounded CSS pixel size;
+- `createFirstRenderLayerScene({ size })` regenerates projected primitives for
+  that virtual size;
+- the WebGL viewport matches the backing size;
+- generated and catalog-backed scene modes use the same resize path.
+
+This is intentionally a first framing contract, not final camera behavior. Map
+scrolling, zoom, and richer camera controls move to Phase 6 and Phase 7 once
+pointer-to-map interaction exists.

@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** ready.
+
 ## Goal
 
 Turn browser pointer/keyboard input into intentional game actions through a UI
@@ -36,15 +38,17 @@ shell that is ergonomic enough for the first playable slice.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-6-01 | Implement pointer-to-map interaction | backlog | story-01-pointer-map-interaction.md | — |
+| SB-6-01 | Implement pointer-to-map interaction | ready | story-01-pointer-map-interaction.md | — |
 | SB-6-02 | Add command routing shell | backlog | story-02-command-routing-shell.md | — |
 | SB-6-03 | Build basic panels and states | backlog | story-03-basic-panels-states.md | — |
 | SB-6-04 | Verify interaction ergonomics | backlog | story-04-interaction-ergonomics.md | — |
 
 ## Where we are
 
-Phase 6 is not started. It depends on renderer projection evidence from Phase 5
-and state mutation hooks from Phase 3.
+Phase 6 is ready to start. Phase 5 completed the WebGL2 scene, canvas resize
+behavior, viewport framing checks, and shared projection transform required for
+pointer-to-map interaction. The next responsible move is SB-6-01: implement
+pointer-to-map interaction.
 
 ## Active risks
 
