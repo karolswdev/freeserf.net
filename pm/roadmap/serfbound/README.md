@@ -62,6 +62,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
   tooling that may inspect source behavior but is not Serfbound product code.
 - `pm/roadmap/serfbound/reference-fixtures/ci/` - committed CI-safe oracle
   fixtures that browser-native code may consume in later phases.
+- `serfbound-local-data/reference-output/` - ignored local/manual oracle outputs
+  generated from user-provided assets; committed evidence may cite checksums and
+  summaries only.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.
@@ -143,6 +146,8 @@ For Serfbound specifically, every implementation story must identify:
 - **Current local asset source:** user-owned English DOS files are present under
   ignored `serfbound-local-data/sources/TheSettlersDemo/Serf-City-Life-is-Feudal_DOS_EN/`;
   the current loader-relevant file is `SPAU.PA`.
+- **Current local reference output:** metadata-only `SPAU.PA` catalog output is
+  generated under ignored `serfbound-local-data/reference-output/`.
 
 ## Glossary
 

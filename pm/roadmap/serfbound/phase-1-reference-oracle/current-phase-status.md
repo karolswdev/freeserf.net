@@ -29,9 +29,9 @@ product runtime.
 - [ ] At least three reference outputs are captured from real source files and
   documented with commands.
 - [x] At least one output is data-free and can run in CI.
-- [ ] At least one output uses the ignored local `SPAU.PA` source and is marked
+- [x] At least one output uses the ignored local `SPAU.PA` source and is marked
   local/manual.
-- [ ] Reference outputs have stable, reviewable formats such as JSON/text/binary
+- [x] Reference outputs have stable, reviewable formats such as JSON/text/binary
   snapshots with checksums.
 - [ ] Any C# capture helper is explicitly isolated from product code and has a
   deletion or quarantine rule.
@@ -42,17 +42,18 @@ product runtime.
 |---|---|---|---|---|
 | SB-1-01 | Select first oracle targets | done | story-01-select-oracle-targets.md | evidence-story-01.md |
 | SB-1-02 | Capture data-free reference output | done | story-02-data-free-reference-output.md | evidence-story-02.md |
-| SB-1-03 | Capture local SPAU.PA resource output | ready | story-03-local-spau-resource-output.md | — |
+| SB-1-03 | Capture local SPAU.PA resource output | done | story-03-local-spau-resource-output.md | evidence-story-03.md |
 | SB-1-04 | Define oracle fixture contract | ready | story-04-oracle-fixture-contract.md | — |
 
 ## Where we are
 
-Phase 1 has a first CI-safe reference fixture. SB-1-02 captured
-`rng.fixed-seed-sequence` from `Freeserf.Core/Random.cs` into
-`pm/roadmap/serfbound/reference-fixtures/ci/rng-fixed-seed-sequence.json`.
-The fixture is deterministic across two consecutive runs and contains no
-original game asset payload. The next responsible move is SB-1-03: capture
-local/manual `SPAU.PA` catalog metadata without committing original asset bytes.
+Phase 1 now has two reference outputs: the CI-safe RNG fixture and a
+local/manual `SPAU.PA` catalog metadata output. SB-1-03 wrote metadata-only
+output to ignored `serfbound-local-data/reference-output/spau-catalog-metadata.json`
+and proved the missing-data path skips cleanly. Phase 1 is still not complete:
+it needs a third reference output and the fixture contract. The next responsible
+move is to add a small data-free Phase 1 extension for `map.geometry-facts` or
+`serializer.state-fixtures`, then finish SB-1-04.
 
 ## Active risks
 
@@ -78,6 +79,14 @@ local/manual `SPAU.PA` catalog metadata without committing original asset bytes.
   because local `dotnet` and Node toolchains are unavailable/broken in this
   environment; the helper lives under `pm/roadmap/serfbound/reference-tools/`
   and is not product code — SB-1-02 capture.
+- 2026-06-09 — Capture `SPAU.PA` only as local/manual metadata — output lives
+  under ignored `serfbound-local-data/reference-output/`, records the inventory
+  checksum, catalog entry counts, resource availability, and metadata
+  checksums, and writes no original asset payload — SB-1-03 capture.
+- 2026-06-09 — Treat the DOS archive as an 8-byte little-endian header followed
+  by entry metadata — the local file's first uint32 matches file size and the
+  second uint32 is the 4,000-entry catalog count, matching the loader comment
+  that entries follow an 8-byte header — SB-1-03 source/data inspection.
 
 ## Decisions deferred
 
@@ -87,3 +96,6 @@ local/manual `SPAU.PA` catalog metadata without committing original asset bytes.
 - Whether to repair local Node before Phase 2 starts — resolve before SB-2-01 —
   SB-1-02 could use Python because it is reference tooling only, but product
   implementation still needs a working browser-native toolchain.
+- Phase 1 third output story — add a small extension for `map.geometry-facts` or
+  `serializer.state-fixtures` before final Phase 1 audit, because the exit
+  criteria require at least three captured reference outputs.

@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 1
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-1-01, SB-0-05
 - **Unblocks:** SB-1-04, SB-4-02, SB-4-04
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -23,13 +23,13 @@ oracle output gives Phase 4 a concrete target for browser import and parsing.
 
 ## Acceptance criteria
 
-- [ ] The local source path is read from ignored `serfbound-local-data/` or an
+- [x] The local source path is read from ignored `serfbound-local-data/` or an
   explicit environment variable.
-- [ ] Output contains metadata/checksums only, not raw original asset payloads.
-- [ ] The output records the `SPAU.PA` checksum from
+- [x] Output contains metadata/checksums only, not raw original asset payloads.
+- [x] The output records the `SPAU.PA` checksum from
   `adoption/local-asset-inventory.md`.
-- [ ] Missing local data produces a clear skip message, not a failed CI path.
-- [ ] Phase 4 can use the output as a resource-catalog target.
+- [x] Missing local data produces a clear skip message, not a failed CI path.
+- [x] Phase 4 can use the output as a resource-catalog target.
 
 ## Test plan
 
@@ -41,4 +41,6 @@ oracle output gives Phase 4 a concrete target for browser import and parsing.
 
 ## Notes / open questions
 
-This story is local/manual by design. CI must remain useful without these files.
+Shipped local/manual metadata capture with output written under ignored
+`serfbound-local-data/reference-output/spau-catalog-metadata.json`. The committed
+evidence records checksums, counts, and selected resource availability only.
