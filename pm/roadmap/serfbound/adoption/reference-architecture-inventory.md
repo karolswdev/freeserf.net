@@ -105,8 +105,6 @@ shell, no native launcher, and no hidden companion process.
 
 ## Open Questions For Phase 0 Decisions
 
-- Should runtime be TypeScript-first with explicit integer helpers, or should
-  Rust/WASM own simulation primitives to reduce numeric-determinism risk?
 - How much original savegame compatibility matters for first release versus a
   new browser-native save format?
 - Should map projection be derived directly from `CoordinateSpace` or simplified
@@ -117,6 +115,15 @@ shell, no native launcher, and no hidden companion process.
   flows for the first playable slice?
 - When, if ever, does multiplayer move from inventory-only to a real browser
   roadmap phase?
+
+## Resolved Since Inventory
+
+- 2026-06-09 — Runtime starts TypeScript-first with explicit deterministic
+  helpers and a narrow WASM escape hatch only if Phase 1 or Phase 2 stop signals
+  trip. See `runtime-architecture-decision.md`.
+- 2026-06-09 — First parity capture starts with RNG, map geometry/projection,
+  state serialization, and local/manual `SPAU.PA` metadata. See
+  `parity-harness-design.md`.
 
 ## Commands Used
 

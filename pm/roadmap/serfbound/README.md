@@ -50,6 +50,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/runtime-architecture-decision.md` -
   TypeScript-first browser runtime decision, rejected alternatives, phase
   mapping, stop signals, and phase-coverage review.
+- `pm/roadmap/serfbound/adoption/parity-harness-design.md` - deterministic
+  oracle target list, fixture locations, comparison rules, and browser
+  consumption boundary for parity work.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.

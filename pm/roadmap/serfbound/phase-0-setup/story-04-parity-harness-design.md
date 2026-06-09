@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 0
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-0-02, SB-0-03
 - **Unblocks:** SB-1-01, SB-1-02, SB-1-03
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,14 +22,14 @@ Serfbound needs a small, repeatable way to capture reference behavior from
 
 ## Acceptance criteria
 
-- [ ] Add `pm/roadmap/serfbound/adoption/parity-harness-design.md`.
-- [ ] The design names the first three parity targets, with source files and
+- [x] Add `pm/roadmap/serfbound/adoption/parity-harness-design.md`.
+- [x] The design names the first three parity targets, with source files and
   expected output shape.
-- [ ] The design distinguishes data-free tests from tests requiring
+- [x] The design distinguishes data-free tests from tests requiring
   user-provided original data.
-- [ ] The design defines where generated reference outputs may live and what
+- [x] The design defines where generated reference outputs may live and what
   must be excluded from Git.
-- [ ] The design includes at least one map/generator target and one state/tick
+- [x] The design includes at least one map/generator target and one state/tick
   or serialization target.
 
 ## Test plan

@@ -31,7 +31,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
   browser rewrite concerns.
 - [x] A runtime architecture decision records TypeScript-first, Rust/WASM-first,
   or hybrid as the initial implementation strategy, with a stop signal.
-- [ ] A parity-harness design identifies the first deterministic reference
+- [x] A parity-harness design identifies the first deterministic reference
   outputs to capture from `freeserf.net`.
 - [ ] An asset/legal boundary document states how users supply DOS/Amiga data in
   the browser, what the repo will not store, and how the local `SPAU.PA` source
@@ -50,7 +50,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
 | SB-0-01 | Name and charter Serfbound | done | [story-01-name-and-charter](./story-01-name-and-charter.md) | [evidence-story-01](./evidence-story-01.md) |
 | SB-0-02 | Inventory reference architecture | done | [story-02-reference-architecture-inventory](./story-02-reference-architecture-inventory.md) | [evidence-story-02](./evidence-story-02.md) |
 | SB-0-03 | Decide browser runtime strategy | done | [story-03-browser-runtime-decision](./story-03-browser-runtime-decision.md) | [evidence-story-03](./evidence-story-03.md) |
-| SB-0-04 | Design deterministic parity harness | backlog | [story-04-parity-harness-design](./story-04-parity-harness-design.md) | — |
+| SB-0-04 | Design deterministic parity harness | done | [story-04-parity-harness-design](./story-04-parity-harness-design.md) | [evidence-story-04](./evidence-story-04.md) |
 | SB-0-05 | Define asset and legal boundary | backlog | [story-05-asset-and-legal-boundary](./story-05-asset-and-legal-boundary.md) | — |
 
 ## Where we are
@@ -59,11 +59,13 @@ Delivery Workbench has been cloned and installed into `freeserf.net`, and the
 rewrite track is named Serfbound. SB-0-02 shipped the source-grounded reference
 architecture inventory, including browser fates, desktop assumptions, and first
 oracle candidates. SB-0-03 chose a TypeScript-first pure-browser runtime with a
-narrow WASM escape hatch only if measured stop signals trip. User-owned English
-DOS files are available locally under ignored `serfbound-local-data/`, including
-`SPAU.PA`, so data-import phases can plan against a real local source. The next
-responsible move is SB-0-04: design the deterministic parity harness before
-capturing or porting behavior.
+narrow WASM escape hatch only if measured stop signals trip. SB-0-04 defined the
+deterministic parity harness shape: RNG, map geometry/projection, serializer
+fixtures, and local/manual `SPAU.PA` metadata. User-owned English DOS files are
+available locally under ignored `serfbound-local-data/`, including `SPAU.PA`, so
+data-import phases can plan against a real local source. The next responsible
+move is SB-0-05: define the asset/legal boundary before Phase 1 captures local
+asset metadata.
 
 ## Active risks
 
@@ -107,6 +109,10 @@ capturing or porting behavior.
 - 2026-06-09 — Keep the 0-9 top-level phase model for now — the current gaps
   are stricter gates and stop signals, not more phase names — SB-0-03 phase
   coverage review.
+- 2026-06-09 — Parity starts with small deterministic facts, not screenshots —
+  RNG, map geometry/projection, and serializer outputs are the first CI-safe
+  targets; `SPAU.PA` catalog metadata is local/manual only — SB-0-04 parity
+  harness design.
 
 ## Decisions deferred
 
