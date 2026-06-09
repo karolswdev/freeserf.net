@@ -28,7 +28,7 @@ oracle fixtures.
 - [x] Numeric determinism and wrapping/overflow behavior are documented and
   tested.
 - [x] Map/coordinate primitives have focused unit tests.
-- [ ] State/tick skeleton has at least one deterministic round-trip or snapshot
+- [x] State/tick skeleton has at least one deterministic round-trip or snapshot
   comparison.
 - [ ] Known divergences from `Freeserf.Core` are documented with rationale.
 
@@ -38,8 +38,8 @@ oracle fixtures.
 |---|---|---|---|---|
 | SB-3-01 | Port deterministic numeric/random rules | done | story-01-numeric-random-rules.md | evidence-story-01.md |
 | SB-3-02 | Port map geometry primitive | done | story-02-map-geometry-primitive.md | evidence-story-02.md |
-| SB-3-03 | Add state and tick skeleton | ready | story-03-state-tick-skeleton.md | — |
-| SB-3-04 | Prove first simulation parity | backlog | story-04-first-simulation-parity.md | — |
+| SB-3-03 | Add state and tick skeleton | done | story-03-state-tick-skeleton.md | evidence-story-03.md |
+| SB-3-04 | Prove first simulation parity | ready | story-04-first-simulation-parity.md | — |
 
 ## Where we are
 
@@ -47,9 +47,10 @@ Phase 3 is in progress. SB-3-01 ported the deterministic numeric helpers and
 `FreeserfRandom` into `@serfbound/engine`, with tests matching every case in
 the Phase 1 RNG fixture. SB-3-02 ported direction, wrapped map position,
 movement, distance, and pure projection primitives against
-`map-geometry-facts.json`. The next responsible move is SB-3-03: add the
-minimal state/tick skeleton that can consume the deterministic primitives
-without DOM/browser APIs.
+`map-geometry-facts.json`. SB-3-03 added a deterministic state/tick skeleton
+with stable snapshot/restore behavior and source-derived clock/counter rules.
+The next responsible move is SB-3-04: prove the first combined simulation
+parity slice and close Phase 3 with a final summary if the exit criteria hold.
 
 ## Active risks
 
@@ -71,6 +72,10 @@ without DOM/browser APIs.
   `CoordinateSpace.cs` geometry/projection subset in pure TypeScript; no
   intentional fixture divergences, with full spiral/pathfinding deferred until
   a later fixture requires it — SB-3-02.
+- 2026-06-09 — Introduce a browser-native `SerfboundGameState` skeleton that
+  preserves source-derived tick/time/counter behavior and stable snapshots while
+  deferring full map/player/serializer parity until dedicated evidence exists —
+  SB-3-03.
 
 ## Decisions deferred
 

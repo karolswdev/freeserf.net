@@ -64,3 +64,23 @@ Known primitive boundary: only the first seven `PositionAddSpirally()` offsets
 are present because the captured `MapSpaceToTileSpace()` search needs the
 center tile plus the first ring. The full 295-entry spiral search belongs to a
 later state/pathfinding story if a fixture requires it.
+
+## State And Tick Policy
+
+`SerfboundGameState` is the first deterministic state container. It mirrors the
+source-visible tick and save-facing fields from `Freeserf.Core/GameState.cs`,
+`Freeserf.Core/Game.cs`, and `Freeserf.Core/Freeserf.cs` for:
+
+- `DEFAULT_GAME_SPEED = 2`;
+- `TICK_LENGTH = 20` and `TICKS_PER_SEC = 50`;
+- 16-bit `Tick` wrapping and 32-bit `ConstTick` wrapping;
+- `GameTimeTicksOfSecond`, `GameTime`, and `NextGameTime` progression;
+- the source `tickDifference` overflow formula used by `Game.Update()`;
+- the first scheduling counters for knight morale and inventory dispatch;
+- a stable JSON snapshot with map dimensions, clock fields, RNG state/string,
+  and counters.
+
+Known skeleton boundary: this does not port `Map.Update()`, players, AI,
+visuals, stats/history, savegame text/binary compatibility, dirty-state
+serialization, or local asset-backed initialization. Those systems require
+their own fixtures or later phase evidence.

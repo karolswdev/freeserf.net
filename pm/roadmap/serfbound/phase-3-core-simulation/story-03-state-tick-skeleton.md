@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 3
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-3-01, SB-3-02
 - **Unblocks:** SB-3-04, SB-7-01, SB-7-03
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ but shaped like the future engine.
 
 ## Acceptance criteria
 
-- [ ] State and tick skeleton exists inside the engine boundary.
-- [ ] Tests prove tick advancement is deterministic.
-- [ ] Snapshot or serialization shape is explicit and stable.
-- [ ] The skeleton can be driven without DOM/browser APIs.
-- [ ] Deferred systems are listed with source references.
+- [x] State and tick skeleton exists inside the engine boundary.
+- [x] Tests prove tick advancement is deterministic.
+- [x] Snapshot or serialization shape is explicit and stable.
+- [x] The skeleton can be driven without DOM/browser APIs.
+- [x] Deferred systems are listed with source references.
 
 ## Test plan
 
@@ -38,5 +38,16 @@ but shaped like the future engine.
 
 ## Notes / open questions
 
-This is not a full savegame port. It is the minimum durable state shape needed
-to support parity and the first playable slice.
+Shipped `SerfboundGameState` in `@serfbound/engine` with source-derived tick
+clock behavior, default speed constants, `GameTime` accumulation,
+`tickDifference` overflow behavior, first schedule counters, RNG snapshot
+fields, map dimensions, and stable JSON snapshot/restore.
+
+This is not a full savegame port and does not claim byte-level serializer
+parity. Deferred systems are `Map.Update()`, terrain/object mutation, players,
+AI, visuals, stats/history counters, text/binary save compatibility, dirty-state
+serialization, local asset-backed initialization, and full game command
+handling. Source references: `Freeserf.Core/GameState.cs`,
+`Freeserf.Core/Game.cs`, `Freeserf.Core/Freeserf.cs`,
+`Freeserf.Core/Map.cs`, `Freeserf.Core/Player.cs`,
+`Freeserf.Core/Savegame.cs`, and `Freeserf.Core/Serialize/*`.

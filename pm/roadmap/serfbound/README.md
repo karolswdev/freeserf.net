@@ -170,7 +170,8 @@ For Serfbound specifically, every implementation story must identify:
 - **Current engine parity primitives:** `@serfbound/engine` implements
   fixed-width numeric helpers, `FreeserfRandom`, and `MapGeometry` direction,
   movement, distance, and projection helpers matched against
-  `rng-fixed-seed-sequence.json` and `map-geometry-facts.json`.
+  `rng-fixed-seed-sequence.json` and `map-geometry-facts.json`, plus a
+  source-derived `SerfboundGameState` tick/snapshot skeleton.
 
 ## Glossary
 
