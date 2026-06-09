@@ -47,6 +47,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/reference-architecture-inventory.md` -
   source-grounded inventory mapping `freeserf.net` subsystems to browser rewrite
   responsibilities.
+- `pm/roadmap/serfbound/adoption/runtime-architecture-decision.md` -
+  TypeScript-first browser runtime decision, rejected alternatives, phase
+  mapping, stop signals, and phase-coverage review.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.
@@ -117,6 +120,8 @@ For Serfbound specifically, every implementation story must identify:
 - **Working title decision:** `Serfbound`, accepted on 2026-06-09.
 - **Runtime constraint:** final Serfbound ships as browser-native code only. No
   .NET product runtime, no desktop app, no "browser shell around .NET".
+- **Runtime baseline:** TypeScript-first product code with a narrow WASM escape
+  hatch only if Phase 1 or Phase 2 evidence trips a recorded stop signal.
 - **Asset constraint:** developers and players may use locally procured original
   data files, but Serfbound does not commit, host, bundle, or redistribute those
   files.

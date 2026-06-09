@@ -29,7 +29,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
 - [x] A source-inventory artifact maps `Freeserf.Core`, `Freeserf.Renderer`,
   `Freeserf.Audio`, `Freeserf.Network`, `FreeserfNet`, and data-file loading to
   browser rewrite concerns.
-- [ ] A runtime architecture decision records TypeScript-first, Rust/WASM-first,
+- [x] A runtime architecture decision records TypeScript-first, Rust/WASM-first,
   or hybrid as the initial implementation strategy, with a stop signal.
 - [ ] A parity-harness design identifies the first deterministic reference
   outputs to capture from `freeserf.net`.
@@ -49,7 +49,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
 |---|---|---|---|---|
 | SB-0-01 | Name and charter Serfbound | done | [story-01-name-and-charter](./story-01-name-and-charter.md) | [evidence-story-01](./evidence-story-01.md) |
 | SB-0-02 | Inventory reference architecture | done | [story-02-reference-architecture-inventory](./story-02-reference-architecture-inventory.md) | [evidence-story-02](./evidence-story-02.md) |
-| SB-0-03 | Decide browser runtime strategy | backlog | [story-03-browser-runtime-decision](./story-03-browser-runtime-decision.md) | — |
+| SB-0-03 | Decide browser runtime strategy | done | [story-03-browser-runtime-decision](./story-03-browser-runtime-decision.md) | [evidence-story-03](./evidence-story-03.md) |
 | SB-0-04 | Design deterministic parity harness | backlog | [story-04-parity-harness-design](./story-04-parity-harness-design.md) | — |
 | SB-0-05 | Define asset and legal boundary | backlog | [story-05-asset-and-legal-boundary](./story-05-asset-and-legal-boundary.md) | — |
 
@@ -58,11 +58,12 @@ no final .NET code, no desktop deliverable, and no native launcher.
 Delivery Workbench has been cloned and installed into `freeserf.net`, and the
 rewrite track is named Serfbound. SB-0-02 shipped the source-grounded reference
 architecture inventory, including browser fates, desktop assumptions, and first
-oracle candidates. No web runtime implementation has been chosen yet. User-owned
-English DOS files are available locally under ignored `serfbound-local-data/`,
-including `SPAU.PA`, so data-import phases can plan against a real local source.
-The next responsible move is SB-0-03: decide the browser runtime strategy using
-the inventory, pure-browser constraints, and Phase 1 oracle needs.
+oracle candidates. SB-0-03 chose a TypeScript-first pure-browser runtime with a
+narrow WASM escape hatch only if measured stop signals trip. User-owned English
+DOS files are available locally under ignored `serfbound-local-data/`, including
+`SPAU.PA`, so data-import phases can plan against a real local source. The next
+responsible move is SB-0-04: design the deterministic parity harness before
+capturing or porting behavior.
 
 ## Active risks
 
@@ -99,12 +100,20 @@ the inventory, pure-browser constraints, and Phase 1 oracle needs.
   choosing runtime — prevents runtime/tooling decisions from ignoring source
   coupling in game, data, renderer, audio, network, and desktop shell code —
   SB-0-02 source inventory.
+- 2026-06-09 — Start TypeScript-first with a narrow WASM escape hatch — direct
+  browser API access and fixture/debugging simplicity matter more before parity
+  evidence exists; Rust/WASM remains available only for measured stop signals —
+  SB-0-03 runtime architecture decision.
+- 2026-06-09 — Keep the 0-9 top-level phase model for now — the current gaps
+  are stricter gates and stop signals, not more phase names — SB-0-03 phase
+  coverage review.
 
 ## Decisions deferred
 
-- Runtime implementation strategy — resolve in SB-0-03 — default to a hybrid
-  plan only if pure TypeScript or pure Rust/WASM fails a concrete criterion;
-  .NET is not an option for final product code.
+- WASM adoption boundary — revisit no later than the end of Phase 2 if a stop
+  signal trips — default to TypeScript-first product code unless deterministic,
+  parsing, performance, or tooling evidence proves a small WASM module is
+  necessary.
 - First playable scope — resolve before Phase 7 — default to local single-player
   with the ignored local English DOS `SPAU.PA` source unless Phase 4 discovers a
   blocker.

@@ -81,9 +81,14 @@ Pragmatic, evidence-first, direct. Ask real questions but leave a usable scaffol
 ## Open Questions To Resolve Before Roadmapping
 
 - Should the first playable browser target prioritize single-player local play only?
-- Should the implementation be TypeScript-first, Rust/WASM-first, or hybrid?
 - How should original DOS/Amiga data be supplied in-browser: user upload,
   directory picker, local persistence, or dev fixture path?
+
+## Resolved Questions
+
+- 2026-06-09 — Runtime implementation starts TypeScript-first with a narrow
+  WASM escape hatch only if recorded stop signals trip by the end of Phase 2.
+  See `runtime-architecture-decision.md`.
 
 ## Intake Notes
 

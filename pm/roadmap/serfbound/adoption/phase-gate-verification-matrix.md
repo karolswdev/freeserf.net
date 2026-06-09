@@ -76,4 +76,4 @@ Before marking the whole Serfbound goal complete:
 As of 2026-06-09, the PMO scaffold is materially stronger than the initial plan:
 all phases have status files and all referenced Phase 1 through Phase 9 story
 files exist. The product is not complete. The next evidence-producing work is
-Phase 0 story SB-0-02, the reference architecture inventory.
+Phase 0 story SB-0-04, the deterministic parity harness design.

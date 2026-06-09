@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 0
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-0-02
 - **Unblocks:** SB-1-01, SB-1-02, SB-2-01, SB-3-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -26,15 +26,15 @@ code.
 
 ## Acceptance criteria
 
-- [ ] Add `pm/roadmap/serfbound/adoption/runtime-architecture-decision.md`.
-- [ ] The decision states the chosen initial strategy and at least two rejected
+- [x] Add `pm/roadmap/serfbound/adoption/runtime-architecture-decision.md`.
+- [x] The decision states the chosen initial strategy and at least two rejected
   alternatives.
-- [ ] The decision includes criteria for deterministic tests, browser API
+- [x] The decision includes criteria for deterministic tests, browser API
   access, savegame/parity harnesses, debugging, performance, and maintenance.
-- [ ] The decision includes a stop signal that would force a strategy change by
+- [x] The decision includes a stop signal that would force a strategy change by
   the end of Phase 2.
-- [ ] The decision maps Phase 1 through Phase 9 story types to the chosen stack.
-- [ ] The decision explicitly rejects final .NET code, Blazor/WebAssembly-.NET,
+- [x] The decision maps Phase 1 through Phase 9 story types to the chosen stack.
+- [x] The decision explicitly rejects final .NET code, Blazor/WebAssembly-.NET,
   Electron/Tauri/native wrappers, and desktop companion processes unless a
   future user decision reverses this roadmap constraint.
 
