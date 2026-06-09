@@ -81,14 +81,16 @@ Pragmatic, evidence-first, direct. Ask real questions but leave a usable scaffol
 ## Open Questions To Resolve Before Roadmapping
 
 - Should the first playable browser target prioritize single-player local play only?
-- How should original DOS/Amiga data be supplied in-browser: user upload,
-  directory picker, local persistence, or dev fixture path?
 
 ## Resolved Questions
 
 - 2026-06-09 — Runtime implementation starts TypeScript-first with a narrow
   WASM escape hatch only if recorded stop signals trip by the end of Phase 2.
   See `runtime-architecture-decision.md`.
+- 2026-06-09 — Original DOS/Amiga data is supplied in-browser through a staged
+  import path: direct `.PA` file selection first, drag/drop as same-boundary
+  convenience, IndexedDB persistence by default, and directory picker only as
+  progressive enhancement. See `asset-and-legal-boundary.md`.
 
 ## Intake Notes
 

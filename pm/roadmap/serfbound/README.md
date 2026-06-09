@@ -53,6 +53,8 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/parity-harness-design.md` - deterministic
   oracle target list, fixture locations, comparison rules, and browser
   consumption boundary for parity work.
+- `pm/roadmap/serfbound/adoption/asset-and-legal-boundary.md` - browser import,
+  storage, test-data, and redistribution boundary for original DOS/Amiga data.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.
@@ -128,6 +130,9 @@ For Serfbound specifically, every implementation story must identify:
 - **Asset constraint:** developers and players may use locally procured original
   data files, but Serfbound does not commit, host, bundle, or redistribute those
   files.
+- **Import baseline:** direct user-selected `.PA` file import first, drag/drop
+  as same-boundary convenience, IndexedDB persistence by default, directory
+  picker as optional progressive enhancement.
 - **Current local asset source:** user-owned English DOS files are present under
   ignored `serfbound-local-data/sources/TheSettlersDemo/Serf-City-Life-is-Feudal_DOS_EN/`;
   the current loader-relevant file is `SPAU.PA`.

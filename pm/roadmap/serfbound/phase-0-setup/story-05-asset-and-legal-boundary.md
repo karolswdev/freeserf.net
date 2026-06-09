@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 0
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-0-02
 - **Unblocks:** SB-2-01, SB-2-02, SB-4-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -24,19 +24,19 @@ locally procured DOS or Amiga files.
 
 ## Acceptance criteria
 
-- [ ] Add `pm/roadmap/serfbound/adoption/asset-and-legal-boundary.md`.
-- [ ] The document quotes or paraphrases the existing repo's data-file
+- [x] Add `pm/roadmap/serfbound/adoption/asset-and-legal-boundary.md`.
+- [x] The document quotes or paraphrases the existing repo's data-file
   constraint and maps it to browser behavior.
-- [ ] The document states which files may be committed, which must be ignored,
+- [x] The document states which files may be committed, which must be ignored,
   and how local developer/user data is stored.
-- [ ] The document references
+- [x] The document references
   `pm/roadmap/serfbound/adoption/local-asset-inventory.md` and identifies
   `SPAU.PA` as the current local DOS source for verification.
-- [ ] The document states that "abandonware" is not a redistribution permission
+- [x] The document states that "abandonware" is not a redistribution permission
   for this repo.
-- [ ] The document chooses an initial import path: upload, drag/drop, directory
+- [x] The document chooses an initial import path: upload, drag/drop, directory
   picker, dev fixture, or a staged combination.
-- [ ] The document records how Phase 4 tests can run without committing
+- [x] The document records how Phase 4 tests can run without committing
   copyrighted assets.
 
 ## Test plan

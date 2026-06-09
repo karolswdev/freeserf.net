@@ -33,7 +33,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
   or hybrid as the initial implementation strategy, with a stop signal.
 - [x] A parity-harness design identifies the first deterministic reference
   outputs to capture from `freeserf.net`.
-- [ ] An asset/legal boundary document states how users supply DOS/Amiga data in
+- [x] An asset/legal boundary document states how users supply DOS/Amiga data in
   the browser, what the repo will not store, and how the local `SPAU.PA` source
   can be used for verification.
 - [ ] Every phase records pure-browser/no-.NET/no-desktop as a non-negotiable
@@ -51,7 +51,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
 | SB-0-02 | Inventory reference architecture | done | [story-02-reference-architecture-inventory](./story-02-reference-architecture-inventory.md) | [evidence-story-02](./evidence-story-02.md) |
 | SB-0-03 | Decide browser runtime strategy | done | [story-03-browser-runtime-decision](./story-03-browser-runtime-decision.md) | [evidence-story-03](./evidence-story-03.md) |
 | SB-0-04 | Design deterministic parity harness | done | [story-04-parity-harness-design](./story-04-parity-harness-design.md) | [evidence-story-04](./evidence-story-04.md) |
-| SB-0-05 | Define asset and legal boundary | backlog | [story-05-asset-and-legal-boundary](./story-05-asset-and-legal-boundary.md) | — |
+| SB-0-05 | Define asset and legal boundary | done | [story-05-asset-and-legal-boundary](./story-05-asset-and-legal-boundary.md) | [evidence-story-05](./evidence-story-05.md) |
 
 ## Where we are
 
@@ -61,11 +61,13 @@ architecture inventory, including browser fates, desktop assumptions, and first
 oracle candidates. SB-0-03 chose a TypeScript-first pure-browser runtime with a
 narrow WASM escape hatch only if measured stop signals trip. SB-0-04 defined the
 deterministic parity harness shape: RNG, map geometry/projection, serializer
-fixtures, and local/manual `SPAU.PA` metadata. User-owned English DOS files are
-available locally under ignored `serfbound-local-data/`, including `SPAU.PA`, so
-data-import phases can plan against a real local source. The next responsible
-move is SB-0-05: define the asset/legal boundary before Phase 1 captures local
-asset metadata.
+fixtures, and local/manual `SPAU.PA` metadata. SB-0-05 defined the asset/legal
+boundary: direct `.PA` file import first, drag/drop as same-boundary convenience,
+IndexedDB persistence unless Phase 4 evidence rejects it, directory picker as
+progressive enhancement, and no committed/hosted/bundled original data.
+User-owned English DOS files remain available locally under ignored
+`serfbound-local-data/`, including `SPAU.PA`. The next responsible move is a
+Phase 0 completion audit and final summary before starting Phase 1 oracle work.
 
 ## Active risks
 
@@ -113,6 +115,15 @@ asset metadata.
   RNG, map geometry/projection, and serializer outputs are the first CI-safe
   targets; `SPAU.PA` catalog metadata is local/manual only — SB-0-04 parity
   harness design.
+- 2026-06-09 — Asset import starts with user-selected local `.PA` files and
+  never with project-hosted original data — direct file import is the baseline,
+  drag/drop may share the same path, IndexedDB is the default persistence
+  target, and directory picker is optional progressive enhancement — SB-0-05
+  asset/legal boundary.
+- 2026-06-09 — "Abandonware" is not redistribution permission for Serfbound —
+  original DOS/Amiga data may be used locally when supplied by the user, but it
+  is not committed, hosted, bundled, or downloaded by the project — SB-0-05
+  asset/legal boundary.
 
 ## Decisions deferred
 
@@ -123,6 +134,6 @@ asset metadata.
 - First playable scope — resolve before Phase 7 — default to local single-player
   with the ignored local English DOS `SPAU.PA` source unless Phase 4 discovers a
   blocker.
-- Browser persistence model — revisit in Phase 4 and harden in Phase 8 —
-  default to IndexedDB for imported data and saves unless the browser API
-  evidence says otherwise.
+- Browser persistence details — revisit in Phase 4 and harden in Phase 8 —
+  default to IndexedDB for imported data and saves unless implementation
+  evidence proves a narrower model is safer.
