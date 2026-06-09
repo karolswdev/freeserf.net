@@ -26,15 +26,16 @@ product runtime.
 
 ## Exit criteria (evidence required)
 
-- [ ] At least three reference outputs are captured from real source files and
+- [x] At least three reference outputs are captured from real source files and
   documented with commands.
 - [x] At least one output is data-free and can run in CI.
 - [x] At least one output uses the ignored local `SPAU.PA` source and is marked
   local/manual.
 - [x] Reference outputs have stable, reviewable formats such as JSON/text/binary
   snapshots with checksums.
-- [ ] Any C# capture helper is explicitly isolated from product code and has a
-  deletion or quarantine rule.
+- [x] Any C# capture helper is explicitly isolated from product code and has a
+  deletion or quarantine rule; no C# helper exists yet, and all temporary
+  Python reference helpers are quarantined under `reference-tools/`.
 
 ## Story status
 
@@ -44,16 +45,17 @@ product runtime.
 | SB-1-02 | Capture data-free reference output | done | story-02-data-free-reference-output.md | evidence-story-02.md |
 | SB-1-03 | Capture local SPAU.PA resource output | done | story-03-local-spau-resource-output.md | evidence-story-03.md |
 | SB-1-04 | Define oracle fixture contract | ready | story-04-oracle-fixture-contract.md | — |
+| SB-1-05 | Capture map geometry reference output | done | story-05-map-geometry-reference-output.md | evidence-story-05.md |
 
 ## Where we are
 
-Phase 1 now has two reference outputs: the CI-safe RNG fixture and a
-local/manual `SPAU.PA` catalog metadata output. SB-1-03 wrote metadata-only
-output to ignored `serfbound-local-data/reference-output/spau-catalog-metadata.json`
-and proved the missing-data path skips cleanly. Phase 1 is still not complete:
-it needs a third reference output and the fixture contract. The next responsible
-move is to add a small data-free Phase 1 extension for `map.geometry-facts` or
-`serializer.state-fixtures`, then finish SB-1-04.
+Phase 1 now has three reference outputs: CI-safe RNG, local/manual `SPAU.PA`
+catalog metadata, and CI-safe map geometry facts. SB-1-05 captured
+`map.geometry-facts` into
+`pm/roadmap/serfbound/reference-fixtures/ci/map-geometry-facts.json`, covering
+direction cycles, wraparound, distances, render tile constants, and projection
+samples with synthetic heights. The next responsible move is SB-1-04: define
+the fixture contract and then audit Phase 1 for exit.
 
 ## Active risks
 
@@ -87,6 +89,9 @@ move is to add a small data-free Phase 1 extension for `map.geometry-facts` or
   by entry metadata — the local file's first uint32 matches file size and the
   second uint32 is the 4,000-entry catalog count, matching the loader comment
   that entries follow an 8-byte header — SB-1-03 source/data inspection.
+- 2026-06-09 — Use `map.geometry-facts` as Phase 1's third output — it is
+  data-free, small enough to review, and protects Phase 3 map primitives,
+  Phase 5 projection, and Phase 6 pointer-to-map interaction — SB-1-05 capture.
 
 ## Decisions deferred
 
@@ -96,6 +101,6 @@ move is to add a small data-free Phase 1 extension for `map.geometry-facts` or
 - Whether to repair local Node before Phase 2 starts — resolve before SB-2-01 —
   SB-1-02 could use Python because it is reference tooling only, but product
   implementation still needs a working browser-native toolchain.
-- Phase 1 third output story — add a small extension for `map.geometry-facts` or
-  `serializer.state-fixtures` before final Phase 1 audit, because the exit
-  criteria require at least three captured reference outputs.
+- Whether SB-1-04 should codify source-derived Python helpers as temporary
+  Phase 1-only tooling, or require future C# cross-checks when a C# toolchain is
+  available.

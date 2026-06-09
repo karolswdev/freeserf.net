@@ -20,14 +20,14 @@ not reference tooling.
 | Order | Target id | Data requirement | First capture story | Future phase protected | Why this target is first-wave |
 |---|---|---|---|---|---|
 | 1 | `rng.fixed-seed-sequence` | data-free / CI-safe | SB-1-02 | Phase 3 | Smallest deterministic behavior with high blast radius; protects numeric wrapping and map generation. |
-| 2 | `map.geometry-facts` | data-free / CI-safe | SB-1-02 or later Phase 1 extension | Phase 3, Phase 5, Phase 6 | Protects map positions, direction cycles, wraparound, and screen/map conversion assumptions. |
+| 2 | `map.geometry-facts` | data-free / CI-safe | SB-1-05 | Phase 3, Phase 5, Phase 6 | Protects map positions, direction cycles, wraparound, and screen/map conversion assumptions. |
 | 3 | `serializer.state-fixtures` | data-free / CI-safe | SB-1-02 or later Phase 1 extension | Phase 3, Phase 7, future sync work | Protects state ordering, dirty arrays/maps, and future browser save/state design. |
 | 4 | `dos.spau-catalog-metadata` | local/manual `SPAU.PA` | SB-1-03 | Phase 4, Phase 5 | Gives the browser parser a real local archive target without committing original asset payloads. |
 
 SB-1-02 only needs to capture at least one data-free target. Start with
-`rng.fixed-seed-sequence`; add `map.geometry-facts` or
-`serializer.state-fixtures` in Phase 1 only if the capture remains small and
-reviewable. SB-1-03 owns the local/manual `SPAU.PA` metadata target.
+`rng.fixed-seed-sequence`; SB-1-05 adds `map.geometry-facts` as the third
+captured output because the fixture remained small and reviewable. SB-1-03 owns
+the local/manual `SPAU.PA` metadata target.
 
 ## Target Details
 

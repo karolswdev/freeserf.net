@@ -148,6 +148,9 @@ For Serfbound specifically, every implementation story must identify:
   the current loader-relevant file is `SPAU.PA`.
 - **Current local reference output:** metadata-only `SPAU.PA` catalog output is
   generated under ignored `serfbound-local-data/reference-output/`.
+- **Current CI-safe reference fixtures:** `rng-fixed-seed-sequence.json` and
+  `map-geometry-facts.json` live under
+  `pm/roadmap/serfbound/reference-fixtures/ci/`.
 
 ## Glossary
 

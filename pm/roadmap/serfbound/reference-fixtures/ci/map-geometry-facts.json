@@ -1,0 +1,1403 @@
+{
+  "cases": [
+    {
+      "dimensions": {
+        "columnMask": 63,
+        "columnRowFactor": 2,
+        "columnSize": 6,
+        "columns": 64,
+        "rowMask": 63,
+        "rowShift": 6,
+        "rowSize": 6,
+        "rows": 64,
+        "tileCount": 4096
+      },
+      "directionOffsets": {
+        "Down": 64,
+        "DownRight": 65,
+        "Left": 63,
+        "Right": 1,
+        "Up": 4032,
+        "UpLeft": 4095
+      },
+      "distanceSamples": [
+        {
+          "distanceX": 1,
+          "distanceY": 1,
+          "left": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "right": {
+            "column": 1,
+            "position": 65,
+            "row": 1
+          }
+        },
+        {
+          "distanceX": -1,
+          "distanceY": -1,
+          "left": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "right": {
+            "column": 63,
+            "position": 4095,
+            "row": 63
+          }
+        },
+        {
+          "distanceX": 3,
+          "distanceY": -1,
+          "left": {
+            "column": 62,
+            "position": 62,
+            "row": 0
+          },
+          "right": {
+            "column": 1,
+            "position": 4033,
+            "row": 63
+          }
+        },
+        {
+          "distanceX": 32,
+          "distanceY": 32,
+          "left": {
+            "column": 32,
+            "position": 2080,
+            "row": 32
+          },
+          "right": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          }
+        }
+      ],
+      "movementSamples": [
+        {
+          "moveDownN3": {
+            "column": 0,
+            "position": 192,
+            "row": 3
+          },
+          "moveRightN3": {
+            "column": 3,
+            "position": 3,
+            "row": 0
+          },
+          "moves": {
+            "Down": {
+              "column": 0,
+              "position": 64,
+              "row": 1
+            },
+            "DownRight": {
+              "column": 1,
+              "position": 65,
+              "row": 1
+            },
+            "Left": {
+              "column": 63,
+              "position": 63,
+              "row": 0
+            },
+            "Right": {
+              "column": 1,
+              "position": 1,
+              "row": 0
+            },
+            "Up": {
+              "column": 0,
+              "position": 4032,
+              "row": 63
+            },
+            "UpLeft": {
+              "column": 63,
+              "position": 4095,
+              "row": 63
+            }
+          },
+          "start": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 1,
+            "position": 257,
+            "row": 4
+          },
+          "moveRightN3": {
+            "column": 4,
+            "position": 68,
+            "row": 1
+          },
+          "moves": {
+            "Down": {
+              "column": 1,
+              "position": 129,
+              "row": 2
+            },
+            "DownRight": {
+              "column": 2,
+              "position": 130,
+              "row": 2
+            },
+            "Left": {
+              "column": 0,
+              "position": 64,
+              "row": 1
+            },
+            "Right": {
+              "column": 2,
+              "position": 66,
+              "row": 1
+            },
+            "Up": {
+              "column": 1,
+              "position": 1,
+              "row": 0
+            },
+            "UpLeft": {
+              "column": 0,
+              "position": 0,
+              "row": 0
+            }
+          },
+          "start": {
+            "column": 1,
+            "position": 65,
+            "row": 1
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 63,
+            "position": 191,
+            "row": 2
+          },
+          "moveRightN3": {
+            "column": 2,
+            "position": 4034,
+            "row": 63
+          },
+          "moves": {
+            "Down": {
+              "column": 63,
+              "position": 63,
+              "row": 0
+            },
+            "DownRight": {
+              "column": 0,
+              "position": 0,
+              "row": 0
+            },
+            "Left": {
+              "column": 62,
+              "position": 4094,
+              "row": 63
+            },
+            "Right": {
+              "column": 0,
+              "position": 4032,
+              "row": 63
+            },
+            "Up": {
+              "column": 63,
+              "position": 4031,
+              "row": 62
+            },
+            "UpLeft": {
+              "column": 62,
+              "position": 4030,
+              "row": 62
+            }
+          },
+          "start": {
+            "column": 63,
+            "position": 4095,
+            "row": 63
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 62,
+            "position": 254,
+            "row": 3
+          },
+          "moveRightN3": {
+            "column": 1,
+            "position": 1,
+            "row": 0
+          },
+          "moves": {
+            "Down": {
+              "column": 62,
+              "position": 126,
+              "row": 1
+            },
+            "DownRight": {
+              "column": 63,
+              "position": 127,
+              "row": 1
+            },
+            "Left": {
+              "column": 61,
+              "position": 61,
+              "row": 0
+            },
+            "Right": {
+              "column": 63,
+              "position": 63,
+              "row": 0
+            },
+            "Up": {
+              "column": 62,
+              "position": 4094,
+              "row": 63
+            },
+            "UpLeft": {
+              "column": 61,
+              "position": 4093,
+              "row": 63
+            }
+          },
+          "start": {
+            "column": 62,
+            "position": 62,
+            "row": 0
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 0,
+            "position": 64,
+            "row": 1
+          },
+          "moveRightN3": {
+            "column": 3,
+            "position": 3971,
+            "row": 62
+          },
+          "moves": {
+            "Down": {
+              "column": 0,
+              "position": 4032,
+              "row": 63
+            },
+            "DownRight": {
+              "column": 1,
+              "position": 4033,
+              "row": 63
+            },
+            "Left": {
+              "column": 63,
+              "position": 4031,
+              "row": 62
+            },
+            "Right": {
+              "column": 1,
+              "position": 3969,
+              "row": 62
+            },
+            "Up": {
+              "column": 0,
+              "position": 3904,
+              "row": 61
+            },
+            "UpLeft": {
+              "column": 63,
+              "position": 3967,
+              "row": 61
+            }
+          },
+          "start": {
+            "column": 0,
+            "position": 3968,
+            "row": 62
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 32,
+            "position": 2272,
+            "row": 35
+          },
+          "moveRightN3": {
+            "column": 35,
+            "position": 2083,
+            "row": 32
+          },
+          "moves": {
+            "Down": {
+              "column": 32,
+              "position": 2144,
+              "row": 33
+            },
+            "DownRight": {
+              "column": 33,
+              "position": 2145,
+              "row": 33
+            },
+            "Left": {
+              "column": 31,
+              "position": 2079,
+              "row": 32
+            },
+            "Right": {
+              "column": 33,
+              "position": 2081,
+              "row": 32
+            },
+            "Up": {
+              "column": 32,
+              "position": 2016,
+              "row": 31
+            },
+            "UpLeft": {
+              "column": 31,
+              "position": 2015,
+              "row": 31
+            }
+          },
+          "start": {
+            "column": 32,
+            "position": 2080,
+            "row": 32
+          }
+        }
+      ],
+      "positionSamples": [
+        {
+          "column": 0,
+          "position": 0,
+          "row": 0
+        },
+        {
+          "column": 1,
+          "position": 65,
+          "row": 1
+        },
+        {
+          "column": 63,
+          "position": 4095,
+          "row": 63
+        },
+        {
+          "column": 62,
+          "position": 62,
+          "row": 0
+        },
+        {
+          "column": 0,
+          "position": 3968,
+          "row": 62
+        },
+        {
+          "column": 32,
+          "position": 2080,
+          "row": 32
+        }
+      ],
+      "projectionSamples": [
+        {
+          "mapToViewScroll1x2": {
+            "x": 992,
+            "y": 1228
+          },
+          "syntheticHeight": 3,
+          "tile": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "tileToMap": {
+            "x": 1024,
+            "y": 1268
+          },
+          "viewToMapScroll1x2": {
+            "x": 1024,
+            "y": 1268
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 1008,
+            "y": 1204
+          },
+          "syntheticHeight": 24,
+          "tile": {
+            "column": 2,
+            "position": 194,
+            "row": 3
+          },
+          "tileToMap": {
+            "x": 1040,
+            "y": 1244
+          },
+          "viewToMapScroll1x2": {
+            "x": 1040,
+            "y": 1244
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 976,
+            "y": 1112
+          },
+          "syntheticHeight": 27,
+          "tile": {
+            "column": 63,
+            "position": 4095,
+            "row": 63
+          },
+          "tileToMap": {
+            "x": 1008,
+            "y": 1152
+          },
+          "viewToMapScroll1x2": {
+            "x": 1008,
+            "y": 1152
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 480,
+            "y": 588
+          },
+          "syntheticHeight": 3,
+          "tile": {
+            "column": 32,
+            "position": 2080,
+            "row": 32
+          },
+          "tileToMap": {
+            "x": 512,
+            "y": 628
+          },
+          "viewToMapScroll1x2": {
+            "x": 512,
+            "y": 628
+          }
+        }
+      ],
+      "size": 3,
+      "viewToTileSamples": [
+        {
+          "mapSpace": {
+            "x": 0,
+            "y": 0
+          },
+          "tile": {
+            "column": 2,
+            "position": 258,
+            "row": 4
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 64,
+            "y": 40
+          },
+          "tile": {
+            "column": 5,
+            "position": 325,
+            "row": 5
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": 64,
+            "y": 40
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 1008,
+            "y": 1272
+          },
+          "tile": {
+            "column": 0,
+            "position": 64,
+            "row": 1
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": -16,
+            "y": -8
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 3,
+            "y": 45
+          },
+          "tile": {
+            "column": 3,
+            "position": 387,
+            "row": 6
+          },
+          "viewInput": {
+            "scrollY": 1,
+            "x": 2051,
+            "y": 25
+          }
+        }
+      ]
+    },
+    {
+      "dimensions": {
+        "columnMask": 127,
+        "columnRowFactor": 4,
+        "columnSize": 7,
+        "columns": 128,
+        "rowMask": 63,
+        "rowShift": 7,
+        "rowSize": 6,
+        "rows": 64,
+        "tileCount": 8192
+      },
+      "directionOffsets": {
+        "Down": 128,
+        "DownRight": 129,
+        "Left": 127,
+        "Right": 1,
+        "Up": 8064,
+        "UpLeft": 8191
+      },
+      "distanceSamples": [
+        {
+          "distanceX": 1,
+          "distanceY": 1,
+          "left": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "right": {
+            "column": 1,
+            "position": 129,
+            "row": 1
+          }
+        },
+        {
+          "distanceX": -1,
+          "distanceY": -1,
+          "left": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "right": {
+            "column": 127,
+            "position": 8191,
+            "row": 63
+          }
+        },
+        {
+          "distanceX": 3,
+          "distanceY": -1,
+          "left": {
+            "column": 126,
+            "position": 126,
+            "row": 0
+          },
+          "right": {
+            "column": 1,
+            "position": 8065,
+            "row": 63
+          }
+        },
+        {
+          "distanceX": 64,
+          "distanceY": 32,
+          "left": {
+            "column": 64,
+            "position": 4160,
+            "row": 32
+          },
+          "right": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          }
+        }
+      ],
+      "movementSamples": [
+        {
+          "moveDownN3": {
+            "column": 0,
+            "position": 384,
+            "row": 3
+          },
+          "moveRightN3": {
+            "column": 3,
+            "position": 3,
+            "row": 0
+          },
+          "moves": {
+            "Down": {
+              "column": 0,
+              "position": 128,
+              "row": 1
+            },
+            "DownRight": {
+              "column": 1,
+              "position": 129,
+              "row": 1
+            },
+            "Left": {
+              "column": 127,
+              "position": 127,
+              "row": 0
+            },
+            "Right": {
+              "column": 1,
+              "position": 1,
+              "row": 0
+            },
+            "Up": {
+              "column": 0,
+              "position": 8064,
+              "row": 63
+            },
+            "UpLeft": {
+              "column": 127,
+              "position": 8191,
+              "row": 63
+            }
+          },
+          "start": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 1,
+            "position": 513,
+            "row": 4
+          },
+          "moveRightN3": {
+            "column": 4,
+            "position": 132,
+            "row": 1
+          },
+          "moves": {
+            "Down": {
+              "column": 1,
+              "position": 257,
+              "row": 2
+            },
+            "DownRight": {
+              "column": 2,
+              "position": 258,
+              "row": 2
+            },
+            "Left": {
+              "column": 0,
+              "position": 128,
+              "row": 1
+            },
+            "Right": {
+              "column": 2,
+              "position": 130,
+              "row": 1
+            },
+            "Up": {
+              "column": 1,
+              "position": 1,
+              "row": 0
+            },
+            "UpLeft": {
+              "column": 0,
+              "position": 0,
+              "row": 0
+            }
+          },
+          "start": {
+            "column": 1,
+            "position": 129,
+            "row": 1
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 127,
+            "position": 383,
+            "row": 2
+          },
+          "moveRightN3": {
+            "column": 2,
+            "position": 8066,
+            "row": 63
+          },
+          "moves": {
+            "Down": {
+              "column": 127,
+              "position": 127,
+              "row": 0
+            },
+            "DownRight": {
+              "column": 0,
+              "position": 0,
+              "row": 0
+            },
+            "Left": {
+              "column": 126,
+              "position": 8190,
+              "row": 63
+            },
+            "Right": {
+              "column": 0,
+              "position": 8064,
+              "row": 63
+            },
+            "Up": {
+              "column": 127,
+              "position": 8063,
+              "row": 62
+            },
+            "UpLeft": {
+              "column": 126,
+              "position": 8062,
+              "row": 62
+            }
+          },
+          "start": {
+            "column": 127,
+            "position": 8191,
+            "row": 63
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 126,
+            "position": 510,
+            "row": 3
+          },
+          "moveRightN3": {
+            "column": 1,
+            "position": 1,
+            "row": 0
+          },
+          "moves": {
+            "Down": {
+              "column": 126,
+              "position": 254,
+              "row": 1
+            },
+            "DownRight": {
+              "column": 127,
+              "position": 255,
+              "row": 1
+            },
+            "Left": {
+              "column": 125,
+              "position": 125,
+              "row": 0
+            },
+            "Right": {
+              "column": 127,
+              "position": 127,
+              "row": 0
+            },
+            "Up": {
+              "column": 126,
+              "position": 8190,
+              "row": 63
+            },
+            "UpLeft": {
+              "column": 125,
+              "position": 8189,
+              "row": 63
+            }
+          },
+          "start": {
+            "column": 126,
+            "position": 126,
+            "row": 0
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 0,
+            "position": 128,
+            "row": 1
+          },
+          "moveRightN3": {
+            "column": 3,
+            "position": 7939,
+            "row": 62
+          },
+          "moves": {
+            "Down": {
+              "column": 0,
+              "position": 8064,
+              "row": 63
+            },
+            "DownRight": {
+              "column": 1,
+              "position": 8065,
+              "row": 63
+            },
+            "Left": {
+              "column": 127,
+              "position": 8063,
+              "row": 62
+            },
+            "Right": {
+              "column": 1,
+              "position": 7937,
+              "row": 62
+            },
+            "Up": {
+              "column": 0,
+              "position": 7808,
+              "row": 61
+            },
+            "UpLeft": {
+              "column": 127,
+              "position": 7935,
+              "row": 61
+            }
+          },
+          "start": {
+            "column": 0,
+            "position": 7936,
+            "row": 62
+          }
+        },
+        {
+          "moveDownN3": {
+            "column": 64,
+            "position": 4544,
+            "row": 35
+          },
+          "moveRightN3": {
+            "column": 67,
+            "position": 4163,
+            "row": 32
+          },
+          "moves": {
+            "Down": {
+              "column": 64,
+              "position": 4288,
+              "row": 33
+            },
+            "DownRight": {
+              "column": 65,
+              "position": 4289,
+              "row": 33
+            },
+            "Left": {
+              "column": 63,
+              "position": 4159,
+              "row": 32
+            },
+            "Right": {
+              "column": 65,
+              "position": 4161,
+              "row": 32
+            },
+            "Up": {
+              "column": 64,
+              "position": 4032,
+              "row": 31
+            },
+            "UpLeft": {
+              "column": 63,
+              "position": 4031,
+              "row": 31
+            }
+          },
+          "start": {
+            "column": 64,
+            "position": 4160,
+            "row": 32
+          }
+        }
+      ],
+      "positionSamples": [
+        {
+          "column": 0,
+          "position": 0,
+          "row": 0
+        },
+        {
+          "column": 1,
+          "position": 129,
+          "row": 1
+        },
+        {
+          "column": 127,
+          "position": 8191,
+          "row": 63
+        },
+        {
+          "column": 126,
+          "position": 126,
+          "row": 0
+        },
+        {
+          "column": 0,
+          "position": 7936,
+          "row": 62
+        },
+        {
+          "column": 64,
+          "position": 4160,
+          "row": 32
+        }
+      ],
+      "projectionSamples": [
+        {
+          "mapToViewScroll1x2": {
+            "x": 3040,
+            "y": 1224
+          },
+          "syntheticHeight": 4,
+          "tile": {
+            "column": 0,
+            "position": 0,
+            "row": 0
+          },
+          "tileToMap": {
+            "x": 3072,
+            "y": 1264
+          },
+          "viewToMapScroll1x2": {
+            "x": 3072,
+            "y": 1264
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 3056,
+            "y": 1200
+          },
+          "syntheticHeight": 25,
+          "tile": {
+            "column": 2,
+            "position": 386,
+            "row": 3
+          },
+          "tileToMap": {
+            "x": 3088,
+            "y": 1240
+          },
+          "viewToMapScroll1x2": {
+            "x": 3088,
+            "y": 1240
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 3024,
+            "y": 1108
+          },
+          "syntheticHeight": 28,
+          "tile": {
+            "column": 127,
+            "position": 8191,
+            "row": 63
+          },
+          "tileToMap": {
+            "x": 3056,
+            "y": 1148
+          },
+          "viewToMapScroll1x2": {
+            "x": 3056,
+            "y": 1148
+          }
+        },
+        {
+          "mapToViewScroll1x2": {
+            "x": 1504,
+            "y": 584
+          },
+          "syntheticHeight": 4,
+          "tile": {
+            "column": 64,
+            "position": 4160,
+            "row": 32
+          },
+          "tileToMap": {
+            "x": 1536,
+            "y": 624
+          },
+          "viewToMapScroll1x2": {
+            "x": 1536,
+            "y": 624
+          }
+        }
+      ],
+      "size": 4,
+      "viewToTileSamples": [
+        {
+          "mapSpace": {
+            "x": 0,
+            "y": 0
+          },
+          "tile": {
+            "column": 2,
+            "position": 514,
+            "row": 4
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 64,
+            "y": 40
+          },
+          "tile": {
+            "column": 5,
+            "position": 645,
+            "row": 5
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": 64,
+            "y": 40
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 3056,
+            "y": 1272
+          },
+          "tile": {
+            "column": 0,
+            "position": 128,
+            "row": 1
+          },
+          "viewInput": {
+            "scrollY": 0,
+            "x": -16,
+            "y": -8
+          }
+        },
+        {
+          "mapSpace": {
+            "x": 3,
+            "y": 45
+          },
+          "tile": {
+            "column": 3,
+            "position": 771,
+            "row": 6
+          },
+          "viewInput": {
+            "scrollY": 1,
+            "x": 4099,
+            "y": 25
+          }
+        }
+      ]
+    }
+  ],
+  "dataRequirement": "data-free / CI-safe",
+  "directionFacts": {
+    "cycleCCWDefault": [
+      "Up",
+      "UpLeft",
+      "Left",
+      "Down",
+      "DownRight",
+      "Right"
+    ],
+    "cycleCWDefault": [
+      "Right",
+      "DownRight",
+      "Down",
+      "Left",
+      "UpLeft",
+      "Up"
+    ],
+    "cycleCWWithoutDown": [
+      "Left",
+      "UpLeft",
+      "Up",
+      "Right",
+      "DownRight"
+    ],
+    "reverse": {
+      "Down": "Up",
+      "DownRight": "UpLeft",
+      "Left": "Right",
+      "Right": "Left",
+      "Up": "Down",
+      "UpLeft": "DownRight"
+    },
+    "turnSamples": [
+      {
+        "direction": "Right",
+        "result": "Up",
+        "times": -7
+      },
+      {
+        "direction": "Right",
+        "result": "Up",
+        "times": -1
+      },
+      {
+        "direction": "Right",
+        "result": "Right",
+        "times": 0
+      },
+      {
+        "direction": "Right",
+        "result": "DownRight",
+        "times": 1
+      },
+      {
+        "direction": "Right",
+        "result": "Left",
+        "times": 3
+      },
+      {
+        "direction": "Right",
+        "result": "Down",
+        "times": 8
+      },
+      {
+        "direction": "DownRight",
+        "result": "Right",
+        "times": -7
+      },
+      {
+        "direction": "DownRight",
+        "result": "Right",
+        "times": -1
+      },
+      {
+        "direction": "DownRight",
+        "result": "DownRight",
+        "times": 0
+      },
+      {
+        "direction": "DownRight",
+        "result": "Down",
+        "times": 1
+      },
+      {
+        "direction": "DownRight",
+        "result": "UpLeft",
+        "times": 3
+      },
+      {
+        "direction": "DownRight",
+        "result": "Left",
+        "times": 8
+      },
+      {
+        "direction": "Down",
+        "result": "DownRight",
+        "times": -7
+      },
+      {
+        "direction": "Down",
+        "result": "DownRight",
+        "times": -1
+      },
+      {
+        "direction": "Down",
+        "result": "Down",
+        "times": 0
+      },
+      {
+        "direction": "Down",
+        "result": "Left",
+        "times": 1
+      },
+      {
+        "direction": "Down",
+        "result": "Up",
+        "times": 3
+      },
+      {
+        "direction": "Down",
+        "result": "UpLeft",
+        "times": 8
+      },
+      {
+        "direction": "Left",
+        "result": "Down",
+        "times": -7
+      },
+      {
+        "direction": "Left",
+        "result": "Down",
+        "times": -1
+      },
+      {
+        "direction": "Left",
+        "result": "Left",
+        "times": 0
+      },
+      {
+        "direction": "Left",
+        "result": "UpLeft",
+        "times": 1
+      },
+      {
+        "direction": "Left",
+        "result": "Right",
+        "times": 3
+      },
+      {
+        "direction": "Left",
+        "result": "Up",
+        "times": 8
+      },
+      {
+        "direction": "UpLeft",
+        "result": "Left",
+        "times": -7
+      },
+      {
+        "direction": "UpLeft",
+        "result": "Left",
+        "times": -1
+      },
+      {
+        "direction": "UpLeft",
+        "result": "UpLeft",
+        "times": 0
+      },
+      {
+        "direction": "UpLeft",
+        "result": "Up",
+        "times": 1
+      },
+      {
+        "direction": "UpLeft",
+        "result": "DownRight",
+        "times": 3
+      },
+      {
+        "direction": "UpLeft",
+        "result": "Right",
+        "times": 8
+      },
+      {
+        "direction": "Up",
+        "result": "UpLeft",
+        "times": -7
+      },
+      {
+        "direction": "Up",
+        "result": "UpLeft",
+        "times": -1
+      },
+      {
+        "direction": "Up",
+        "result": "Up",
+        "times": 0
+      },
+      {
+        "direction": "Up",
+        "result": "Right",
+        "times": 1
+      },
+      {
+        "direction": "Up",
+        "result": "Down",
+        "times": 3
+      },
+      {
+        "direction": "Up",
+        "result": "DownRight",
+        "times": 8
+      }
+    ],
+    "values": {
+      "Down": 2,
+      "DownRight": 1,
+      "Left": 3,
+      "Right": 0,
+      "Up": 5,
+      "UpLeft": 4
+    }
+  },
+  "generation": {
+    "command": "python3 pm/roadmap/serfbound/reference-tools/capture-map-geometry-oracle.py --output pm/roadmap/serfbound/reference-fixtures/ci/map-geometry-facts.json",
+    "notes": "Temporary Phase 1 source-derived reference tooling; not product code and not imported by browser runtime.",
+    "tool": "pm/roadmap/serfbound/reference-tools/capture-map-geometry-oracle.py"
+  },
+  "heightModel": {
+    "formula": "(column * 3 + row * 5 + size) % 32",
+    "kind": "synthetic",
+    "reason": "CoordinateSpace projection requires map heights; Phase 1 keeps this data-free."
+  },
+  "renderConstants": {
+    "tileHeight": 20,
+    "tileWidth": 32
+  },
+  "schemaVersion": 1,
+  "source": {
+    "files": [
+      {
+        "lastCommit": "3cea30e66dd39140adbc090102a1e405ca55efdc",
+        "path": "Freeserf.Core/MapGeometry.cs",
+        "sha256": "e9ae83d6c8b85716239ce29b4771e5f13f43e8d816288cdd4a2c5f2705ccfc7c"
+      },
+      {
+        "lastCommit": "94778ec5f5e121d978318a040b469e093ad92e8a",
+        "path": "Freeserf.Core/CoordinateSpace.cs",
+        "sha256": "38f653e0bddd13500b31835b80d31e31b055d232d6b934a1967aceaa5084630f"
+      },
+      {
+        "lastCommit": "67208c78d33a83134454ef82c82ae85fcb1352c0",
+        "path": "Freeserf.Core/Map.cs",
+        "sha256": "4504c5182524efeae72fdf348c3ddbbc766f175cfdf062b2b06ddca68cfb23cf"
+      },
+      {
+        "lastCommit": "b340fe1133db9b96d58917c539a90351976fe4f3",
+        "path": "Freeserf.Core/Render/RenderMap.cs",
+        "sha256": "a525f809993fda3c63c2f284d39b1b9e9bf2b1b72356de9891df9a02fc67aa99"
+      }
+    ],
+    "methods": [
+      "DirectionExtensions.Turn()",
+      "DirectionExtensions.Reverse()",
+      "DirectionCycleCW.CreateDefault()",
+      "DirectionCycleCW.CreateWithout()",
+      "DirectionCycleCCW.CreateDefault()",
+      "MapGeometry.PositionColumn()",
+      "MapGeometry.PositionRow()",
+      "MapGeometry.Position()",
+      "MapGeometry.PositionAdd()",
+      "MapGeometry.DistanceX()",
+      "MapGeometry.DistanceY()",
+      "MapGeometry.Move()",
+      "MapGeometry.MoveRightN()",
+      "MapGeometry.MoveDownN()",
+      "CoordinateSpace.TileSpaceToMapSpace()",
+      "CoordinateSpace.MapSpaceToViewSpace()",
+      "CoordinateSpace.ViewSpaceToMapSpace()",
+      "CoordinateSpace.MapSpaceToTileSpace()",
+      "CoordinateSpace.ViewSpaceToTileSpace()",
+      "RenderMap.TILE_WIDTH",
+      "RenderMap.TILE_HEIGHT"
+    ]
+  },
+  "targetId": "map.geometry-facts"
+}
