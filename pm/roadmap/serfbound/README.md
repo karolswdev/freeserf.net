@@ -156,6 +156,9 @@ For Serfbound specifically, every implementation story must identify:
   `pm/roadmap/serfbound/reference-fixtures/ci/`.
 - **Current browser workspace:** `serfbound/` is an npm/TypeScript workspace
   with app, engine, assets, and test-support package boundaries.
+- **Current CI-safe browser command:** `npm test` from `serfbound/` builds the
+  workspace and runs Node's built-in test runner against committed Phase 1
+  fixture data without `serfbound-local-data/`.
 
 ## Glossary
 

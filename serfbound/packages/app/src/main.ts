@@ -15,6 +15,8 @@ export function bootstrapSummary(): AppBootstrapSummary {
     schemaVersion: 1,
     targetId: "rng.fixed-seed-sequence",
     dataRequirement: "data-free / CI-safe",
+    source: { package: "@serfbound/app" },
+    generation: { mode: "bootstrap-smoke" },
   });
 
   return {

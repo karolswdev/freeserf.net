@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 2
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-2-01, SB-1-04
 - **Unblocks:** SB-3-04, SB-4-02, SB-9-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ every future phase a place to prove behavior without depending on local
 
 ## Acceptance criteria
 
-- [ ] A test command runs without `serfbound-local-data/`.
-- [ ] A fixture validation test reads at least one CI-safe oracle fixture.
-- [ ] Local/manual asset tests are clearly named and excluded from default CI.
-- [ ] The command is documented in the relevant phase status or workspace docs.
-- [ ] Failing tests produce actionable output.
+- [x] A test command runs without `serfbound-local-data/`.
+- [x] A fixture validation test reads at least one CI-safe oracle fixture.
+- [x] Local/manual asset tests are clearly named and excluded from default CI.
+- [x] The command is documented in the relevant phase status or workspace docs.
+- [x] Failing tests produce actionable output.
 
 ## Test plan
 
@@ -37,5 +37,9 @@ every future phase a place to prove behavior without depending on local
 
 ## Notes / open questions
 
-This story does not need full CI YAML if the local command is not stable yet.
-It must, however, make CI-safe behavior concrete.
+Shipped `npm test` / `npm run test:ci` using Node's built-in test runner. The
+default test command builds the TypeScript workspace, reads committed CI-safe
+fixtures, validates fixture headers, proves unsupported schema versions fail
+with explicit errors, and consumes concrete RNG/map facts. Local/manual asset
+checks are named separately as `npm run test:local:assets` and are not part of
+the default CI-safe path.

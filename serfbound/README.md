@@ -27,13 +27,22 @@ source ~/.nvm/nvm.sh
 nvm use
 npm install
 npm run build
+npm test
 npm run check:boundaries
 ```
 
 `npm run build` compiles all packages with TypeScript project references.
+`npm test` runs the default CI-safe test spine. It builds the workspace and
+uses Node's built-in test runner against committed fixtures under
+`pm/roadmap/serfbound/reference-fixtures/ci/`; it must pass with local asset
+environment variables unset and must not read `serfbound-local-data/`.
 `npm run check:boundaries` verifies that package manifests do not introduce
 desktop wrappers, .NET runtimes, native launchers, or forbidden local asset
 payload dependencies.
+
+Local/manual asset checks are opt-in only. Keep them out of `npm test` and
+`npm run test:ci`; use clearly named commands such as
+`npm run test:local:assets` for checks that require user-provided original data.
 
 ## Fixture Policy
 

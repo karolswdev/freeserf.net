@@ -25,8 +25,8 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 
 ## Exit criteria (evidence required)
 
-- [ ] `npm`/web-tooling commands build and test the browser workspace.
-- [ ] CI can run without local assets.
+- [x] `npm`/web-tooling commands build and test the browser workspace.
+- [x] CI can run without local assets.
 - [ ] The app shell opens in a browser and proves the deployment model is static
   or otherwise pure browser.
 - [ ] Runtime boundaries are documented: engine, assets, rendering, UI, audio,
@@ -38,17 +38,19 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-2-01 | Scaffold pure-browser workspace | done | story-01-scaffold-browser-workspace.md | evidence-story-01.md |
-| SB-2-02 | Add CI-safe test spine | backlog | story-02-ci-safe-test-spine.md | — |
+| SB-2-02 | Add CI-safe test spine | done | story-02-ci-safe-test-spine.md | evidence-story-02.md |
 | SB-2-03 | Define runtime module boundaries | backlog | story-03-runtime-module-boundaries.md | — |
 | SB-2-04 | Prove static browser app shell | backlog | story-04-static-browser-shell.md | — |
 
 ## Where we are
 
-Phase 2 has started. SB-2-01 created the `serfbound/` TypeScript npm workspace
-with app, engine, assets, and test-support package boundaries. The workspace
-builds with nvm Node `22.21.0`, while Homebrew Node/npm remain broken. The next
-responsible move is SB-2-02: add a CI-safe test spine that validates and
-consumes at least one Phase 1 fixture without `serfbound-local-data/`.
+Phase 2 is in progress. SB-2-01 created the `serfbound/` TypeScript npm
+workspace with app, engine, assets, and test-support package boundaries.
+SB-2-02 added the default CI-safe test spine: `npm test` builds the workspace,
+validates committed oracle fixture headers, and consumes RNG/map fixture facts
+without local asset environment variables. The next responsible move is SB-2-03:
+define runtime module boundaries before deeper engine, asset, renderer, UI,
+audio, persistence, and worker work spreads out.
 
 ## Active risks
 
@@ -70,11 +72,14 @@ consumes at least one Phase 1 fixture without `serfbound-local-data/`.
 - 2026-06-09 — Use nvm Node `22.21.0` for Phase 2 commands because Homebrew
   Node `25.9.0` fails to load `libllhttp.9.3.dylib`; `.nvmrc` records the
   working local toolchain — SB-2-01.
+- 2026-06-09 — Use Node's built-in test runner for the first CI-safe test spine
+  and keep local/manual asset checks under separately named opt-in commands —
+  SB-2-02.
 
 ## Decisions deferred
 
-- Monorepo package names — resolve during SB-2-01 — default to names under
-  `serfbound/*` until publishability matters.
+- Package publish/release strategy — defer until Phase 9 unless an earlier
+  dependency boundary requires public package metadata.
 - Whether to repair Homebrew Node or keep using nvm Node — resolve before Phase
   2 final audit. SB-2-01 proves the workspace with nvm, but Homebrew `node` and
   `npm` still fail to load `libllhttp.9.3.dylib`.

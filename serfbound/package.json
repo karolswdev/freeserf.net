@@ -11,7 +11,10 @@
   "scripts": {
     "build": "tsc -b packages/engine packages/assets packages/test-support packages/app",
     "clean": "tsc -b --clean packages/engine packages/assets packages/test-support packages/app",
-    "check:boundaries": "node scripts/check-boundaries.mjs"
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "test": "npm run test:ci",
+    "test:ci": "npm run build && node --test tests/ci/*.test.mjs",
+    "test:local:assets": "node scripts/test-local-assets.mjs"
   },
   "workspaces": [
     "packages/*"
