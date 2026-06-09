@@ -1,6 +1,7 @@
 # Phase 0 — Rewrite Discovery And Architecture
 
 **Last updated:** 2026-06-09.
+**Status:** complete; pending Phase 1 execution.
 
 ## Goal
 
@@ -20,11 +21,19 @@ no final .NET code, no desktop deliverable, and no native launcher.
   redesign beyond what is needed to plan the browser shell. Also out: any plan
   that preserves .NET as product code or adds a desktop target.
 
+## Non-negotiable constraints
+
+- Final product code is pure browser.
+- No .NET product runtime, desktop wrapper, native launcher, local companion
+  process, or browser shell around a desktop runtime.
+- Original DOS/Amiga data is user-provided only; Serfbound does not commit,
+  host, bundle, or redistribute it.
+
 ## Exit criteria (evidence required)
 
-- [ ] `pm/roadmap/serfbound/README.md` names Serfbound and lists all planned
+- [x] `pm/roadmap/serfbound/README.md` names Serfbound and lists all planned
   phases with explicit goals.
-- [ ] `pm/roadmap/serfbound/adoption/session-intake.md` captures the user
+- [x] `pm/roadmap/serfbound/adoption/session-intake.md` captures the user
   direction, constraints, and open questions.
 - [x] A source-inventory artifact maps `Freeserf.Core`, `Freeserf.Renderer`,
   `Freeserf.Audio`, `Freeserf.Network`, `FreeserfNet`, and data-file loading to
@@ -36,10 +45,10 @@ no final .NET code, no desktop deliverable, and no native launcher.
 - [x] An asset/legal boundary document states how users supply DOS/Amiga data in
   the browser, what the repo will not store, and how the local `SPAU.PA` source
   can be used for verification.
-- [ ] Every phase records pure-browser/no-.NET/no-desktop as a non-negotiable
+- [x] Every phase records pure-browser/no-.NET/no-desktop as a non-negotiable
   constraint or dependency.
-- [ ] Phase 1 has ready stories for reference-oracle capture.
-- [ ] The roadmap explains why reference capture, browser foundation,
+- [x] Phase 1 has ready stories for reference-oracle capture.
+- [x] The roadmap explains why reference capture, browser foundation,
   simulation parity, data import, rendering, UI/input, playable slice,
   browser hardening, and release operations are separate gates.
 
@@ -66,8 +75,9 @@ boundary: direct `.PA` file import first, drag/drop as same-boundary convenience
 IndexedDB persistence unless Phase 4 evidence rejects it, directory picker as
 progressive enhancement, and no committed/hosted/bundled original data.
 User-owned English DOS files remain available locally under ignored
-`serfbound-local-data/`, including `SPAU.PA`. The next responsible move is a
-Phase 0 completion audit and final summary before starting Phase 1 oracle work.
+`serfbound-local-data/`, including `SPAU.PA`. The Phase 0 completion audit has
+verified all five stories, matching evidence, phase constraints, and Phase 1
+readiness. The next responsible move is Phase 1: select the first oracle targets.
 
 ## Active risks
 

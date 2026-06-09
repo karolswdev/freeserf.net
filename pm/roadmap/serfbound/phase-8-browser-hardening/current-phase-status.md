@@ -16,6 +16,14 @@ recovery.
 - **Out:** Major new gameplay systems, desktop packaging, multiplayer, or brand
   campaign work.
 
+## Non-negotiable constraints
+
+- Final product code is pure browser.
+- No .NET product runtime, desktop wrapper, native launcher, local companion
+  process, or browser shell around a desktop runtime.
+- Original DOS/Amiga data is user-provided only; Serfbound does not commit,
+  host, bundle, or redistribute it.
+
 ## Exit criteria (evidence required)
 
 - [ ] Tick/render frame budgets are measured on representative browsers.

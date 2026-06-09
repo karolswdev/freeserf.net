@@ -14,6 +14,14 @@ oracle fixtures.
 - **Out:** Rendering, audio, full economy, AI completeness, multiplayer, UI
   polish, or local asset import beyond consuming oracle fixtures.
 
+## Non-negotiable constraints
+
+- Final product code is pure browser.
+- No .NET product runtime, desktop wrapper, native launcher, local companion
+  process, or browser shell around a desktop runtime.
+- Original DOS/Amiga data is user-provided only; Serfbound does not commit,
+  host, bundle, or redistribute it.
+
 ## Exit criteria (evidence required)
 
 - [ ] Data-free parity tests pass against at least one Phase 1 oracle fixture.

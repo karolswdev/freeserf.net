@@ -14,6 +14,14 @@ Package, document, and operate Serfbound as a maintainable browser product.
 - **Out:** Desktop release packages, .NET runtime artifacts, major new gameplay
   features, multiplayer, or post-release feature roadmap.
 
+## Non-negotiable constraints
+
+- Final product code is pure browser.
+- No .NET product runtime, desktop wrapper, native launcher, local companion
+  process, or browser shell around a desktop runtime.
+- Original DOS/Amiga data is user-provided only; Serfbound does not commit,
+  host, bundle, or redistribute it.
+
 ## Exit criteria (evidence required)
 
 - [ ] CI runs build, lint, unit tests, browser tests, and data-free parity tests.

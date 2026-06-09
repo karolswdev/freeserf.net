@@ -17,6 +17,14 @@ saves/loads state.
   release branding, parity for every late-game system, desktop packaging, or
   .NET runtime dependencies.
 
+## Non-negotiable constraints
+
+- Final product code is pure browser.
+- No .NET product runtime, desktop wrapper, native launcher, local companion
+  process, or browser shell around a desktop runtime.
+- Original DOS/Amiga data is user-provided only; Serfbound does not commit,
+  host, bundle, or redistribute it.
+
 ## Exit criteria (evidence required)
 
 - [ ] A user can open the browser client, import local data, start a game, and
