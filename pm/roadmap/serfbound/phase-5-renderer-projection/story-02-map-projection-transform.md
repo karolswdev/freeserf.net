@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 5
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-5-01, SB-3-02
 - **Unblocks:** SB-5-03, SB-6-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,11 +22,11 @@ interactions depend on it.
 
 ## Acceptance criteria
 
-- [ ] Projection helpers exist outside DOM-specific code where practical.
-- [ ] Tests cover map-to-screen and screen-to-map representative cases.
-- [ ] Behavior is documented against `Freeserf.Core/Rendering.txt`.
-- [ ] Transform supports resize/viewport changes or records deferred handling.
-- [ ] Phase 6 can consume the conversion without duplicating math.
+- [x] Projection helpers exist outside DOM-specific code where practical.
+- [x] Tests cover map-to-screen and screen-to-map representative cases.
+- [x] Behavior is documented against `Freeserf.Core/Rendering.txt`.
+- [x] Transform supports resize/viewport changes or records deferred handling.
+- [x] Phase 6 can consume the conversion without duplicating math.
 
 ## Test plan
 
@@ -37,5 +37,10 @@ interactions depend on it.
 
 ## Notes / open questions
 
-Exact pixel parity is less important than stable, testable interaction mapping
-at this stage.
+Shipped in `@serfbound/engine` as `MapProjectionTransform`. The transform is
+browser-neutral, composes existing fixture-backed `MapGeometry` projection
+helpers, supports virtual-screen letterboxing and resize, and exposes shared
+map/tile/view/screen conversion for renderer and Phase 6 input code.
+
+Exact pixel parity remains less important than stable, testable interaction
+mapping at this stage.

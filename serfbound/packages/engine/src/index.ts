@@ -74,6 +74,27 @@ export type MapGeometryProjectionOptions = {
 
 export type MapHeightProvider = (tile: MapTile) => number;
 
+export type MapProjectionRotation = "None" | "Deg90" | "Deg180" | "Deg270";
+
+export type RenderSize = {
+  readonly width: number;
+  readonly height: number;
+};
+
+export type RenderRect = RenderSize & {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+};
+
+export type MapProjectionTransformOptions = MapGeometryProjectionOptions & {
+  readonly geometry: MapGeometry;
+  readonly virtualSize: RenderSize;
+  readonly screenSize: RenderSize;
+  readonly rotation?: MapProjectionRotation;
+};
+
 export const directionValues: Record<Direction, number> = {
   Right: 0,
   DownRight: 1,
@@ -472,6 +493,238 @@ export class MapGeometry {
     }
 
     return distanceX * distanceX + distanceY * distanceY;
+  }
+}
+
+function assertFinitePositiveSize(size: RenderSize, label: string): void {
+  if (
+    !Number.isFinite(size.width) ||
+    !Number.isFinite(size.height) ||
+    size.width <= 0 ||
+    size.height <= 0
+  ) {
+    throw new Error(`${label} width and height must be finite positive numbers.`);
+  }
+}
+
+function assertFiniteNumber(value: number, label: string): void {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${label} must be a finite number.`);
+  }
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+function renderRect(left: number, top: number, width: number, height: number): RenderRect {
+  return {
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+  };
+}
+
+function isQuarterTurn(rotation: MapProjectionRotation): boolean {
+  return rotation === "Deg90" || rotation === "Deg270";
+}
+
+function isClose(left: number, right: number): boolean {
+  return Math.abs(left - right) < 1e-9;
+}
+
+function calculateDisplayRect(
+  virtualSize: RenderSize,
+  screenSize: RenderSize,
+  rotation: MapProjectionRotation,
+): RenderRect {
+  const ratioWidth = isQuarterTurn(rotation) ? virtualSize.height : virtualSize.width;
+  const ratioHeight = isQuarterTurn(rotation) ? virtualSize.width : virtualSize.height;
+  const virtualRatio = ratioWidth / ratioHeight;
+  const screenRatio = screenSize.width / screenSize.height;
+
+  if (isClose(screenRatio, virtualRatio)) {
+    return renderRect(0, 0, screenSize.width, screenSize.height);
+  }
+
+  if (screenRatio > virtualRatio) {
+    const width = screenSize.height * virtualRatio;
+    return renderRect((screenSize.width - width) / 2, 0, width, screenSize.height);
+  }
+
+  const height = screenSize.width / virtualRatio;
+  return renderRect(0, (screenSize.height - height) / 2, screenSize.width, height);
+}
+
+function projectionOptions(
+  scrollX: number,
+  scrollY: number,
+  tileWidth: number,
+  tileHeight: number,
+): Required<MapGeometryProjectionOptions> {
+  return { scrollX, scrollY, tileWidth, tileHeight };
+}
+
+export class MapProjectionTransform {
+  readonly geometry: MapGeometry;
+  readonly virtualSize: RenderSize;
+  readonly screenSize: RenderSize;
+  readonly displayRect: RenderRect;
+  readonly rotation: MapProjectionRotation;
+  readonly scrollX: number;
+  readonly scrollY: number;
+  readonly tileWidth: number;
+  readonly tileHeight: number;
+  readonly sizeFactorX: number;
+  readonly sizeFactorY: number;
+
+  constructor(options: MapProjectionTransformOptions) {
+    assertFinitePositiveSize(options.virtualSize, "virtualSize");
+    assertFinitePositiveSize(options.screenSize, "screenSize");
+
+    this.geometry = options.geometry;
+    this.virtualSize = { ...options.virtualSize };
+    this.screenSize = { ...options.screenSize };
+    this.rotation = options.rotation ?? "None";
+    this.scrollX = options.scrollX ?? 0;
+    this.scrollY = options.scrollY ?? 0;
+    this.tileWidth = options.tileWidth ?? 32;
+    this.tileHeight = options.tileHeight ?? 20;
+
+    assertFiniteNumber(this.scrollX, "scrollX");
+    assertFiniteNumber(this.scrollY, "scrollY");
+    assertFiniteNumber(this.tileWidth, "tileWidth");
+    assertFiniteNumber(this.tileHeight, "tileHeight");
+
+    if (this.tileWidth <= 0 || this.tileHeight <= 0) {
+      throw new Error("tileWidth and tileHeight must be finite positive numbers.");
+    }
+
+    this.displayRect = calculateDisplayRect(this.virtualSize, this.screenSize, this.rotation);
+
+    if (isQuarterTurn(this.rotation)) {
+      this.sizeFactorX = this.virtualSize.height / this.displayRect.width;
+      this.sizeFactorY = this.virtualSize.width / this.displayRect.height;
+    } else {
+      this.sizeFactorX = this.virtualSize.width / this.displayRect.width;
+      this.sizeFactorY = this.virtualSize.height / this.displayRect.height;
+    }
+  }
+
+  static create(options: MapProjectionTransformOptions): MapProjectionTransform {
+    return new MapProjectionTransform(options);
+  }
+
+  resize(screenSize: RenderSize): MapProjectionTransform {
+    return new MapProjectionTransform({
+      geometry: this.geometry,
+      virtualSize: this.virtualSize,
+      screenSize,
+      rotation: this.rotation,
+      scrollX: this.scrollX,
+      scrollY: this.scrollY,
+      tileWidth: this.tileWidth,
+      tileHeight: this.tileHeight,
+    });
+  }
+
+  get mapOptions(): Required<MapGeometryProjectionOptions> {
+    return projectionOptions(this.scrollX, this.scrollY, this.tileWidth, this.tileHeight);
+  }
+
+  mapToView(point: MapPoint): MapPoint {
+    return this.geometry.mapSpaceToViewSpace(point, this.mapOptions);
+  }
+
+  viewToMap(point: MapPoint): MapPoint {
+    return this.geometry.viewSpaceToMapSpace(point, this.mapOptions);
+  }
+
+  tileToMap(position: number, heightProvider: MapHeightProvider = () => 0): MapPoint {
+    return this.geometry.tileSpaceToMapSpace(position, heightProvider, this.mapOptions);
+  }
+
+  mapToTile(point: MapPoint, heightProvider: MapHeightProvider = () => 0): number {
+    return this.geometry.mapSpaceToTileSpace(point, heightProvider, this.mapOptions);
+  }
+
+  tileToView(position: number, heightProvider: MapHeightProvider = () => 0): MapPoint {
+    return this.mapToView(this.tileToMap(position, heightProvider));
+  }
+
+  viewToTile(point: MapPoint, heightProvider: MapHeightProvider = () => 0): number {
+    return this.geometry.viewSpaceToTileSpace(point, heightProvider, this.mapOptions);
+  }
+
+  mapToScreen(point: MapPoint): MapPoint {
+    return this.viewToScreen(this.mapToView(point));
+  }
+
+  screenToMap(point: MapPoint): MapPoint {
+    return this.viewToMap(this.screenToView(point));
+  }
+
+  tileToScreen(position: number, heightProvider: MapHeightProvider = () => 0): MapPoint {
+    return this.viewToScreen(this.tileToView(position, heightProvider));
+  }
+
+  screenToTile(point: MapPoint, heightProvider: MapHeightProvider = () => 0): number {
+    return this.viewToTile(this.screenToView(point), heightProvider);
+  }
+
+  screenToView(point: MapPoint): MapPoint {
+    const relativeX =
+      clamp(point.x, this.displayRect.left, this.displayRect.right) - this.displayRect.left;
+    const relativeY =
+      clamp(point.y, this.displayRect.top, this.displayRect.bottom) - this.displayRect.top;
+    const rotated = this.rotateScreenRelativeToView(relativeX, relativeY);
+
+    return {
+      x: Math.round(this.sizeFactorX * rotated.x),
+      y: Math.round(this.sizeFactorY * rotated.y),
+    };
+  }
+
+  viewToScreen(point: MapPoint): MapPoint {
+    const rotated = {
+      x: point.x / this.sizeFactorX,
+      y: point.y / this.sizeFactorY,
+    };
+    const relative = this.rotateViewToScreenRelative(rotated.x, rotated.y);
+
+    return {
+      x: this.displayRect.left + relative.x,
+      y: this.displayRect.top + relative.y,
+    };
+  }
+
+  private rotateScreenRelativeToView(x: number, y: number): MapPoint {
+    switch (this.rotation) {
+      case "None":
+        return { x, y };
+      case "Deg90":
+        return { x: y, y: this.displayRect.width - x };
+      case "Deg180":
+        return { x: this.displayRect.width - x, y: this.displayRect.height - y };
+      case "Deg270":
+        return { x: this.displayRect.height - y, y: x };
+    }
+  }
+
+  private rotateViewToScreenRelative(x: number, y: number): MapPoint {
+    switch (this.rotation) {
+      case "None":
+        return { x, y };
+      case "Deg90":
+        return { x: this.displayRect.width - y, y: x };
+      case "Deg180":
+        return { x: this.displayRect.width - x, y: this.displayRect.height - y };
+      case "Deg270":
+        return { x: y, y: this.displayRect.height - x };
+    }
   }
 }
 

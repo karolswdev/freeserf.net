@@ -65,6 +65,29 @@ are present because the captured `MapSpaceToTileSpace()` search needs the
 center tile plus the first ring. The full 295-entry spiral search belongs to a
 later state/pathfinding story if a fixture requires it.
 
+## Projection Transform Policy
+
+`MapProjectionTransform` is the shared coordinate conversion surface for
+renderer and input code. It composes the map/view helpers above with a
+browser-neutral virtual screen transform inspired by
+`Freeserf.Core/Rendering.txt` and `FreeserfNet/GameView.cs`:
+
+- render code works in a virtual view size independent of the real browser
+  viewport;
+- real screen coordinates are clipped to the active display rectangle before
+  becoming view coordinates;
+- letterboxing preserves the virtual aspect ratio and exposes the active
+  `displayRect`;
+- `resize(screenSize)` returns an equivalent transform for a new viewport;
+- map, tile, view, and screen conversions are available without DOM, Canvas,
+  WebGL, CSS, storage, desktop, or `.NET` dependencies.
+
+The implementation is fixture-backed by
+`tests/ci/engine-projection-transform.test.mjs`. Tests cover letterboxed
+screen-to-view conversion, quarter-turn rotation, resize behavior, map-to-screen
+projection, screen-to-map conversion, and screen-to-tile lookup through the same
+synthetic height fixture used by `MapGeometry`.
+
 ## State And Tick Policy
 
 `SerfboundGameState` is the first deterministic state container. It mirrors the
