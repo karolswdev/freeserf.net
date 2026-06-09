@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 2
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-0-03, SB-1-04
 - **Unblocks:** SB-2-02, SB-2-03, SB-2-04, SB-3-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -23,12 +23,12 @@ layout and dependencies.
 
 ## Acceptance criteria
 
-- [ ] A browser workspace exists under the chosen repo path.
-- [ ] `package.json` scripts or equivalent commands build the workspace.
-- [ ] Product dependencies contain no .NET, desktop wrapper, or native launcher
+- [x] A browser workspace exists under the chosen repo path.
+- [x] `package.json` scripts or equivalent commands build the workspace.
+- [x] Product dependencies contain no .NET, desktop wrapper, or native launcher
   runtime.
-- [ ] Workspace docs point back to the Serfbound PMO roadmap.
-- [ ] The scaffold has explicit package boundaries for app, engine, assets, and
+- [x] Workspace docs point back to the Serfbound PMO roadmap.
+- [x] The scaffold has explicit package boundaries for app, engine, assets, and
   tests or documents a simpler starting layout.
 
 ## Test plan
@@ -41,5 +41,7 @@ layout and dependencies.
 
 ## Notes / open questions
 
-The scaffold should be minimal. Tooling complexity must justify itself by
-making oracle consumption and browser tests easier.
+Shipped `serfbound/` as an npm workspace using nvm Node `22.21.0`, TypeScript
+project references, and packages for app, engine, assets, and test-support.
+Homebrew Node remains broken, so `.nvmrc` and workspace docs define the working
+toolchain path for now.

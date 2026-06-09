@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-2-browser-foundation](./phase-2-browser-foundation/current-phase-status.md)
-**Status:** Phase 0 and Phase 1 complete; Phase 2 ready.
+**Status:** Phase 0 and Phase 1 complete; Phase 2 in progress.
 
 ## Vision
 
@@ -78,7 +78,7 @@ and either prove the new behavior intentionally or defer the decision.
 |---|---|---|---|
 | 0 | Prove the rewrite shape before implementation starts | complete | [phase-0-setup](./phase-0-setup/) |
 | 1 | Capture trustworthy reference behavior before rewriting it | complete | [phase-1-reference-oracle](./phase-1-reference-oracle/) |
-| 2 | Establish the pure-browser workspace, runtime, and CI spine | ready | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
+| 2 | Establish the pure-browser workspace, runtime, and CI spine | in-progress | [phase-2-browser-foundation](./phase-2-browser-foundation/) |
 | 3 | Port deterministic simulation primitives with parity evidence | planning | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | planning | [phase-4-data-assets](./phase-4-data-assets/) |
 | 5 | Build the map renderer, projection model, and visual asset path | planning | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
@@ -154,6 +154,8 @@ For Serfbound specifically, every implementation story must identify:
 - **Current CI-safe reference fixtures:** `rng-fixed-seed-sequence.json` and
   `map-geometry-facts.json` live under
   `pm/roadmap/serfbound/reference-fixtures/ci/`.
+- **Current browser workspace:** `serfbound/` is an npm/TypeScript workspace
+  with app, engine, assets, and test-support package boundaries.
 
 ## Glossary
 

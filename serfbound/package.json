@@ -1,0 +1,22 @@
+{
+  "name": "serfbound-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "npm@11.6.2",
+  "engines": {
+    "node": ">=22 <23",
+    "npm": ">=11 <12"
+  },
+  "scripts": {
+    "build": "tsc -b packages/engine packages/assets packages/test-support packages/app",
+    "clean": "tsc -b --clean packages/engine packages/assets packages/test-support packages/app",
+    "check:boundaries": "node scripts/check-boundaries.mjs"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

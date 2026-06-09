@@ -1,0 +1,16 @@
+{
+  "name": "@serfbound/app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@serfbound/assets": "0.0.0",
+    "@serfbound/engine": "0.0.0",
+    "@serfbound/test-support": "0.0.0"
+  }
+}

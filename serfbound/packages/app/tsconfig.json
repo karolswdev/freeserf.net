@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
+  },
+  "references": [
+    { "path": "../engine" },
+    { "path": "../assets" },
+    { "path": "../test-support" }
+  ],
+  "include": ["src/**/*.ts"]
+}

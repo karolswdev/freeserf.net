@@ -31,7 +31,7 @@ artifacts, or manual verification notes.
 |---|---|---|---|
 | 0 | Rewrite discovery is credible | Roadmap, source inventory, runtime decision, parity design, asset boundary, and phase plan exist | Complete |
 | 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | Complete |
-| 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | Ready |
+| 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | In progress; workspace scaffold builds |
 | 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | Not started |
 | 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Not started |
 | 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Not started |
@@ -78,5 +78,6 @@ all phases have status files and all referenced Phase 1 through Phase 9 story
 files exist. Phase 0 is complete and documented in
 `pm/roadmap/serfbound/phase-0-setup/final-summary.md`. Phase 1 is complete and
 documented in `pm/roadmap/serfbound/phase-1-reference-oracle/final-summary.md`.
-The product is not complete. Phase 2 is ready to start with SB-2-01, and the
-first implementation blocker is the broken local browser toolchain.
+The product is not complete. Phase 2 has started with SB-2-01's TypeScript npm
+workspace scaffold. The next gap is SB-2-02: a CI-safe test spine that consumes
+Phase 1 fixtures without local assets.

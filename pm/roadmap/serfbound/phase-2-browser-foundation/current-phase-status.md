@@ -37,18 +37,18 @@ package layout, CI shape, runtime boundaries, and deployment skeleton.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-2-01 | Scaffold pure-browser workspace | ready | story-01-scaffold-browser-workspace.md | — |
+| SB-2-01 | Scaffold pure-browser workspace | done | story-01-scaffold-browser-workspace.md | evidence-story-01.md |
 | SB-2-02 | Add CI-safe test spine | backlog | story-02-ci-safe-test-spine.md | — |
 | SB-2-03 | Define runtime module boundaries | backlog | story-03-runtime-module-boundaries.md | — |
 | SB-2-04 | Prove static browser app shell | backlog | story-04-static-browser-shell.md | — |
 
 ## Where we are
 
-Phase 2 is ready. Phase 0 selected the TypeScript-first browser runtime, and
-Phase 1 completed the oracle target list, CI-safe fixtures, local/manual
-metadata output, and fixture contract. The next responsible move is SB-2-01:
-scaffold the pure-browser workspace and repair or replace the broken local
-Node/npm toolchain.
+Phase 2 has started. SB-2-01 created the `serfbound/` TypeScript npm workspace
+with app, engine, assets, and test-support package boundaries. The workspace
+builds with nvm Node `22.21.0`, while Homebrew Node/npm remain broken. The next
+responsible move is SB-2-02: add a CI-safe test spine that validates and
+consumes at least one Phase 1 fixture without `serfbound-local-data/`.
 
 ## Active risks
 
@@ -63,10 +63,18 @@ Node/npm toolchain.
 - 2026-06-09 — Start Phase 2 after Phase 1 final audit — use Phase 1 fixtures
   and `oracle-fixture-contract.md` as test-spine inputs; SB-2-01 is the first
   ready story.
+- 2026-06-09 — Use npm workspaces under `serfbound/` with packages
+  `@serfbound/app`, `@serfbound/engine`, `@serfbound/assets`, and
+  `@serfbound/test-support` — this keeps the browser runtime separate from the
+  existing C# reference tree — SB-2-01.
+- 2026-06-09 — Use nvm Node `22.21.0` for Phase 2 commands because Homebrew
+  Node `25.9.0` fails to load `libllhttp.9.3.dylib`; `.nvmrc` records the
+  working local toolchain — SB-2-01.
 
 ## Decisions deferred
 
 - Monorepo package names — resolve during SB-2-01 — default to names under
   `serfbound/*` until publishability matters.
-- Local browser toolchain repair — resolve during SB-2-01 — Homebrew `node` and
-  `npm` currently fail to load `libllhttp.9.3.dylib`.
+- Whether to repair Homebrew Node or keep using nvm Node — resolve before Phase
+  2 final audit. SB-2-01 proves the workspace with nvm, but Homebrew `node` and
+  `npm` still fail to load `libllhttp.9.3.dylib`.
