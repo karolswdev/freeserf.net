@@ -44,6 +44,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
   of ignored local assets available for verification.
 - `pm/roadmap/serfbound/adoption/phase-gate-verification-matrix.md` - proof
   matrix for what "tested and end-to-end proven" requires across phases.
+- `pm/roadmap/serfbound/adoption/reference-architecture-inventory.md` -
+  source-grounded inventory mapping `freeserf.net` subsystems to browser rewrite
+  responsibilities.
 
 If a phase disagrees with source canon, the phase must record the disagreement
 and either prove the new behavior intentionally or defer the decision.

@@ -26,7 +26,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
   phases with explicit goals.
 - [ ] `pm/roadmap/serfbound/adoption/session-intake.md` captures the user
   direction, constraints, and open questions.
-- [ ] A source-inventory artifact maps `Freeserf.Core`, `Freeserf.Renderer`,
+- [x] A source-inventory artifact maps `Freeserf.Core`, `Freeserf.Renderer`,
   `Freeserf.Audio`, `Freeserf.Network`, `FreeserfNet`, and data-file loading to
   browser rewrite concerns.
 - [ ] A runtime architecture decision records TypeScript-first, Rust/WASM-first,
@@ -48,7 +48,7 @@ no final .NET code, no desktop deliverable, and no native launcher.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-0-01 | Name and charter Serfbound | done | [story-01-name-and-charter](./story-01-name-and-charter.md) | [evidence-story-01](./evidence-story-01.md) |
-| SB-0-02 | Inventory reference architecture | backlog | [story-02-reference-architecture-inventory](./story-02-reference-architecture-inventory.md) | — |
+| SB-0-02 | Inventory reference architecture | done | [story-02-reference-architecture-inventory](./story-02-reference-architecture-inventory.md) | [evidence-story-02](./evidence-story-02.md) |
 | SB-0-03 | Decide browser runtime strategy | backlog | [story-03-browser-runtime-decision](./story-03-browser-runtime-decision.md) | — |
 | SB-0-04 | Design deterministic parity harness | backlog | [story-04-parity-harness-design](./story-04-parity-harness-design.md) | — |
 | SB-0-05 | Define asset and legal boundary | backlog | [story-05-asset-and-legal-boundary](./story-05-asset-and-legal-boundary.md) | — |
@@ -56,16 +56,13 @@ no final .NET code, no desktop deliverable, and no native launcher.
 ## Where we are
 
 Delivery Workbench has been cloned and installed into `freeserf.net`, and the
-rewrite track is named Serfbound. The project is currently a planning scaffold:
-no web runtime implementation has been chosen yet. User-owned English DOS files
-are available locally under ignored `serfbound-local-data/sources/`, including
-`SPAU.PA`, so data-import phases can plan against a real local source. The
-roadmap has been tightened into proof gates so implementation cannot skip from
-"we like the idea" to "we are writing engine code" without oracle, workspace,
-data, rendering, UI, and browser-hardening evidence. The next responsible move
-is SB-0-02: inventory the reference implementation by subsystem and mark which
-parts become engine logic, browser adapters, temporary oracle code, or dropped
-desktop-only behavior.
+rewrite track is named Serfbound. SB-0-02 shipped the source-grounded reference
+architecture inventory, including browser fates, desktop assumptions, and first
+oracle candidates. No web runtime implementation has been chosen yet. User-owned
+English DOS files are available locally under ignored `serfbound-local-data/`,
+including `SPAU.PA`, so data-import phases can plan against a real local source.
+The next responsible move is SB-0-03: decide the browser runtime strategy using
+the inventory, pure-browser constraints, and Phase 1 oracle needs.
 
 ## Active risks
 
@@ -98,6 +95,10 @@ desktop-only behavior.
 - 2026-06-09 — Split the roadmap into stricter delivery gates — the previous
   five-phase plan hid too much risk between discovery, engine work, rendering,
   and release — user concern plus roadmap review.
+- 2026-06-09 — Map `freeserf.net` subsystems to Serfbound browser fates before
+  choosing runtime — prevents runtime/tooling decisions from ignoring source
+  coupling in game, data, renderer, audio, network, and desktop shell code —
+  SB-0-02 source inventory.
 
 ## Decisions deferred
 

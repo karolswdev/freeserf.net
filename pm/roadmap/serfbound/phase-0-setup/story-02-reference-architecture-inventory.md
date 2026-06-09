@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 0
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-0-01
 - **Unblocks:** SB-0-03, SB-0-04, SB-1-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -26,15 +26,15 @@ oracles, and which are desktop-only behavior.
 
 ## Acceptance criteria
 
-- [ ] Add `pm/roadmap/serfbound/adoption/reference-architecture-inventory.md`.
-- [ ] The inventory has a table with columns: subsystem, source files,
+- [x] Add `pm/roadmap/serfbound/adoption/reference-architecture-inventory.md`.
+- [x] The inventory has a table with columns: subsystem, source files,
   current responsibility, browser fate, first parity evidence.
-- [ ] The inventory explicitly covers `Game.cs`, `Map.cs`, `MapGenerator.cs`,
+- [x] The inventory explicitly covers `Game.cs`, `Map.cs`, `MapGenerator.cs`,
   `Savegame.cs`, `GameState.cs`, `DataSourceDos.cs`, `DataSourceAmiga.cs`,
   `Render/*`, `Freeserf.Renderer/*`, `Freeserf.Audio/*`, and `FreeserfNet/*`.
-- [ ] The inventory identifies at least five desktop assumptions that need
+- [x] The inventory identifies at least five desktop assumptions that need
   browser replacements.
-- [ ] The inventory marks at least three deterministic outputs suitable for
+- [x] The inventory marks at least three deterministic outputs suitable for
   parity capture in SB-0-04.
 
 ## Test plan
@@ -46,5 +46,5 @@ oracles, and which are desktop-only behavior.
 
 ## Notes / open questions
 
-Do not infer behavior from class names alone. If a subsystem is unclear, cite
-the exact unknown and make it a Phase 0 question.
+The inventory intentionally leaves runtime choice, first oracle target ordering,
+and browser implementation strategy to SB-0-03 and SB-0-04.
