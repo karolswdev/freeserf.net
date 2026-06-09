@@ -27,7 +27,7 @@ oracle fixtures.
 - [x] Data-free parity tests pass against at least one Phase 1 oracle fixture.
 - [x] Numeric determinism and wrapping/overflow behavior are documented and
   tested.
-- [ ] Map/coordinate primitives have focused unit tests.
+- [x] Map/coordinate primitives have focused unit tests.
 - [ ] State/tick skeleton has at least one deterministic round-trip or snapshot
   comparison.
 - [ ] Known divergences from `Freeserf.Core` are documented with rationale.
@@ -37,16 +37,19 @@ oracle fixtures.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-3-01 | Port deterministic numeric/random rules | done | story-01-numeric-random-rules.md | evidence-story-01.md |
-| SB-3-02 | Port map geometry primitive | ready | story-02-map-geometry-primitive.md | — |
-| SB-3-03 | Add state and tick skeleton | backlog | story-03-state-tick-skeleton.md | — |
+| SB-3-02 | Port map geometry primitive | done | story-02-map-geometry-primitive.md | evidence-story-02.md |
+| SB-3-03 | Add state and tick skeleton | ready | story-03-state-tick-skeleton.md | — |
 | SB-3-04 | Prove first simulation parity | backlog | story-04-first-simulation-parity.md | — |
 
 ## Where we are
 
 Phase 3 is in progress. SB-3-01 ported the deterministic numeric helpers and
 `FreeserfRandom` into `@serfbound/engine`, with tests matching every case in
-the Phase 1 RNG fixture. The next responsible move is SB-3-02: port the map
-geometry primitive against `map-geometry-facts.json`.
+the Phase 1 RNG fixture. SB-3-02 ported direction, wrapped map position,
+movement, distance, and pure projection primitives against
+`map-geometry-facts.json`. The next responsible move is SB-3-03: add the
+minimal state/tick skeleton that can consume the deterministic primitives
+without DOM/browser APIs.
 
 ## Active risks
 
@@ -64,6 +67,10 @@ geometry primitive against `map-geometry-facts.json`.
 - 2026-06-09 — Preserve `Freeserf.Core/Random.cs` behavior with explicit
   TypeScript fixed-width helpers and fixture-backed tests; no intentional RNG
   behavior divergences — SB-3-01.
+- 2026-06-09 — Preserve the captured `Freeserf.Core/MapGeometry.cs` and
+  `CoordinateSpace.cs` geometry/projection subset in pure TypeScript; no
+  intentional fixture divergences, with full spiral/pathfinding deferred until
+  a later fixture requires it — SB-3-02.
 
 ## Decisions deferred
 

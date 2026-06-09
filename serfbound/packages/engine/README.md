@@ -38,3 +38,29 @@ Known fixture note: the operator-`^` fixture's `constructor.values` metadata is
 not used as the initial state because the Phase 1 capture recorded that field
 from a mutable list. Tests reconstruct the initial state from `leftState` and
 `rightState`, then compare the fixture's `initialState` and every step.
+
+## Map Geometry Policy
+
+`MapGeometry` mirrors the captured Phase 1 behavior of
+`Freeserf.Core/MapGeometry.cs` for:
+
+- `Direction`, `DirectionExtensions.Turn()`, and `Reverse()`;
+- default clockwise/counter-clockwise direction cycles and
+  `DirectionCycleCW.CreateWithout()`;
+- `MapGeometry` dimensions derived from map size;
+- `Position()`, `PositionColumn()`, `PositionRow()`, `PositionAdd()`, movement,
+  direction-to-neighbor, and shortest signed `DistanceX()` / `DistanceY()`;
+- pure projection helpers corresponding to the captured subset of
+  `CoordinateSpace.TileSpaceToMapSpace()`, `MapSpaceToViewSpace()`,
+  `ViewSpaceToMapSpace()`, `MapSpaceToTileSpace()`, and
+  `ViewSpaceToTileSpace()`.
+
+The implementation is fixture-backed by
+`pm/roadmap/serfbound/reference-fixtures/ci/map-geometry-facts.json`, including
+sizes 3 and 4, edge wraparound, direction offsets, distance samples, and
+projection samples using the fixture's synthetic height model.
+
+Known primitive boundary: only the first seven `PositionAddSpirally()` offsets
+are present because the captured `MapSpaceToTileSpace()` search needs the
+center tile plus the first ring. The full 295-entry spiral search belongs to a
+later state/pathfinding story if a fixture requires it.

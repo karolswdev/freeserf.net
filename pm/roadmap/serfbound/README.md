@@ -167,9 +167,10 @@ For Serfbound specifically, every implementation story must identify:
   `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
 - **Current static shell proof:**
   `pm/roadmap/serfbound/phase-2-browser-foundation/artifacts/story-04-app-shell-desktop.png`.
-- **Current engine parity primitive:** `@serfbound/engine` implements
-  `FreeserfRandom` and fixed-width numeric helpers matched against
-  `rng-fixed-seed-sequence.json`.
+- **Current engine parity primitives:** `@serfbound/engine` implements
+  fixed-width numeric helpers, `FreeserfRandom`, and `MapGeometry` direction,
+  movement, distance, and projection helpers matched against
+  `rng-fixed-seed-sequence.json` and `map-geometry-facts.json`.
 
 ## Glossary
 

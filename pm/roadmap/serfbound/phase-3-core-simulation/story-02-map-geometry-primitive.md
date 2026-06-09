@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 3
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-3-01, SB-1-02
 - **Unblocks:** SB-3-03, SB-5-02, SB-6-01
-- **Owner:** unassigned
+- **Owner:** Codex
 
 ## Problem
 
@@ -22,14 +22,14 @@ UI work will be expensive to unwind.
 
 ## Acceptance criteria
 
-- [ ] Map geometry helpers exist in the engine boundary.
-- [ ] Tests cover representative positions, edges, neighbors, and direction
+- [x] Map geometry helpers exist in the engine boundary.
+- [x] Tests cover representative positions, edges, neighbors, and direction
   logic from selected oracle targets.
-- [ ] Output matches the relevant oracle fixture or records an intentional
+- [x] Output matches the relevant oracle fixture or records an intentional
   divergence.
-- [ ] Renderer/input stories can consume the primitive without importing DOM
+- [x] Renderer/input stories can consume the primitive without importing DOM
   code into the engine.
-- [ ] Documentation links the primitive to `Freeserf.Core` source files.
+- [x] Documentation links the primitive to `Freeserf.Core` source files.
 
 ## Test plan
 
@@ -40,4 +40,14 @@ UI work will be expensive to unwind.
 
 ## Notes / open questions
 
-This story should produce a small useful slice, not a complete map subsystem.
+Shipped `MapGeometry`, direction helpers, and pure projection helpers in
+`@serfbound/engine`. Tests match every case in `map-geometry-facts.json`,
+including sizes 3 and 4, edge wraparound, neighbor movement, direction cycles,
+shortest signed distances, tile-to-map projection, map/view normalization, and
+view-to-tile lookup against the fixture's synthetic height model.
+
+There are no intentional behavior divergences from the captured fixture. The
+only boundary note is scope: the primitive includes the first seven
+`PositionAddSpirally()` offsets needed by `CoordinateSpace.MapSpaceToTileSpace()`
+fixture samples, not the full 295-entry `Map` spiral pattern used by later
+search/pathfinding code.
