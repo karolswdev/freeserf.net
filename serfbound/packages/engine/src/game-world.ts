@@ -139,6 +139,12 @@ export type WorldPlayer = {
   hasCastle: boolean;
   castlePosition: number | null;
   landArea: number;
+  // Player.UpdateKnightMorale state: morale from gold reserves vs the
+  // map's total gold, and the gold counted toward it.
+  knightMorale: number;
+  goldDeposited: number;
+  // Player settings.CastleKnightsWanted (reference default).
+  castleKnightsWanted: number;
 };
 
 export type RoadPlan = {
@@ -247,6 +253,9 @@ export class SerfboundGameWorld {
       hasCastle: false,
       castlePosition: null,
       landArea: 0,
+      knightMorale: 1024,
+      goldDeposited: 0,
+      castleKnightsWanted: 3,
     }));
     this.#spiralPositions = classicSpiralPattern.map(([x, y]) =>
       this.geometry.position(x & this.geometry.columnMask, y & this.geometry.rowMask),
@@ -1129,6 +1138,75 @@ export class SerfboundGameWorld {
     }
 
     return false;
+  }
+
+  // --- knight morale (Player.UpdateKnightMorale) --------------------------------------
+
+  // Game init: MapGoldMoraleFactor = 10 * 1024 * player count.
+  mapGoldMoraleFactor(): number {
+    return 10 * 1024 * this.players.length;
+  }
+
+  // Game.GoldTotal, condensed: unmined map gold plus gold already in the
+  // economy (ore and bars held in inventories). The reference seeds the
+  // total from the map deposit at game start and adjusts as gold is lost;
+  // recomputing keeps the same invariant without the bookkeeping.
+  goldTotal(): number {
+    let total = 0;
+    for (let position = 0; position < this.minerals.length; position += 1) {
+      if (this.minerals[position] === 1) {
+        total += this.resourceAmounts[position]!;
+      }
+    }
+
+    for (const inventory of this.inventories.values()) {
+      total += inventory.resources[13]! + inventory.resources[14]!;
+    }
+
+    for (const building of this.buildings.values()) {
+      if (militaryBuildingTypes.includes(building.type)) {
+        total += building.deliveredResources[14] ?? 0;
+      }
+    }
+
+    return total;
+  }
+
+  updateKnightMorale(playerIndex: number): void {
+    const player = this.players[playerIndex];
+    if (player === undefined) {
+      return;
+    }
+
+    let inventoryGold = 0;
+    for (const inventory of this.inventories.values()) {
+      if (inventory.player === playerIndex) {
+        inventoryGold += inventory.resources[14]!;
+      }
+    }
+
+    let militaryGold = 0;
+    for (const building of this.buildings.values()) {
+      if (building.player === playerIndex && militaryBuildingTypes.includes(building.type)) {
+        militaryGold += building.deliveredResources[14] ?? 0;
+      }
+    }
+
+    let depot = inventoryGold + militaryGold;
+    player.goldDeposited = depot;
+
+    let totalGold = this.goldTotal();
+    if (totalGold !== 0) {
+      while (totalGold > 0xffff) {
+        totalGold >>= 1;
+        depot >>= 1;
+      }
+
+      depot = Math.min(depot, totalGold - 1);
+      player.knightMorale = 1024 + Math.trunc((this.mapGoldMoraleFactor() * depot) / totalGold);
+    } else {
+      player.knightMorale = 4096;
+    }
   }
 
   // --- land ownership (Game.UpdateLandOwnership) -------------------------------------

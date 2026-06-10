@@ -1398,6 +1398,8 @@ function syncWorldState(
     delete root.dataset.serfboundWorldFlagCount;
     delete root.dataset.serfboundWorldBuildingCount;
     delete root.dataset.serfboundWorldBuildingDoneCount;
+    delete root.dataset.serfboundStockSummary;
+    delete root.dataset.serfboundMilitarySummary;
     return;
   }
 
@@ -1420,8 +1422,9 @@ function syncWorldState(
   );
   // Live economy stats: the castle stock's key lines (Phase 16's stats
   // popups render the full table from the same source).
-  const inventory = (world as { inventoryForPlayer?: (p: number) => { resources: Uint32Array } | null })
-    .inventoryForPlayer?.(0);
+  const inventory = (world as {
+    inventoryForPlayer?: (p: number) => { resources: Uint32Array; knights: number } | null;
+  }).inventoryForPlayer?.(0);
   if (inventory !== undefined && inventory !== null) {
     root.dataset.serfboundStockSummary = [
       `plank:${inventory.resources[7]}`,
@@ -1429,6 +1432,15 @@ function syncWorldState(
       `lumber:${inventory.resources[6]}`,
       `bread:${inventory.resources[5]}`,
       `steel:${inventory.resources[11]}`,
+    ].join(",");
+    const player = world.players[0] as
+      | { knightMorale?: number }
+      | undefined;
+    root.dataset.serfboundMilitarySummary = [
+      `sword:${inventory.resources[24]}`,
+      `shield:${inventory.resources[25]}`,
+      `knight:${inventory.knights}`,
+      `morale:${player?.knightMorale ?? 0}`,
     ].join(",");
   }
 

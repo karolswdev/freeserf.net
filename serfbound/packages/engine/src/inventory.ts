@@ -92,6 +92,9 @@ export type WorldInventory = {
   readonly resources: Uint32Array;
   // Generic serf pool waiting inside (professions arrive with the chains).
   genericSerfs: number;
+  // Knights waiting inside, recruited from generic serfs with weapons
+  // (the reference Inventory serf-type counts, condensed to the pool).
+  knights: number;
   // Outbound resources waiting for a free slot on the inventory flag
   // (the reference schedules these through MoveResourceOut).
   readonly pendingOut: { resource: number; destinationFlagIndex: number }[];
@@ -113,8 +116,27 @@ export function createInventory(
     // Castle serf stocking, condensed: a base crew plus one per supply level
     // (the reference seeds serfs through GameInitBox player settings).
     genericSerfs: 5 + initialSupplies,
+    knights: 0,
     pendingOut: [],
   };
+}
+
+// Inventory.PromoteSerfToKnight: a generic serf plus one sword and one
+// shield become a knight of the lowest rank.
+export function inventoryPromoteSerfToKnight(inventory: WorldInventory): boolean {
+  if (
+    inventory.genericSerfs <= 0 ||
+    (inventory.resources[resourceType.sword] ?? 0) === 0 ||
+    (inventory.resources[resourceType.shield] ?? 0) === 0
+  ) {
+    return false;
+  }
+
+  inventory.resources[resourceType.sword] = inventory.resources[resourceType.sword]! - 1;
+  inventory.resources[resourceType.shield] = inventory.resources[resourceType.shield]! - 1;
+  inventory.genericSerfs -= 1;
+  inventory.knights += 1;
+  return true;
 }
 
 export function inventoryTakeResource(inventory: WorldInventory, resource: number): boolean {

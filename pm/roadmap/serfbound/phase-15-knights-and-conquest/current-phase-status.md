@@ -1,7 +1,7 @@
 # Phase 15 — Knights and Conquest
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -29,7 +29,7 @@ outcomes parity-checked against the reference simulation.
 
 ## Exit criteria (evidence required)
 
-- [ ] Weapons/shields and gold morale supply knights per reference rules.
+- [x] Weapons/shields and gold morale supply knights per reference rules.
   (SB-15-01)
 - [ ] Military buildings occupy, set territory, and grow borders matching
   fixtures. (SB-15-02)
@@ -42,14 +42,18 @@ outcomes parity-checked against the reference simulation.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-15-01 | Arm and recruit knights | backlog | story-01-arm-and-recruit-knights.md | — |
+| SB-15-01 | Arm and recruit knights | done | story-01-arm-and-recruit-knights.md | evidence-story-01.md |
 | SB-15-02 | Military occupation and border growth | backlog | story-02-occupation-border-growth.md | — |
 | SB-15-03 | Port combat resolution with parity fixtures | backlog | story-03-combat-resolution-parity.md | — |
 | SB-15-04 | Capture, defeat, and game over | backlog | story-04-capture-defeat-game-over.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 14 closes.
+SB-15-01 is done: the weaponsmith forges swords and free shields from
+coal + steel, knight morale follows the reference gold formula, and the
+castle recruits its wanted knight stock (generic serf + sword + shield),
+all live in the browser military summary. SB-15-02 (occupation and border
+growth) is next.
 
 ## Active risks
 

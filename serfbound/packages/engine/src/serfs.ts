@@ -5,6 +5,7 @@ import {
   type WorldBuilding,
 } from "./game-world.js";
 import {
+  inventoryPromoteSerfToKnight,
   inventoryTakeResource,
   inventoryTakeSerf,
   resourceType,
@@ -40,9 +41,9 @@ export const serfState = {
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
 
 // lumberjack, stonecutter, forester, sawmill, fisher, farm, mill, baker,
-// pig farm, butcher, the four mines, both smelters, and the toolmaker
+// pig farm, butcher, the four mines, both smelters, toolmaker, weaponsmith
 const workedBuildingTypes = new Set<number>([
-  2, 4, 9, 17, 1, 12, 15, 16, 14, 13, 5, 6, 7, 8, 18, 23, 19,
+  2, 4, 9, 17, 1, 12, 15, 16, 14, 13, 5, 6, 7, 8, 18, 23, 19, 20,
 ]);
 
 // Demand routing: which completed buildings consume a product directly.
@@ -54,7 +55,7 @@ const productConsumers: Readonly<Record<number, readonly number[]>> = {
   0: [5, 6, 7, 8], // fish -> mines
   5: [5, 6, 7, 8], // bread -> mines
   2: [5, 6, 7, 8], // meat -> mines
-  12: [18, 23], // coal -> steel/gold smelters
+  12: [18, 20, 23], // coal -> steel smelter, weaponsmith, gold smelter
   10: [18], // iron ore -> steel smelter
   13: [23], // gold ore -> gold smelter
   11: [19, 20], // steel -> toolmaker, weaponsmith
@@ -262,6 +263,7 @@ export class SerfboundSerfEngine {
   update(gameTick: number): void {
     this.#sweepWorkerRequests(gameTick);
     this.#drainPendingOut();
+    this.#sweepMilitary(gameTick);
     for (const serf of [...this.serfs.values()]) {
       switch (serf.state) {
         case serfState.walking:
@@ -660,6 +662,29 @@ export class SerfboundSerfEngine {
     }
   }
 
+  #lastMoraleTick = -1;
+
+  // Military upkeep each engine pass: refresh knight morale on the stats
+  // cadence and keep the castle's knight stock recruited (Player's
+  // CastleKnightsWanted promoting generic serfs with sword + shield).
+  #sweepMilitary(gameTick: number): void {
+    if (this.#lastMoraleTick < 0 || ((gameTick - this.#lastMoraleTick) & 0xffff) >= 1024) {
+      this.#lastMoraleTick = gameTick;
+      for (const player of this.world.players) {
+        if (player.hasCastle) {
+          this.world.updateKnightMorale(player.index);
+        }
+      }
+    }
+
+    for (const inventory of this.world.inventories.values()) {
+      const wanted = this.world.players[inventory.player]?.castleKnightsWanted ?? 0;
+      while (inventory.knights < wanted && inventoryPromoteSerfToKnight(inventory)) {
+        // Promotion consumed a sword, a shield, and a generic serf.
+      }
+    }
+  }
+
   // Completed production buildings request their profession worker from the
   // castle (condensed Inventory.CallOutSerf profession dispatch).
   #sweepWorkerRequests(gameTick: number): void {
@@ -803,6 +828,28 @@ export class SerfboundSerfEngine {
           [resourceType.coal, resourceType.goldOre],
           resourceType.goldBar,
         );
+        break;
+      case buildingType.weaponSmith:
+        // HandleSerfMakingWeaponState: one coal + one steel make a sword,
+        // then a shield "for free" (the reference FreeShieldPossible flip,
+        // carried on the worker's phase since one smith works the forge).
+        if (serf.workCounter >= 500) {
+          if (serf.workPhase % 2 === 1) {
+            serf.workCounter = 0;
+            serf.workPhase += 1;
+            this.#emitProduct(building, resourceType.shield);
+          } else {
+            const coal = building.deliveredResources[resourceType.coal] ?? 0;
+            const steel = building.deliveredResources[resourceType.steel] ?? 0;
+            if (coal > 0 && steel > 0) {
+              serf.workCounter = 0;
+              serf.workPhase += 1;
+              building.deliveredResources[resourceType.coal] = coal - 1;
+              building.deliveredResources[resourceType.steel] = steel - 1;
+              this.#emitProduct(building, resourceType.sword);
+            }
+          }
+        }
         break;
       case buildingType.toolMaker:
         if (serf.workCounter >= 500) {

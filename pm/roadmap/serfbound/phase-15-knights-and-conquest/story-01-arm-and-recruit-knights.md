@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 15
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-14-05
 - **Unblocks:** SB-15-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Knights need swords and shields from the weaponsmith and morale from gold reserv
 
 ## Acceptance criteria
 
-- [ ] Weapon/shield production matches reference fixtures.
-- [ ] Gold morale computation matches Player.cs fixtures.
-- [ ] Knights recruit per reference gating (serf + sword + shield).
+- [x] Weapon/shield production matches reference fixtures.
+- [x] Gold morale computation matches Player.cs fixtures.
+- [x] Knights recruit per reference gating (serf + sword + shield).
 
 ## Test plan
 

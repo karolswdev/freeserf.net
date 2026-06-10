@@ -145,6 +145,13 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     /^plank:\d+,stone:\d+,lumber:\d+,bread:\d+,steel:\d+$/,
   );
 
+  // Military stats ride the same sync: the castle recruits knights from its
+  // preset weapons, so the knight stock and morale are live nonzero values.
+  const militarySummary = await page
+    .locator("#app")
+    .getAttribute("data-serfbound-military-summary");
+  expect(militarySummary).toMatch(/^sword:\d+,shield:\d+,knight:[1-9]\d*,morale:\d+$/);
+
   // Connect the lumberjack's flag so builders and materials can reach it;
   // construction is serf-driven and completes only over a connected road.
   let lumberjackRoadBuilt = false;
