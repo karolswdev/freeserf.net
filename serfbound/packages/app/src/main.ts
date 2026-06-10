@@ -54,6 +54,15 @@ import {
   type DecodedRenderAssets,
   type PointerMapInteraction,
 } from "./render-layer-scene.js";
+import {
+  panelBarRect,
+  panelButtonAt,
+  panelButtonSprites,
+  pointInPanelBar,
+  type PanelBuildPossibility,
+} from "./panel-bar.js";
+
+export * from "./panel-bar.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -151,6 +160,7 @@ type PointerMapInteractionHandlers = {
   readonly commandRouter: () => SerfboundCommandRouter;
   readonly landscapeContext: () => PointerLandscapeContext | undefined;
   readonly worldCastlePending: () => boolean;
+  readonly panelClick: (interaction: PointerMapInteraction) => boolean;
   readonly roadModeClick: (interaction: PointerMapInteraction) => boolean;
   readonly onWorldChanged: () => void;
   readonly onSelection: (interaction: PointerMapInteraction) => void;
@@ -315,7 +325,45 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined;
   let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
+  // The authentic panel bar's build slot mirrors what the selected tile
+  // allows (reference Interface.BuildPossibility, condensed).
+  const computeBuildPossibility = (): PanelBuildPossibility => {
+    const world = currentWorld;
+    const tile = selectedInteraction?.tile;
+    if (world === undefined || tile === undefined || root.dataset.serfboundGameState !== "running") {
+      return "none";
+    }
+
+    const position = tile.position;
+    if (world.players[0]?.hasCastle === false) {
+      return world.canBuildCastle(position, 0) ? "castle" : "none";
+    }
+
+    if (world.canBuildBuilding(position, 17, 0)) return "large";
+    if (world.canBuildBuilding(position, 2, 0)) return "small";
+    if (world.canBuildBuilding(position, 6, 0)) return "mine";
+    if (world.canBuildFlag(position, 0)) return "flag";
+    return "none";
+  };
+  const computePanelButtons = (): number[] | undefined => {
+    if (currentWorld === undefined || currentLandscapeAssets === undefined) {
+      return undefined;
+    }
+
+    return panelButtonSprites({
+      buildPossibility: computeBuildPossibility(),
+      roadMode: root.dataset.serfboundRoadMode !== "idle" &&
+        root.dataset.serfboundRoadMode !== undefined,
+    });
+  };
   const renderCurrentScene = () => {
+    const panelButtons = computePanelButtons();
+    if (panelButtons === undefined) {
+      delete root.dataset.serfboundPanelButtons;
+    } else {
+      root.dataset.serfboundPanelButtons = panelButtons.join(",");
+    }
+
     renderScene(
       root,
       currentTypedAssetCatalog,
@@ -330,6 +378,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentScroll,
       currentTick,
       currentBuiltStructures,
+      panelButtons,
     );
   };
   const applyScroll = (columnDelta: number, rowDelta: number) => {
@@ -466,6 +515,59 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentWorld !== undefined &&
       root.dataset.serfboundGameState === "running" &&
       currentWorld.players[0]?.hasCastle === false,
+    panelClick(interaction) {
+      if (currentWorld === undefined || currentLandscapeAssets === undefined) {
+        return false;
+      }
+
+      const rect = panelBarRect({ width: canvas.width, height: canvas.height }, 2);
+      if (!pointInPanelBar(rect, interaction.screen.x, interaction.screen.y)) {
+        return false;
+      }
+
+      const slot = panelButtonAt(rect, 2, interaction.screen.x, interaction.screen.y);
+      if (slot === 0) {
+        // Build: perform what the slot's sprite shows for the selected
+        // tile (castle/flag now; the build popup takes over in SB-16-03).
+        const possibility = computeBuildPossibility();
+        const tile = selectedInteraction?.tile;
+        if (tile !== undefined && possibility === "castle") {
+          const result = commandRouter.dispatch({
+            type: "game.build-castle",
+            source: "pointer",
+            tile,
+          });
+          applyCommandResultState(root, result);
+          syncWorldState(root, currentWorld);
+        } else if (tile !== undefined && possibility !== "none") {
+          const result = commandRouter.dispatch({
+            type: "game.build-flag",
+            source: "pointer",
+            tile,
+          });
+          applyCommandResultState(root, result);
+          syncWorldState(root, currentWorld);
+        }
+      } else if (slot === 1) {
+        // Road mode toggle, same semantics as the shell road button.
+        if (root.dataset.serfboundRoadMode !== "idle") {
+          setRoadMode("idle");
+          getCommandStateElement(root).textContent = "Road mode ended";
+          getCommandDetailElement(root).textContent =
+            "Select a tile to inspect available actions.";
+        } else {
+          setRoadMode("awaiting-start");
+          getCommandStateElement(root).textContent = "Build road";
+          getCommandDetailElement(root).textContent = "Select the starting flag.";
+        }
+      } else if (slot !== null) {
+        // Map/stats/settings popups land with SB-16-03/04.
+        root.dataset.serfboundLastEffect = "panel-popup-pending";
+      }
+
+      renderCurrentScene();
+      return true;
+    },
     roadModeClick(interaction) {
       const mode = root.dataset.serfboundRoadMode;
       if (currentWorld === undefined || mode === "idle" || mode === undefined) {
@@ -1222,6 +1324,7 @@ function renderScene(
   scroll: MapScroll,
   tick: number,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
+  panelButtons?: readonly number[],
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
@@ -1239,6 +1342,7 @@ function renderScene(
           builtStructures,
           ...(world === undefined ? {} : { world }),
           ...(serfs === undefined ? {} : { serfs }),
+          ...(panelButtons === undefined ? {} : { panel: { buttons: panelButtons } }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
@@ -1298,6 +1402,12 @@ function attachPointerMapInteraction(
 
   canvas.addEventListener("pointerdown", (event) => {
     const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
+
+    // The panel bar sits above the map: its clicks never reach the world.
+    if (handlers.panelClick(interaction)) {
+      return;
+    }
+
     applyPointerHoverState(root, interaction, event.pointerType);
     applyPointerSelectionState(root, interaction);
 

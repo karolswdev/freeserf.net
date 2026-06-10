@@ -201,8 +201,11 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
   for (let frame = 0; frame < 4; frame += 1) {
     entries.push({ index: 660 + frame, bytes: solidSprite(16, 144, 80 + frame * 5) });
   }
-  for (let button = 0; button < 5; button += 1) {
-    entries.push({ index: 1750 + button, bytes: solidSprite(32, 32, 160 + button * 4) });
+  for (let button = 0; button < 26; button += 1) {
+    entries.push({ index: 1750 + button, bytes: solidSprite(32, 32, 160 + button * 3) });
+  }
+  for (let piece = 0; piece < 26; piece += 1) {
+    entries.push({ index: 1780 + piece, bytes: solidSprite(8, 40, 90 + piece * 2) });
   }
   entries.push({
     index: 3999,

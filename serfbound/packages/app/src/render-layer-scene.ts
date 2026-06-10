@@ -78,6 +78,7 @@ export type DecodedRenderAssets = {
   readonly rawIcons: ReadonlyMap<number, DecodedDosSprite>;
   readonly rawPanelButtons: ReadonlyMap<number, DecodedDosSprite>;
   readonly rawPopupFrames: readonly (DecodedDosSprite | null)[];
+  readonly rawBottomFrames: readonly (DecodedDosSprite | null)[];
   readonly rawCursor: DecodedDosSprite | null;
 };
 
@@ -681,6 +682,11 @@ export function buildDecodedRenderAssets(
     rawPopupFrames.push(decodeUiSafely(() => decodeUiFrame(archive, "framePopup", frame)));
   }
 
+  const rawBottomFrames: (DecodedDosSprite | null)[] = [];
+  for (let frame = 0; frame < 26; frame += 1) {
+    rawBottomFrames.push(decodeUiSafely(() => decodeUiFrame(archive, "frameBottom", frame)));
+  }
+
   const rawCursor = decodeUiSafely(() => decodeUiCursor(archive));
 
   return {
@@ -704,6 +710,7 @@ export function buildDecodedRenderAssets(
     rawIcons,
     rawPanelButtons,
     rawPopupFrames,
+    rawBottomFrames,
     rawCursor,
   };
 }

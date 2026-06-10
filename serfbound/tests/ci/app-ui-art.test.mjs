@@ -63,8 +63,9 @@ test("decoded UI art lands in the render assets and the landscape atlas", () => 
   assert.notEqual(decoded, null);
   assert.equal(decoded.rawFontGlyphs.filter((glyph) => glyph !== null).length, 44);
   assert.equal(decoded.rawIcons.size, 20);
-  assert.equal(decoded.rawPanelButtons.size, 5);
+  assert.equal(decoded.rawPanelButtons.size, 26);
   assert.equal(decoded.rawPopupFrames.filter((frame) => frame !== null).length, 4);
+  assert.equal(decoded.rawBottomFrames.filter((frame) => frame !== null).length, 26);
   assert.notEqual(decoded.rawCursor, null);
 
   const started = startSerfboundLocalGame({ data: dataSource });
@@ -106,7 +107,6 @@ test("the UI overlay renders text, icon, frame, and cursor at 2x over the world"
     "decoded font text on screen",
   );
   assert.equal(uiSprites.some((sprite) => sprite.key === "uii:0"), true, "icon on screen");
-  assert.equal(uiSprites.some((sprite) => sprite.key === "uifr:0"), true, "frame on screen");
   assert.equal(uiSprites.some((sprite) => sprite.key === "uic"), true, "cursor on screen");
 
   // The ui layer draws last: every ui sprite sorts after every map sprite.

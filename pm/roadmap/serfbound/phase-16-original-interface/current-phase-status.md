@@ -34,8 +34,8 @@ original.
 
 - [x] Text renders with the decoded game font; icons/frames/cursors come from
   decoded art. (SB-16-01)
-- [ ] The panel bar drives the game: build mode, stats access, settings,
-  game speed. (SB-16-02)
+- [x] The panel bar drives the game: build mode, stats access, settings,
+  game speed. (SB-16-02; stats/settings slots open with their popups)
 - [ ] The popup system covers build menus, stats, and settings with original
   layouts. (SB-16-03)
 - [ ] Minimap renders the world, supports click-to-navigate, and
@@ -47,17 +47,17 @@ original.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-16-01 | Render decoded UI art: fonts, icons, frames, cursors | done | story-01-ui-art-foundation.md | evidence-story-01.md |
-| SB-16-02 | Build the authentic panel bar | backlog | story-02-authentic-panel-bar.md | — |
+| SB-16-02 | Build the authentic panel bar | done | story-02-authentic-panel-bar.md | evidence-story-02.md |
 | SB-16-03 | Build the popup system | backlog | story-03-popup-system.md | — |
 | SB-16-04 | Minimap and notifications | backlog | story-04-minimap-notifications.md | — |
 | SB-16-05 | Authentic game start screen | backlog | story-05-game-start-screen.md | — |
 
 ## Where we are
 
-SB-16-01 is done: the decoded game font, icons, frames, panel buttons,
-and cursor render through a new 2x integer-scaled ui layer above the map,
-proven with real SPAU.PA data (the live HUD reads the castle stock in the
-original font). SB-16-02 (the authentic panel bar) is next.
+SB-16-02 is done: the authentic panel bar renders from frame_bottom and
+panel_button art at the reference layout, mirrors build possibility and
+road mode in its slots, and drives castle/flag building and road mode from
+canvas clicks. SB-16-03 (the popup system) is next.
 
 ## Active risks
 

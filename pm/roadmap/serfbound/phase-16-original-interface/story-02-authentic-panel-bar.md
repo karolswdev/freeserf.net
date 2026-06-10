@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 16
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-16-01
 - **Unblocks:** SB-16-03
 - **Owner:** unassigned
@@ -18,9 +18,10 @@ The panel bar is mission control - build button, stats, map, settings, game spee
 
 ## Acceptance criteria
 
-- [ ] Panel bar renders authentically and drives build/road modes.
-- [ ] Button states match reference behavior.
-- [ ] Temporary panel functions migrate or are explicitly retired.
+- [x] Panel bar renders authentically and drives build/road modes.
+- [x] Button states match reference behavior.
+- [x] Temporary panel functions migrate or are explicitly retired (road/flag
+  driven by the bar; retirement completes with SB-16-05 — recorded).
 
 ## Test plan
 

@@ -152,6 +152,35 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     .getAttribute("data-serfbound-military-summary");
   expect(militarySummary).toMatch(/^sword:\d+,shield:\d+,knight:[1-9]\d*,morale:\d+$/);
 
+  // The authentic panel bar renders and drives road mode: clicking the
+  // road slot toggles it on and off (reference button behavior).
+  const panelButtons = await page
+    .locator("#app")
+    .getAttribute("data-serfbound-panel-buttons");
+  expect(panelButtons).toMatch(/^\d+,8,9,11,13$/);
+  const canvasBox = await canvas.boundingBox();
+  if (canvasBox === null) {
+    throw new Error("canvas has no bounding box");
+  }
+
+  const panelX = Math.max(0, Math.floor((canvasBox.width - 640) / 2));
+  const panelY = Math.max(0, canvasBox.height - 80);
+  const roadSlot = {
+    x: panelX + (64 + 48) * 2 + 32,
+    y: panelY + 4 * 2 + 32,
+  };
+  await canvas.click({ position: roadSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-road-mode",
+    "awaiting-start",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-panel-buttons",
+    /^\d+,25,9,11,13$/,
+  );
+  await canvas.click({ position: roadSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-road-mode", "idle");
+
   // Connect the lumberjack's flag so builders and materials can reach it;
   // construction is serf-driven and completes only over a connected road.
   let lumberjackRoadBuilt = false;

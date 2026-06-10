@@ -1,3 +1,4 @@
+import { panelBackgroundLayout, panelBarRect } from "./panel-bar.js";
 import {
   buildSpriteAtlas,
   composeMaskedTile,
@@ -364,6 +365,11 @@ export function buildLandscapeRenderAssets(
       sprites[`uifr:${index}`] = stripOffsets(frame);
     }
   });
+  decodedAssets.rawBottomFrames.forEach((frame, index) => {
+    if (frame !== null) {
+      sprites[`uifb:${index}`] = stripOffsets(frame);
+    }
+  });
   if (decodedAssets.rawCursor !== null) {
     sprites["uic"] = stripOffsets(decodedAssets.rawCursor);
   }
@@ -472,6 +478,9 @@ export type LandscapeSceneOptions = {
     readonly animation: number;
     readonly counter: number;
   }[];
+  // The authentic panel bar: the five slots' panel_button sprite ids
+  // (SB-16-02; computed from game state by the shell).
+  readonly panel?: { readonly buttons: readonly number[] };
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -768,11 +777,29 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
     }
 
     pushUiSprite(sprites, atlas, "uii:0", 6 * uiScale, 2 * uiScale, uiScale);
-    pushUiSprite(sprites, atlas, "uifr:0", 0, 24 * uiScale, uiScale);
     pushUiSprite(
       sprites, atlas, "uic",
       options.size.width - 20 * uiScale, 2 * uiScale, uiScale,
     );
+  }
+
+  // The authentic panel bar (SB-16-02): frame_bottom background pieces
+  // and the five panel_button slots, docked bottom-center.
+  if (options.panel !== undefined && atlas.regions["uip:0"] !== undefined) {
+    const rect = panelBarRect(options.size, uiScale);
+    for (const [pieceIndex, pieceX, pieceY] of panelBackgroundLayout) {
+      pushUiSprite(
+        sprites, atlas, `uifb:${pieceIndex}`,
+        rect.x + pieceX * uiScale, rect.y + pieceY * uiScale, uiScale,
+      );
+    }
+
+    options.panel.buttons.forEach((buttonSprite, slot) => {
+      pushUiSprite(
+        sprites, atlas, `uip:${buttonSprite}`,
+        rect.x + (64 + slot * 48) * uiScale, rect.y + 4 * uiScale, uiScale,
+      );
+    });
   }
 
   const sortedSprites = sprites.sort(compareLandscapeSprite);
