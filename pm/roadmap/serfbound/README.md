@@ -227,8 +227,9 @@ For Serfbound specifically, every implementation story must identify:
 - **Current browser save/load proof:** `@serfbound/engine` restores validated
   `serfbound.local-game` snapshots; `@serfbound/app` saves versioned browser
   records with imported-data source metadata in a dedicated IndexedDB store,
-  reloads saved state after browser reload, and keeps missing/corrupt save
-  paths recoverable.
+  reloads saved state after browser reload, rejects corrupt or unsupported
+  storage versions recoverably, and keeps imported-data reset separate from
+  local-save reset.
 - **Current playable-loop proof:** Phase 7 manual evidence proves a browser
   user can import local `SPAU.PA`, start a local game, build a flag, save,
   reload, load, and see the restored built flag with no .NET runtime, desktop
@@ -242,6 +243,10 @@ For Serfbound specifically, every implementation story must identify:
   trip; any future worker path must prove message contracts, transfer/clone
   costs, deterministic equivalence, browser compatibility, and failure
   recovery before being enabled.
+- **Current persistence recovery proof:** Phase 8 browser tests cover corrupt
+  imported-data reset, corrupt save reset without losing imported data, and
+  quota/write error UI feedback. Player-facing troubleshooting lives in
+  `phase-8-browser-hardening/persistence-recovery-guide.md`.
 
 ## Glossary
 

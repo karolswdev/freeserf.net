@@ -21,6 +21,7 @@ import {
 } from "@serfbound/engine";
 import {
   BrowserIndexedDbImportedArchiveStore,
+  InvalidStoredImportedArchiveRecordError,
   clearImportedArchiveRecord,
   createStoredImportedArchiveRecord,
   errorMessage,
@@ -30,6 +31,7 @@ import {
 } from "./imported-data-store.js";
 import {
   BrowserIndexedDbLocalGameSaveStore,
+  InvalidStoredLocalGameSaveRecordError,
   clearLocalGameSaveRecord,
   createStoredLocalGameSaveRecord,
   saveLocalGameSaveRecord,
@@ -45,6 +47,8 @@ import {
 
 export {
   BrowserIndexedDbImportedArchiveStore,
+  InvalidStoredImportedArchiveRecordError,
+  assertStoredImportedArchiveRecord,
   clearImportedArchiveRecord,
   cloneToArrayBuffer,
   createStoredImportedArchiveRecord,
@@ -59,6 +63,8 @@ export {
 } from "./imported-data-store.js";
 export {
   BrowserIndexedDbLocalGameSaveStore,
+  InvalidStoredLocalGameSaveRecordError,
+  assertStoredLocalGameSaveRecord,
   clearLocalGameSaveRecord,
   createStoredLocalGameSaveRecord,
   currentLocalGameSaveKey,
@@ -482,7 +488,12 @@ async function restorePersistedLocalGameSave(
     applyLocalGameSaveAvailableState(root, record);
     return record;
   } catch (error) {
-    applyLocalGameSaveErrorState(root, `Saved game restore failed: ${errorMessage(error)}`);
+    applyLocalGameSaveErrorState(
+      root,
+      error instanceof InvalidStoredLocalGameSaveRecordError
+        ? "Saved game is corrupt or from an unsupported version. Clear the save to keep using imported data."
+        : `Saved game restore failed: ${errorMessage(error)}`,
+    );
     return undefined;
   }
 }
@@ -531,7 +542,12 @@ async function loadCurrentLocalGame(
   try {
     record = await localGameSaveStore.loadCurrent();
   } catch (error) {
-    applyLocalGameSaveErrorState(root, `Could not load saved game: ${errorMessage(error)}`);
+    applyLocalGameSaveErrorState(
+      root,
+      error instanceof InvalidStoredLocalGameSaveRecordError
+        ? "Saved game is corrupt or from an unsupported version. Clear the save to keep using imported data."
+        : `Could not load saved game: ${errorMessage(error)}`,
+    );
     return;
   }
 
@@ -566,10 +582,13 @@ async function clearCurrentLocalGameSave(
     return;
   }
 
-  onCleared();
   delete root.dataset.serfboundLocalSaveSavedAt;
   delete root.dataset.serfboundLocalSaveSource;
   applyNoLocalGameSaveState(root, "No saved game", "Saved game cleared.");
+  if (root.dataset.serfboundStorageState !== "error") {
+    root.dataset.serfboundRecoverableState = "none";
+  }
+  onCleared();
 }
 
 function refreshLocalGameSnapshot(
@@ -710,7 +729,16 @@ async function restorePersistedArchive(
 
     applyStoredArchiveRecord(root, record, renderCatalogScene, renderGeneratedScene);
   } catch (error) {
-    applyStorageErrorState(root, `Local data restore failed: ${errorMessage(error)}`);
+    if (error instanceof InvalidStoredImportedArchiveRecordError) {
+      applyStorageErrorState(
+        root,
+        "Saved data is corrupt or from an unsupported version. Clear it and import SPAU.PA again.",
+        true,
+      );
+      return;
+    }
+
+    applyStorageErrorState(root, `Local data restore failed: ${errorMessage(error)}`, false);
   }
 }
 
@@ -787,14 +815,21 @@ async function clearSelectedArchive(
   setResetEnabled(root, false);
 }
 
-function applyStorageErrorState(root: HTMLElement, message: string): void {
+function applyStorageErrorState(
+  root: HTMLElement,
+  message: string,
+  canClearStoredData = false,
+): void {
   root.dataset.serfboundStorageState = "error";
   root.dataset.serfboundRecoverableState = "storage-error";
   root.dataset.serfboundStorageMessage = message;
   getDataStateElement(root).textContent = "Saved data unavailable";
-  getDataDetailElement(root).textContent = "Try importing SPAU.PA again.";
+  getDataDetailElement(root).textContent = canClearStoredData
+    ? "Clear saved data and import SPAU.PA again."
+    : "Try importing SPAU.PA again.";
   setSourceState(root, "No data");
   syncGameReadiness(root);
+  setResetEnabled(root, canClearStoredData);
 }
 
 function renderScene(
@@ -1074,7 +1109,8 @@ function syncLocalGameSaveControls(
     currentSavedLocalGame === undefined ||
     currentImportedDataSource === undefined ||
     !localGameDataSourcesMatch(currentImportedDataSource, currentSavedLocalGame.dataSource);
-  getClearSaveButton(root).disabled = currentSavedLocalGame === undefined;
+  getClearSaveButton(root).disabled =
+    currentSavedLocalGame === undefined && root.dataset.serfboundLocalSaveState !== "error";
 }
 
 function localGameDataSourcesMatch(

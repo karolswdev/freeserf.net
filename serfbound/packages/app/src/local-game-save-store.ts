@@ -40,6 +40,13 @@ export type StoredLocalGameSaveInput = {
   readonly savedAtIso?: string;
 };
 
+export class InvalidStoredLocalGameSaveRecordError extends Error {
+  public constructor() {
+    super("Saved game has an unsupported storage version or corrupt metadata.");
+    this.name = "InvalidStoredLocalGameSaveRecordError";
+  }
+}
+
 export function createStoredLocalGameSaveRecord(
   input: StoredLocalGameSaveInput,
 ): StoredLocalGameSaveRecord {
@@ -99,7 +106,11 @@ export class BrowserIndexedDbLocalGameSaveStore implements LocalGameSaveStore {
       const result = await requestToPromise<unknown>(request);
       await transactionDone(transaction);
 
-      return isStoredLocalGameSaveRecord(result) ? cloneLocalGameSaveRecord(result) : null;
+      if (result === undefined) {
+        return null;
+      }
+
+      return cloneLocalGameSaveRecord(assertStoredLocalGameSaveRecord(result));
     } finally {
       database.close();
     }
@@ -170,6 +181,14 @@ export function cloneLocalGameSaveRecord(
     dataSource: { ...record.dataSource },
     snapshot,
   };
+}
+
+export function assertStoredLocalGameSaveRecord(input: unknown): StoredLocalGameSaveRecord {
+  if (isStoredLocalGameSaveRecord(input)) {
+    return input;
+  }
+
+  throw new InvalidStoredLocalGameSaveRecordError();
 }
 
 function cloneLocalGameSnapshot(

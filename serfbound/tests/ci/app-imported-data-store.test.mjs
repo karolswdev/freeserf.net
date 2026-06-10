@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  InvalidStoredImportedArchiveRecordError,
+  InvalidStoredLocalGameSaveRecordError,
+  assertStoredImportedArchiveRecord,
+  assertStoredLocalGameSaveRecord,
   clearLocalGameSaveRecord,
   createStoredImportedArchiveRecord,
   createStoredLocalGameSaveRecord,
@@ -181,6 +185,25 @@ test("imported archive store contract supports save, load, and clear", async () 
   assert.equal(await store.loadCurrent(), null);
 });
 
+test("imported archive records reject corrupt metadata and storage version mismatches", () => {
+  const record = createStoredImportedArchiveRecord({
+    fileName: "SPAU.PA",
+    normalizedName: "SPAU.PA",
+    bytes: createGeneratedPaArchive(),
+    importedAtIso: "2026-06-09T23:00:00.000Z",
+  });
+
+  assert.equal(assertStoredImportedArchiveRecord(record), record);
+  assert.throws(
+    () => assertStoredImportedArchiveRecord({ ...record, schemaVersion: 2 }),
+    InvalidStoredImportedArchiveRecordError,
+  );
+  assert.throws(
+    () => assertStoredImportedArchiveRecord({ ...record, byteLength: 999 }),
+    InvalidStoredImportedArchiveRecordError,
+  );
+});
+
 test("storage operation helpers return recoverable error states", async () => {
   const failingStore = {
     async loadCurrent() {
@@ -259,6 +282,27 @@ test("local game save store contract supports save, load, and clear", async () =
     state: "cleared",
   });
   assert.equal(await store.loadCurrent(), null);
+});
+
+test("local game save records reject corrupt metadata and storage version mismatches", () => {
+  const record = createStoredLocalGameSaveRecord({
+    snapshot: createStartedLocalGameSnapshot(),
+    savedAtIso: "2026-06-09T23:30:00.000Z",
+  });
+
+  assert.equal(assertStoredLocalGameSaveRecord(record), record);
+  assert.throws(
+    () => assertStoredLocalGameSaveRecord({ ...record, schemaVersion: 2 }),
+    InvalidStoredLocalGameSaveRecordError,
+  );
+  assert.throws(
+    () =>
+      assertStoredLocalGameSaveRecord({
+        ...record,
+        dataSource: { ...record.dataSource, byteLength: 999 },
+      }),
+    InvalidStoredLocalGameSaveRecordError,
+  );
 });
 
 test("local game save operation helpers return recoverable error states", async () => {

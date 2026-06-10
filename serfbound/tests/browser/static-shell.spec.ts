@@ -389,6 +389,142 @@ test("render layer scene stays framed on desktop and mobile viewports", async ({
   }
 });
 
+test("corrupt imported data can be reset from the browser shell", async ({ page }) => {
+  await page.goto("/");
+  await resetSerfboundDatabases(page);
+  await seedInvalidImportedArchiveRecord(page);
+  await page.reload();
+
+  await expect(page.getByTestId("data-state")).toHaveText("Saved data unavailable");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "Clear saved data and import SPAU.PA again.",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "error",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-recoverable-state",
+    "storage-error",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-message",
+    "Saved data is corrupt or from an unsupported version. Clear it and import SPAU.PA again.",
+  );
+  await expect(page.getByTestId("start-game-button")).toBeDisabled();
+  await expect(page.getByTestId("data-reset-button")).toBeEnabled();
+
+  await page.getByTestId("data-reset-button").click();
+  await expect(page.getByTestId("data-state")).toHaveText("No game data");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "Saved data cleared. Import SPAU.PA to start.",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "cleared",
+  );
+  await expect(page.getByTestId("data-reset-button")).toBeDisabled();
+
+  await page.reload();
+  await expect(page.getByTestId("data-state")).toHaveText("No game data");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "empty",
+  );
+});
+
+test("corrupt save data can be reset without losing imported data", async ({ page }) => {
+  await page.goto("/");
+  await resetSerfboundDatabases(page);
+  await seedValidImportedArchiveRecord(page);
+  await seedInvalidLocalGameSaveRecord(page);
+  await page.reload();
+
+  await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.getByTestId("data-detail")).toHaveText("SPAU.PA restored with 2 resources.");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-state",
+    "persisted",
+  );
+  await expect(page.getByTestId("save-state")).toHaveText("Save unavailable");
+  await expect(page.getByTestId("save-detail")).toHaveText(
+    "Saved game is corrupt or from an unsupported version. Clear the save to keep using imported data.",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-save-state",
+    "error",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-recoverable-state",
+    "save-error",
+  );
+  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+  await expect(page.getByTestId("data-reset-button")).toBeEnabled();
+  await expect(page.getByTestId("clear-save-button")).toBeEnabled();
+
+  await page.getByTestId("clear-save-button").click();
+  await expect(page.getByTestId("save-state")).toHaveText("No saved game");
+  await expect(page.getByTestId("save-detail")).toHaveText("Saved game cleared.");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-save-state",
+    "empty",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-recoverable-state",
+    "none",
+  );
+  await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.getByTestId("source-state")).toHaveText("Imported data");
+  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+  await expect(page.getByTestId("clear-save-button")).toBeDisabled();
+
+  await page.reload();
+  await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.getByTestId("save-state")).toHaveText("No saved game");
+  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+});
+
+test("quota and write errors produce recoverable browser feedback", async ({ page }) => {
+  await page.goto("/");
+  await resetSerfboundDatabases(page);
+  await page.reload();
+  await installIndexedDbPutFailures(page);
+  await expect(page.getByTestId("serfbound-shell")).toBeVisible();
+
+  await setIndexedDbPutFailure(page, "archives", "quota exhausted");
+  await page.getByTestId("data-import-input").setInputFiles({
+    name: "SPAU.PA",
+    mimeType: "application/octet-stream",
+    buffer: createGeneratedPaArchive(),
+  });
+  await expect(page.getByTestId("data-state")).toHaveText("Data loaded");
+  await expect(page.getByTestId("data-detail")).toHaveText(
+    "The data works for this session, but could not be saved for next time.",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-recoverable-state",
+    "storage-error",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-storage-message",
+    "quota exhausted",
+  );
+  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+
+  await setIndexedDbPutFailure(page, "saves", "save quota exhausted");
+  await page.getByTestId("start-game-button").click();
+  await expect(page.getByTestId("save-game-button")).toBeEnabled();
+  await page.getByTestId("save-game-button").click();
+  await expect(page.getByTestId("save-state")).toHaveText("Save unavailable");
+  await expect(page.getByTestId("save-detail")).toHaveText(
+    "Could not save game: save quota exhausted",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-recoverable-state",
+    "save-error",
+  );
+});
+
 async function waitForCanvasResize(page) {
   await page.waitForFunction(() => {
     const canvas = document.querySelector("[data-testid='terrain-preview']");
@@ -402,6 +538,134 @@ async function waitForCanvasResize(page) {
       canvas.height === Math.max(1, Math.round(rect.height))
     );
   });
+}
+
+async function installIndexedDbPutFailures(page) {
+  await page.evaluate(() => {
+    const originalPut = IDBObjectStore.prototype.put;
+    const failStores = new Map();
+    Object.defineProperty(window, "__serfboundFailIndexedDbPut", {
+      configurable: true,
+      value(storeName, message) {
+        failStores.set(storeName, message);
+      },
+    });
+    IDBObjectStore.prototype.put = function putWithOptionalFailure(...args) {
+      const message = failStores.get(this.name);
+      if (message !== undefined) {
+        throw new Error(message);
+      }
+
+      return originalPut.apply(this, args);
+    };
+  });
+}
+
+async function setIndexedDbPutFailure(page, storeName, message) {
+  await page.evaluate(
+    ({ storeName: targetStoreName, message: targetMessage }) => {
+      window.__serfboundFailIndexedDbPut(targetStoreName, targetMessage);
+    },
+    { storeName, message },
+  );
+}
+
+async function resetSerfboundDatabases(page) {
+  for (const databaseName of [
+    "serfbound-imported-data",
+    "serfbound-local-game-saves",
+  ]) {
+    await page.evaluate(async (name) => {
+      await new Promise((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(name);
+        request.onsuccess = () => resolve(undefined);
+        request.onerror = () => reject(request.error ?? new Error(`Could not delete ${name}`));
+        request.onblocked = () => reject(new Error(`${name} deletion was blocked`));
+      });
+    }, databaseName);
+  }
+}
+
+async function seedInvalidImportedArchiveRecord(page) {
+  await putIndexedDbRecord(page, {
+    databaseName: "serfbound-imported-data",
+    storeName: "archives",
+    record: {
+      schemaVersion: 2,
+      storageKey: "current-dos-pa",
+      source: "dos-pa",
+      normalizedName: "SPAU.PA",
+      fileName: "SPAU.PA",
+      byteLength: 32,
+      importedAtIso: "2026-06-09T23:00:00.000Z",
+      bytes: Array.from(createGeneratedPaArchive()),
+    },
+  });
+}
+
+async function seedValidImportedArchiveRecord(page) {
+  await putIndexedDbRecord(page, {
+    databaseName: "serfbound-imported-data",
+    storeName: "archives",
+    record: {
+      schemaVersion: 1,
+      storageKey: "current-dos-pa",
+      source: "dos-pa",
+      normalizedName: "SPAU.PA",
+      fileName: "SPAU.PA",
+      byteLength: 32,
+      importedAtIso: "2026-06-09T23:00:00.000Z",
+      bytes: Array.from(createGeneratedPaArchive()),
+    },
+  });
+}
+
+async function seedInvalidLocalGameSaveRecord(page) {
+  await putIndexedDbRecord(page, {
+    databaseName: "serfbound-local-game-saves",
+    storeName: "saves",
+    record: {
+      schemaVersion: 2,
+      storageKey: "current-local-game",
+      source: "serfbound-local-game",
+      savedAtIso: "2026-06-09T23:30:00.000Z",
+    },
+  });
+}
+
+async function putIndexedDbRecord(page, seed) {
+  await page.evaluate(async ({ databaseName, storeName, record }) => {
+    const storedRecord = {
+      ...record,
+      bytes: Array.isArray(record.bytes) ? new Uint8Array(record.bytes).buffer : record.bytes,
+    };
+    const database = await new Promise((resolve, reject) => {
+      const request = indexedDB.open(databaseName, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName, { keyPath: "storageKey" });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error(`Could not open ${databaseName}`));
+      request.onblocked = () => reject(new Error(`${databaseName} open was blocked`));
+    });
+
+    try {
+      const transaction = database.transaction(storeName, "readwrite");
+      transaction.objectStore(storeName).put(storedRecord);
+      await new Promise((resolve, reject) => {
+        transaction.oncomplete = () => resolve(undefined);
+        transaction.onerror = () =>
+          reject(transaction.error ?? new Error(`${databaseName} transaction failed`));
+        transaction.onabort = () =>
+          reject(transaction.error ?? new Error(`${databaseName} transaction aborted`));
+      });
+    } finally {
+      database.close();
+    }
+  }, seed);
 }
 
 async function movePointerToCanvasFraction(page, fractionX, fractionY) {

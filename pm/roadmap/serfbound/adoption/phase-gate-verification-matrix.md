@@ -37,7 +37,7 @@ artifacts, or manual verification notes.
 | 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Complete |
 | 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Complete |
 | 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Complete |
-| 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | In progress; performance baseline and worker decision complete |
+| 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | In progress; performance baseline, worker decision, and persistence recovery complete |
 | 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | Not started |
 
 ## Evidence Rules By Type
@@ -75,7 +75,8 @@ Before marking the whole Serfbound goal complete:
 
 As of 2026-06-09, Phases 0 through 7 are complete and documented with paired
 story evidence plus phase final summaries. Phase 8 is in progress with the
-first performance baseline measured and the worker/threading model explicitly
-deferred until measured stop signals trip. The product is not complete. The
-next gap is SB-8-03: harden persistence recovery around corrupt, stale, failed,
-or quota-limited browser storage.
+first performance baseline measured, the worker/threading model explicitly
+deferred until measured stop signals trip, and persistence recovery implemented
+for corrupt records, unsupported storage versions, reset paths, and quota/write
+feedback. The product is not complete. The next gap is SB-8-04: verify browser
+compatibility across the required desktop and mobile browser positions.

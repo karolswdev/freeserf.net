@@ -31,7 +31,7 @@ recovery.
 - [x] Tick/render frame budgets are measured on representative browsers.
 - [x] Main-thread and worker strategy is documented and implemented or
   explicitly deferred.
-- [ ] Persistence survives reloads and has recovery/reset behavior.
+- [x] Persistence survives reloads and has recovery/reset behavior.
 - [ ] Browser compatibility matrix is documented with at least Chrome, Firefox,
   Safari/WebKit, and mobile Safari/Chrome positions.
 - [ ] Accessibility basics are verified for keyboard, focus, contrast, and
@@ -43,8 +43,8 @@ recovery.
 |---|---|---|---|---|
 | SB-8-01 | Establish performance budgets | done | story-01-performance-budgets.md | evidence-story-01.md |
 | SB-8-02 | Decide worker and threading model | done | story-02-worker-threading-model.md | evidence-story-02.md |
-| SB-8-03 | Harden persistence recovery | ready | story-03-persistence-recovery.md | — |
-| SB-8-04 | Verify browser compatibility | backlog | story-04-browser-compatibility.md | — |
+| SB-8-03 | Harden persistence recovery | done | story-03-persistence-recovery.md | evidence-story-03.md |
+| SB-8-04 | Verify browser compatibility | ready | story-04-browser-compatibility.md | — |
 
 ## Where we are
 
@@ -53,8 +53,10 @@ script, explicit first-slice budgets, and a local Chromium baseline for
 simulation tick, browser frame cadence, import, save, and reload/load timings.
 SB-8-02 used that baseline to choose a main-thread-first browser runtime for
 the current playable slice, with Workers explicitly deferred until measured
-stop signals trip. The next responsible move is SB-8-03: harden persistence
-recovery around corrupt, stale, failed, or quota-limited browser storage.
+stop signals trip. SB-8-03 hardened persistence recovery around corrupt,
+unsupported-version, failed, and quota-limited browser storage. The next
+responsible move is SB-8-04: verify browser compatibility across the required
+desktop and mobile browser positions.
 
 ## Active risks
 
@@ -75,6 +77,10 @@ recovery around corrupt, stale, failed, or quota-limited browser storage.
   deferred because the measured tick, frame, import, save, and reload/load
   costs remain within SB-8-01 budgets. Revisit only when the stop signals in
   `worker-threading-decision.md` trip — SB-8-02.
+- 2026-06-09 — Persistence recovery treats corrupt or unsupported-version
+  imported-data and save records as explicit recoverable errors. `Clear data`
+  resets imported data; `Clear save` resets only the local-game save and keeps
+  imported data intact — SB-8-03.
 
 ## Decisions deferred
 

@@ -38,6 +38,13 @@ export type StoredImportedArchiveInput = {
   readonly importedAtIso?: string;
 };
 
+export class InvalidStoredImportedArchiveRecordError extends Error {
+  public constructor() {
+    super("Saved imported data has an unsupported storage version or corrupt metadata.");
+    this.name = "InvalidStoredImportedArchiveRecordError";
+  }
+}
+
 export function createStoredImportedArchiveRecord(
   input: StoredImportedArchiveInput,
 ): StoredImportedArchiveRecord {
@@ -99,7 +106,11 @@ export class BrowserIndexedDbImportedArchiveStore implements ImportedArchiveStor
       const result = await requestToPromise<unknown>(request);
       await transactionDone(transaction);
 
-      return isStoredImportedArchiveRecord(result) ? result : null;
+      if (result === undefined) {
+        return null;
+      }
+
+      return assertStoredImportedArchiveRecord(result);
     } finally {
       database.close();
     }
@@ -173,6 +184,14 @@ export function cloneToArrayBuffer(input: ArrayBuffer | ArrayBufferView): ArrayB
 
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+export function assertStoredImportedArchiveRecord(input: unknown): StoredImportedArchiveRecord {
+  if (isStoredImportedArchiveRecord(input)) {
+    return input;
+  }
+
+  throw new InvalidStoredImportedArchiveRecordError();
 }
 
 function requestToPromise<T>(request: IDBRequest): Promise<T> {

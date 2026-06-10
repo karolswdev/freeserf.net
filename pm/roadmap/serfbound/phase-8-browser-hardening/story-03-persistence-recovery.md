@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 8
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-7-03
 - **Unblocks:** SB-9-03, SB-9-04
 - **Owner:** unassigned
@@ -21,11 +21,11 @@ recovery flows before players trust imported assets and saves.
 
 ## Acceptance criteria
 
-- [ ] Corrupt imported-data metadata can be reset.
-- [ ] Corrupt save data can be reset without losing imported data unless needed.
-- [ ] Storage version mismatch behavior is documented and tested.
-- [ ] Quota or write errors produce recoverable UI feedback.
-- [ ] Player docs have troubleshooting steps.
+- [x] Corrupt imported-data metadata can be reset.
+- [x] Corrupt save data can be reset without losing imported data unless needed.
+- [x] Storage version mismatch behavior is documented and tested.
+- [x] Quota or write errors produce recoverable UI feedback.
+- [x] Player docs have troubleshooting steps.
 
 ## Test plan
 
@@ -36,4 +36,5 @@ recovery flows before players trust imported assets and saves.
 
 ## Notes / open questions
 
-Recovery UX should be boring, explicit, and hard to trigger accidentally.
+Recovery UX is explicit in the Data and Save panels. `Clear save` only deletes
+the local-game save; `Clear data` resets imported data and requires reimport.
