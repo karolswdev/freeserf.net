@@ -1,5 +1,13 @@
 # Freeserf.net
 
+> **Serfbound has moved.** The pure-browser TypeScript remake developed
+> in this repository's `serfbound/` workspace now lives in its own
+> repository: **https://github.com/karolswdev/serfbound** (play it at
+> https://karolswdev.github.io/serfbound/). This repository remains the
+> C# reference implementation and the archive of Serfbound's
+> development history (including the heavy visual-evidence artifacts
+> under `pm/roadmap/serfbound/`).
+
 Freeserf.net is an authentic remake of the game **The Settlers I** by BlueByte.
 
 To avoid copyright issues I won't provide any copyrighted data from the original game like music or graphics. To play the game you will therefore need the original DOS or Amiga data files.

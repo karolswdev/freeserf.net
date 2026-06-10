@@ -1,7 +1,7 @@
 # Phase 24 — Repository Independence
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-24-01..03 done.
+**Status:** complete — see final-summary.md. The roadmap is authoritative in karolswdev/serfbound from the cutover onward.
 
 ## Goal
 
@@ -49,7 +49,7 @@ The old repository becomes the archive it always was.
   set passes in the export tree. (SB-24-02)
 - [x] CI and the Pages release path run green in the new repository.
   (SB-24-03)
-- [ ] The zero-.NET guard enforces independence mechanically; the old
+- [x] The zero-.NET guard enforces independence mechanically; the old
   repository carries the handoff note; phase close. (SB-24-04)
 
 ## Story status
@@ -59,17 +59,15 @@ The old repository becomes the archive it always was.
 | SB-24-01 | Extraction and licensing decision record | done | story-01-extraction-licensing.md | evidence-story-01.md |
 | SB-24-02 | Create and populate the standalone repository | done | story-02-standalone-repository.md | evidence-story-02.md |
 | SB-24-03 | CI and Pages in the new repository | done | story-03-ci-pages-new-repo.md | evidence-story-03.md |
-| SB-24-04 | Independence gate and handoff | backlog | story-04-independence-gate.md | — |
+| SB-24-04 | Independence gate and handoff | done | story-04-independence-gate.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-24-01..02 shipped: https://github.com/karolswdev/serfbound exists —
-public, GPL-3.0 with the derivation notice, the workspace at the root,
-the PMO record aboard, zero .NET, all gates green in the export before
-the push. Historical visual artifacts stay in this archive (recorded
-refinement). CI and Pages both run green in the new repository and
-https://karolswdev.github.io/serfbound/ serves the build. Next:
-SB-24-04 closes the phase — the zero-.NET guard and the handoff.
+The phase is closed and the cutover is done:
+https://github.com/karolswdev/serfbound is Serfbound's home (GPL-3.0,
+zero .NET enforced by the CI guard, Pages serving the build); this
+repository is the archive, with the handoff note up top and its
+serfbound workflows retired. See final-summary.md.
 
 ## Active risks
 

@@ -1,7 +1,7 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [24 — Repository Independence](./phase-24-repository-independence/)
+**Current phase:** moved — the roadmap continues in [karolswdev/serfbound](https://github.com/karolswdev/serfbound) (next: phase 25, community and identity)
 **Status:** Phases 0–23 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)).
 Post-launch so far: Phase 21 closed the launch-review punch list
@@ -11,9 +11,12 @@ zero servers; Phase 23 shipped correspondence play — offline-chess
 Serfbound with trustless turn windows, recaps, digests, hot-seat
 pass-and-play, and two-tab async matches (see
 [phase-23-correspondence-foundations/final-summary.md](./phase-23-correspondence-foundations/final-summary.md)).
-Remaining: repository independence — Serfbound's own GPL-3.0 repo with
-zero .NET (24), identity/challenges/the turn mailbox (25), data breadth
-and localization (26), realtime WebRTC online play (27).
+Phase 24 closed the cutover: Serfbound lives at
+[karolswdev/serfbound](https://github.com/karolswdev/serfbound)
+(GPL-3.0, zero .NET, Pages at https://karolswdev.github.io/serfbound/).
+This archive copy of the roadmap is frozen; phases 25–27
+(identity/challenges/mailbox, data breadth/localization, realtime
+WebRTC) continue there.
 
 ## Vision
 
@@ -117,7 +120,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
 | 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | complete | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
-| 24 | Repository independence: standalone GPL-3.0 repo, zero .NET | scaffolded | [phase-24-repository-independence](./phase-24-repository-independence/) |
+| 24 | Repository independence: standalone GPL-3.0 repo, zero .NET | complete | [phase-24-repository-independence](./phase-24-repository-independence/) |
 | 25 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-25-community-identity](./phase-25-community-identity/) |
 | 26 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-26-data-breadth-localization](./phase-26-data-breadth-localization/) |
 | 27 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-27-realtime-online-play](./phase-27-realtime-online-play/) |

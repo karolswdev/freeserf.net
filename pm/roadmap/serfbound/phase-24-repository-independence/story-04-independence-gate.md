@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 24
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-24-03
 - **Unblocks:** SB-25-01
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -26,11 +26,11 @@ and the phase closes with the full gate set green in the new home.
 
 ## Acceptance criteria
 
-- [ ] The guard fails the build if any .NET artifact appears; it passes
+- [x] The guard fails the build if any .NET artifact appears; it passes
   on the real tree.
-- [ ] The old repository points to the new one and its serfbound
+- [x] The old repository points to the new one and its serfbound
   workflows are retired.
-- [ ] All standing gates green in the new repository at the closing
+- [x] All standing gates green in the new repository at the closing
   commit.
 
 ## Test plan
