@@ -33,7 +33,7 @@ outcomes parity-checked against the reference simulation.
   (SB-15-01)
 - [x] Military buildings occupy, set territory, and grow borders matching
   fixtures. (SB-15-02)
-- [ ] Combat sequences match reference outcome fixtures; fights animate with
+- [x] Combat sequences match reference outcome fixtures; fights animate with
   authentic sprites. (SB-15-03)
 - [ ] An attack can capture an enemy building and a castle can fall, ending
   the game, with real-data capture evidence. (SB-15-04)
@@ -44,16 +44,16 @@ outcomes parity-checked against the reference simulation.
 |---|---|---|---|---|
 | SB-15-01 | Arm and recruit knights | done | story-01-arm-and-recruit-knights.md | evidence-story-01.md |
 | SB-15-02 | Military occupation and border growth | done | story-02-occupation-border-growth.md | evidence-story-02.md |
-| SB-15-03 | Port combat resolution with parity fixtures | backlog | story-03-combat-resolution-parity.md | — |
+| SB-15-03 | Port combat resolution with parity fixtures | done | story-03-combat-resolution-parity.md | evidence-story-03.md |
 | SB-15-04 | Capture, defeat, and game over | backlog | story-04-capture-defeat-game-over.md | — |
 
 ## Where we are
 
-SB-15-02 is done: huts, towers, and fortresses request knights per the
-reference occupant tables, knights walk the roads to garrison, the first
-arrival activates the post and grows the borders through the influence
-tables, and gold bars route to occupied posts feeding morale. SB-15-03
-(combat resolution parity) is next.
+SB-15-03 is done: the reference fight is ported exactly — SetFightOutcome
+math and RandomInt order, the flat attack-move/animation tables, the
+defender-replacement loop, and seeded outcomes proven against an
+independent reimplementation across five seeds. SB-15-04 (capture, defeat,
+and game over) closes the phase.
 
 ## Active risks
 

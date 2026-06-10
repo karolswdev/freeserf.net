@@ -1,4 +1,4 @@
-import type { Direction } from "./index.js";
+import { FreeserfRandom, type Direction } from "./index.js";
 import {
   buildingConstructionCosts,
   isMilitaryBuildingType,
@@ -39,6 +39,11 @@ export const serfState = {
   building: 9,
   idleOnPath: 10,
   working: 11,
+  knightMarching: 12,
+  knightAttacking: 13,
+  knightDefending: 14,
+  knightAttackingVictory: 15,
+  dead: 16,
 } as const;
 
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
@@ -77,6 +82,30 @@ const minerFoods: readonly number[] = [resourceType.fish, resourceType.bread, re
 
 // The reference tool order for the toolmaker's round-robin output.
 const toolOutputs: readonly number[] = [15, 16, 17, 18, 19, 20, 21, 22, 23];
+
+// Serf.cs combat tables, copied flat exactly as the reference declares them
+// (the later rows are 15 entries, so sequence starts chosen by
+// RandomInt() & 0x70 land mid-row — a reference quirk preserved).
+const knightAttackMoves: readonly number[] = [
+  1, 2, 4, 2, 0, 2, 4, 2, 1, 0, 2, 2, 3, 0, 0, -1,
+  3, 2, 2, 3, 0, 4, 1, 3, 2, 4, 2, 2, 3, 0, 0, -1,
+  2, 1, 4, 3, 2, 2, 2, 3, 0, 3, 1, 2, 0, 2, 0, -1,
+  2, 1, 3, 2, 4, 2, 3, 0, 0, 4, 2, 0, 2, 1, 0, -1,
+  3, 1, 0, 2, 2, 1, 0, 2, 4, 2, 2, 3, 0, 0, -1,
+  0, 3, 1, 2, 3, 4, 2, 1, 2, 0, 2, 4, 0, 2, 0, -1,
+  0, 2, 1, 2, 4, 2, 3, 0, 2, 4, 3, 2, 0, 0, -1,
+  0, 0, 1, 4, 3, 2, 2, 1, 2, 0, 0, 4, 3, 0, -1,
+];
+
+const knightFightAnim: readonly number[] = [
+  24, 35, 41, 56, 67, 72, 83, 89, 100, 121, 0, 0, 0, 0, 0, 0,
+  26, 40, 42, 57, 73, 74, 88, 104, 106, 120, 122, 0, 0, 0, 0, 0,
+  17, 18, 23, 33, 34, 38, 39, 98, 102, 103, 113, 114, 118, 119, 0, 0,
+  130, 133, 134, 135, 147, 148, 161, 162, 164, 166, 167, 0, 0, 0, 0, 0,
+  50, 52, 53, 70, 129, 131, 132, 146, 149, 151, 0, 0, 0, 0, 0, 0,
+];
+
+const knightFightAnimMax: readonly number[] = [10, 11, 14, 11, 10];
 
 const directionOrder: readonly Direction[] = ["Right", "DownRight", "Down", "Left", "UpLeft", "Up"];
 const reverseOf: Record<Direction, Direction> = {
@@ -149,6 +178,14 @@ export type WorldSerf = {
   // Knight assignment: the military building this knight garrisons.
   isKnight: boolean;
   garrisonTargetIndex: number;
+  // Combat state: rank (Knight0..Knight4), the building under attack, the
+  // fight opponent, the position in the attack-move sequence, and the
+  // outcome decided up front by SetFightOutcome.
+  knightRank: number;
+  attackTargetIndex: number;
+  fightOpponentIndex: number;
+  fightMove: number;
+  fightWon: boolean;
 };
 
 export class SerfboundSerfEngine {
@@ -156,12 +193,15 @@ export class SerfboundSerfEngine {
   readonly serfs = new Map<number, WorldSerf>();
   // Map position -> serf index (Map.SetSerfIndex equivalent; 0 = none).
   readonly serfIndexes: Uint32Array;
+  // Game.RandomInt source for combat (seeded for deterministic outcomes).
+  readonly random: FreeserfRandom;
   #nextSerfIndex = 1;
   readonly #dispatchedBuildings = new Set<number>();
 
-  constructor(world: SerfboundGameWorld) {
+  constructor(world: SerfboundGameWorld, random?: FreeserfRandom) {
     this.world = world;
     this.serfIndexes = new Uint32Array(world.tileCount);
+    this.random = random ?? FreeserfRandom.fromWord(0x5a5a);
   }
 
   hasSerfAt(position: number): boolean {
@@ -210,6 +250,11 @@ export class SerfboundSerfEngine {
       workTargetPosition: -1,
       isKnight: false,
       garrisonTargetIndex: 0,
+      knightRank: 0,
+      attackTargetIndex: 0,
+      fightOpponentIndex: 0,
+      fightMove: 0,
+      fightWon: false,
     };
     this.#nextSerfIndex += 1;
     this.serfs.set(serf.index, serf);
@@ -316,6 +361,18 @@ export class SerfboundSerfEngine {
           break;
         case serfState.enteringBuilding:
           this.#handleEnteringBuilding(serf, gameTick);
+          break;
+        case serfState.knightMarching:
+          this.#handleKnightMarching(serf, gameTick);
+          break;
+        case serfState.knightAttacking:
+          this.#handleKnightAttacking(serf, gameTick);
+          break;
+        case serfState.knightAttackingVictory:
+          this.#handleKnightAttackingVictory(serf, gameTick);
+          break;
+        case serfState.dead:
+          this.#handleDead(serf, gameTick);
           break;
         default:
           break;
@@ -1316,6 +1373,284 @@ export class SerfboundSerfEngine {
     this.serfIndexes[newPosition] = serf.index;
     serf.counter += counterFromAnimation(serf.animation);
     return true;
+  }
+
+  // --- combat (Serf.cs fight states + SetFightOutcome) -------------------------------
+
+  // Player attack initiation, condensed: pull knights from the castle and
+  // march them on the target building's flag (the reference selects them
+  // from nearby military buildings; supply selection lands with the war UI).
+  launchAttack(
+    playerIndex: number,
+    targetBuildingIndex: number,
+    knightCount: number,
+    gameTick: number,
+  ): number {
+    const target = this.world.buildings.get(targetBuildingIndex);
+    const player = this.world.players[playerIndex];
+    if (
+      target === undefined ||
+      !target.isDone ||
+      target.player === playerIndex ||
+      player === undefined ||
+      player.castlePosition === null ||
+      (!isMilitaryBuildingType(target.type) && target.type !== buildingType.castle)
+    ) {
+      return 0;
+    }
+
+    const targetFlag = this.world.flags.get(target.flagIndex);
+    if (targetFlag === undefined) {
+      return 0;
+    }
+
+    let sent = 0;
+    while (sent < knightCount) {
+      const knight = this.spawnKnightSerf(playerIndex, gameTick);
+      if (knight === null) {
+        break;
+      }
+
+      knight.attackTargetIndex = targetBuildingIndex;
+      knight.workTargetPosition = targetFlag.position;
+      knight.state = serfState.knightMarching;
+      knight.tick = gameTick;
+      knight.counter = 0;
+      sent += 1;
+    }
+
+    return sent;
+  }
+
+  // Map.Dist over the wrapped axial grid: opposite-sign deltas share the
+  // Down/Up diagonal, same-sign deltas must be walked separately.
+  #hexDistance(from: number, to: number): number {
+    const dx = this.world.geometry.distanceX(from, to);
+    const dy = this.world.geometry.distanceY(from, to);
+    if (dx * dy < 0) {
+      return Math.max(Math.abs(dx), Math.abs(dy));
+    }
+
+    return Math.abs(dx) + Math.abs(dy);
+  }
+
+  // Attacking knights march off-road toward the target flag (the reference
+  // FreeWalking path, condensed to a greedy descent on map distance).
+  #handleKnightMarching(serf: WorldSerf, gameTick: number): void {
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+    serf.counter -= delta;
+
+    while (serf.counter < 0) {
+      if (serf.position === serf.workTargetPosition) {
+        this.#engageBuilding(serf, gameTick);
+        return;
+      }
+
+      let bestDirection: Direction | null = null;
+      let bestDistance = this.#hexDistance(serf.position, serf.workTargetPosition);
+      for (const direction of directionOrder) {
+        const next = this.world.move(serf.position, direction);
+        // Buildings block the march; the greedy line walks around them.
+        if (this.world.hasBuilding(next)) {
+          continue;
+        }
+
+        const distance = this.#hexDistance(next, serf.workTargetPosition);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestDirection = direction;
+        }
+      }
+
+      if (bestDirection === null) {
+        serf.counter = 0;
+        return;
+      }
+
+      if (!this.#changeDirection(serf, bestDirection)) {
+        serf.counter = 0;
+        return;
+      }
+    }
+  }
+
+  // Engage the target: the next defender steps out and the fight begins;
+  // an empty garrison leaves the attacker victorious at the flag
+  // (capture consequences land with SB-15-04).
+  #engageBuilding(serf: WorldSerf, gameTick: number): void {
+    const building = this.world.buildings.get(serf.attackTargetIndex);
+    if (building === undefined || building.player === serf.player) {
+      serf.state = serfState.null;
+      serf.counter = 0;
+      return;
+    }
+
+    if (building.knights <= 0) {
+      // No defenders left: the post is undefended (SB-15-04 captures it).
+      serf.state = serfState.null;
+      serf.counter = 0;
+      return;
+    }
+
+    building.knights -= 1;
+    const defender: WorldSerf = {
+      index: this.#nextSerfIndex,
+      player: building.player,
+      state: serfState.knightDefending,
+      position: building.position,
+      tick: gameTick,
+      animation: 0,
+      counter: 0,
+      walkingDirection: 0,
+      walkingDestination: 0,
+      walkingWaitCounter: 0,
+      slopeLength: 0,
+      nextState: serfState.null,
+      roadFlagIndex: 0,
+      roadDirection: null,
+      carriedResource: -1,
+      carriedDestination: 0,
+      buildTargetIndex: 0,
+      workBuildingIndex: 0,
+      workPhase: 0,
+      workCounter: 0,
+      workTargetPosition: -1,
+      isKnight: true,
+      garrisonTargetIndex: 0,
+      knightRank: 0,
+      attackTargetIndex: 0,
+      fightOpponentIndex: serf.index,
+      fightMove: 0,
+      fightWon: false,
+    };
+    this.#nextSerfIndex += 1;
+    this.serfs.set(defender.index, defender);
+
+    serf.fightOpponentIndex = defender.index;
+    this.#setFightOutcome(serf, defender);
+    serf.state = serfState.knightAttacking;
+    serf.counter = 0;
+    serf.tick = gameTick;
+  }
+
+  // Serf.SetFightOutcome, exact reference math and RandomInt order:
+  // rank doubles morale per level; fighting on foreign land swaps the
+  // 0x1000 land factor for the player's gold-driven knight morale.
+  #setFightOutcome(attacker: WorldSerf, defender: WorldSerf): void {
+    const expFactor = 1 << attacker.knightRank;
+    let landFactor = 0x1000;
+    if (attacker.player !== this.world.owner(attacker.position)) {
+      landFactor = this.world.players[attacker.player]?.knightMorale ?? 0x1000;
+    }
+
+    const morale = Math.floor((0x400 * expFactor * landFactor) / 0x10000);
+
+    const defenderExpFactor = 1 << defender.knightRank;
+    let defenderLandFactor = 0x1000;
+    if (defender.player !== this.world.owner(defender.position)) {
+      defenderLandFactor = this.world.players[defender.player]?.knightMorale ?? 0x1000;
+    }
+
+    const defenderMorale = Math.floor((0x400 * defenderExpFactor * defenderLandFactor) / 0x10000);
+
+    const result = Math.floor(((morale + defenderMorale) * this.random.next()) / 0x10000);
+    attacker.fightWon = result < morale;
+    attacker.fightMove = this.random.next() & 0x70;
+  }
+
+  // Serf.HandleKnightAttacking: the attacker drives both serfs through the
+  // fight sequence; a negative move resolves the fight with the outcome
+  // decided in SetFightOutcome.
+  #handleKnightAttacking(serf: WorldSerf, gameTick: number): void {
+    const defender = this.serfs.get(serf.fightOpponentIndex);
+    if (defender === undefined) {
+      serf.state = serfState.null;
+      return;
+    }
+
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+    defender.tick = gameTick;
+    serf.counter -= delta;
+    defender.counter = serf.counter;
+
+    while (serf.counter < 0) {
+      const move = knightAttackMoves[serf.fightMove]!;
+      if (move < 0) {
+        const building = this.world.buildings.get(serf.attackTargetIndex);
+        if (!serf.fightWon) {
+          // Defender won: it returns to its building, the attacker dies.
+          if (building !== undefined) {
+            building.knights += 1;
+          }
+
+          this.serfs.delete(defender.index);
+          serf.state = serfState.dead;
+          serf.animation = 152 + serf.knightRank;
+          serf.counter = 255;
+          serf.fightOpponentIndex = 0;
+        } else {
+          // Attacker won: the defender dies, the attacker re-engages once
+          // the body is carried off.
+          defender.state = serfState.dead;
+          defender.animation = 147 + serf.knightRank;
+          defender.counter = 255;
+          defender.tick = gameTick;
+          serf.state = serfState.knightAttackingVictory;
+          serf.animation = 168;
+          serf.counter = 0;
+        }
+
+        return;
+      }
+
+      // Next move in the fight sequence; the defender's view mirrors it.
+      serf.fightMove += 1;
+      const displayMove = serf.fightWon ? move : 4 - move;
+      const animationOffset = (this.random.next() * knightFightAnimMax[displayMove]!) >> 16;
+      const knightAnimation = knightFightAnim[displayMove * 16 + animationOffset]!;
+      serf.animation = 146 + ((knightAnimation >> 4) & 0xf);
+      defender.animation = 156 + (knightAnimation & 0xf);
+      serf.counter = 72 + (this.random.next() & 0x18);
+      defender.counter = serf.counter;
+    }
+  }
+
+  // Serf.HandleSerfKnightAttackingVictoryState: wait out the defender's
+  // death animation, then engage the building again.
+  #handleKnightAttackingVictory(serf: WorldSerf, gameTick: number): void {
+    const defender = this.serfs.get(serf.fightOpponentIndex);
+    if (defender === undefined) {
+      this.#engageBuilding(serf, gameTick);
+      return;
+    }
+
+    const delta = (gameTick - defender.tick) & 0xffff;
+    defender.tick = gameTick;
+    defender.counter -= delta;
+
+    if (defender.counter < 0) {
+      this.serfs.delete(defender.index);
+      serf.fightOpponentIndex = 0;
+      serf.tick = gameTick;
+      this.#engageBuilding(serf, gameTick);
+    }
+  }
+
+  // Dead serfs play out their death animation and leave the map.
+  #handleDead(serf: WorldSerf, gameTick: number): void {
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+    serf.counter -= delta;
+
+    if (serf.counter < 0) {
+      if (this.serfIndexes[serf.position] === serf.index) {
+        this.serfIndexes[serf.position] = 0;
+      }
+
+      this.serfs.delete(serf.index);
+    }
   }
 
   // Greedy flag-graph routing toward the destination flag (condensed

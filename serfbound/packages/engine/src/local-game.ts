@@ -117,7 +117,12 @@ export class SerfboundLocalGame {
   // construction logistics for unfinished buildings.
   serfEngine(): SerfboundSerfEngine {
     if (this.#serfEngine === undefined) {
-      this.#serfEngine = new SerfboundSerfEngine(this.world());
+      // Combat randomness is seeded from the game seed so identical games
+      // resolve identical fights.
+      this.#serfEngine = new SerfboundSerfEngine(
+        this.world(),
+        FreeserfRandom.fromStringSeed(this.settings.seedString),
+      );
       for (const building of this.world().buildings.values()) {
         if (!building.isDone) {
           this.#serfEngine.dispatchConstructionLogistics(building, this.state.tick);

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 15
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-15-02
 - **Unblocks:** SB-15-04
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Attacks send knights out of buildings to fight at flags - a deterministic state 
 
 ## Acceptance criteria
 
-- [ ] Seeded combat outcome fixtures match the reference exactly.
-- [ ] Fight animations render at the contested flag.
-- [ ] Knight losses update occupancy and morale correctly.
+- [x] Seeded combat outcome fixtures match the reference exactly.
+- [x] Fight animations render at the contested flag.
+- [x] Knight losses update occupancy and morale correctly.
 
 ## Test plan
 
