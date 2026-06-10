@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 7
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-3-03, SB-4-04, SB-5-03, SB-6-03
 - **Unblocks:** SB-7-02, SB-7-03, SB-7-04
 - **Owner:** unassigned
@@ -37,6 +37,12 @@ form one browser flow.
 - **Design handoff:** Screenshot/video evidence of started game.
 
 ## Notes / open questions
+
+Shipped deterministic local game initialization through
+`startSerfboundLocalGame()` in `@serfbound/engine`. The browser start path now
+requires imported `SPAU.PA` catalog data, starts a local single-player session,
+replaces the command router with the initialized game state, and displays a
+settlement map state with screenshot evidence.
 
 Keep setup options minimal. The first goal is a working local path, not a full
 original setup screen.

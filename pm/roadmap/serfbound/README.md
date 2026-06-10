@@ -214,6 +214,11 @@ For Serfbound specifically, every implementation story must identify:
   mouse-style pointer input, trackpad-equivalent pointer paths, touch-style
   PointerEvent handling, import recovery, start-game state, selected tile
   feedback, and desktop/mobile panel layout.
+- **Current local game start proof:** `@serfbound/engine` initializes a
+  deterministic local single-player game from imported `SPAU.PA` catalog
+  metadata; `@serfbound/app` requires imported data before starting, swaps the
+  command router onto the initialized game state, and displays the settlement
+  map with screenshot evidence under `phase-7-playable-slice/artifacts/`.
 
 ## Glossary
 

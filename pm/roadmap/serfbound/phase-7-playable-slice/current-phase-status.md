@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** in progress.
+
 ## Goal
 
 Deliver a local browser-playable slice that imports data, starts a game,
@@ -27,7 +29,7 @@ saves/loads state.
 
 ## Exit criteria (evidence required)
 
-- [ ] A user can open the browser client, import local data, start a game, and
+- [x] A user can open the browser client, import local data, start a game, and
   see the settlement map.
 - [ ] One visible build/road/flag interaction mutates engine state and rendered
   output.
@@ -40,17 +42,17 @@ saves/loads state.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-7-01 | Start local game from imported data | ready | story-01-start-local-game.md | — |
-| SB-7-02 | Implement first visible build action | backlog | story-02-first-visible-build-action.md | — |
+| SB-7-01 | Start local game from imported data | done | story-01-start-local-game.md | evidence-story-01.md |
+| SB-7-02 | Implement first visible build action | ready | story-02-first-visible-build-action.md | — |
 | SB-7-03 | Add browser save/load loop | backlog | story-03-browser-save-load-loop.md | — |
 | SB-7-04 | Verify playable loop manually | backlog | story-04-playable-loop-verification.md | — |
 
 ## Where we are
 
-Phase 7 is ready to start. Phase 6 completed the browser input shell,
-recoverable first-playable panels, command routing, and interaction ergonomics
-audit. The next responsible move is SB-7-01: start a local game from imported
-data.
+Phase 7 is in progress. SB-7-01 added deterministic local game initialization
+from imported `SPAU.PA` catalog metadata, wires the browser start path to that
+engine state, and captures a started-game screenshot. The next responsible move
+is SB-7-02: implement the first visible build action through the command route.
 
 ## Active risks
 
@@ -62,7 +64,12 @@ data.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — A local game start requires imported `SPAU.PA` catalog data.
+  Generated preview terrain can still render before import, but it cannot be
+  promoted to a running local game — SB-7-01.
+- 2026-06-09 — Derive the first local game seed deterministically from imported
+  DOS PA catalog metadata until Phase 7 introduces explicit setup options —
+  SB-7-01.
 
 ## Decisions deferred
 

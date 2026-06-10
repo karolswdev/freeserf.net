@@ -10,8 +10,11 @@ import {
 import {
   engineBoundary,
   SerfboundCommandRouter,
+  startSerfboundLocalGame,
   uint16,
   type SerfboundCommandResult,
+  type SerfboundLocalGameDataSource,
+  type SerfboundLocalGameStartResult,
 } from "@serfbound/engine";
 import {
   BrowserIndexedDbImportedArchiveStore,
@@ -80,7 +83,11 @@ export type MountSerfboundOptions = {
 };
 
 type SceneRenderGenerated = () => void;
-type SceneRenderCatalog = (typedAssetCatalog: TypedAssetCatalog) => void;
+type SceneRenderCatalog = (
+  typedAssetCatalog: TypedAssetCatalog,
+  catalog: DosPaCatalog,
+  archiveName: string,
+) => void;
 
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
@@ -91,7 +98,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   root.dataset.serfboundCatalogState = "unread";
   root.dataset.serfboundStorageState = "empty";
   root.dataset.serfboundGameState = "setup";
-  root.dataset.serfboundStartMode = "practice";
+  root.dataset.serfboundStartMode = "import-required";
+  root.dataset.serfboundLocalGameState = "none";
   root.dataset.serfboundRecoverableState = "none";
   root.dataset.serfboundCommandState = "idle";
   root.dataset.serfboundCommandLogLength = "0";
@@ -118,19 +126,19 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           <p class="status-panel__label">Data</p>
           <p class="status-panel__value" data-testid="data-state">No game data</p>
         </div>
-        <p class="status-panel__detail" data-testid="data-detail">Import SPAU.PA when ready. Practice is available now.</p>
+        <p class="status-panel__detail" data-testid="data-detail">Import SPAU.PA to start a local game.</p>
         <div>
           <p class="status-panel__label">Game</p>
-          <p class="status-panel__value" data-testid="game-state">Setup</p>
+          <p class="status-panel__value" data-testid="game-state">Data needed</p>
         </div>
-        <p class="status-panel__detail" data-testid="game-detail">Start a practice settlement or import data first.</p>
+        <p class="status-panel__detail" data-testid="game-detail">Import game data first.</p>
         <div>
           <p class="status-panel__label">Source</p>
-          <p class="status-panel__value" data-testid="source-state">Practice</p>
+          <p class="status-panel__value" data-testid="source-state">No data</p>
         </div>
         <div>
           <p class="status-panel__label">Map</p>
-          <p class="status-panel__value" data-testid="scene-state">Practice terrain</p>
+          <p class="status-panel__value" data-testid="scene-state">Waiting for data</p>
         </div>
         <p class="status-panel__detail" data-testid="scene-detail">Select land to inspect it.</p>
         <div>
@@ -159,6 +167,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           class="primary-action"
           data-testid="start-game-button"
           type="button"
+          disabled
         >Start game</button>
         <label class="secondary-action" for="data-import">Import data</label>
         <button
@@ -175,25 +184,33 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   if (canvas === null) {
     throw new Error("Serfbound shell canvas did not mount.");
   }
-  const commandRouter = new SerfboundCommandRouter();
+  let commandRouter = new SerfboundCommandRouter();
   root.dataset.serfboundEnginePackage = summary.enginePackage;
 
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
+  let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   const renderCurrentScene = () => {
     renderScene(root, currentTypedAssetCatalog);
   };
   const renderGeneratedScene = () => {
     currentTypedAssetCatalog = undefined;
+    currentImportedDataSource = undefined;
+    commandRouter = new SerfboundCommandRouter();
     renderCurrentScene();
   };
-  const renderCatalogScene = (typedAssetCatalog: TypedAssetCatalog) => {
+  const renderCatalogScene = (
+    typedAssetCatalog: TypedAssetCatalog,
+    catalog: DosPaCatalog,
+    archiveName: string,
+  ) => {
     currentTypedAssetCatalog = typedAssetCatalog;
+    currentImportedDataSource = localGameDataSourceFromCatalog(catalog, archiveName);
     renderCurrentScene();
   };
 
   renderGeneratedScene();
   observeSceneResize(canvas, renderCurrentScene);
-  attachPointerMapInteraction(root, canvas, commandRouter);
+  attachPointerMapInteraction(root, canvas, () => commandRouter);
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -232,7 +249,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   }
 
   startButton.addEventListener("click", () => {
-    applyRunningGameState(root);
+    const result = startSerfboundLocalGame(
+      currentImportedDataSource === undefined ? {} : { data: currentImportedDataSource },
+    );
+    if (result.status === "started") {
+      commandRouter = new SerfboundCommandRouter(result.game.state);
+    }
+    applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
   });
 
   void restorePersistedArchive(
@@ -267,23 +290,23 @@ function applyArchiveValidation(
       break;
     case "unsupported":
       state.textContent = "File not usable";
-      detail.textContent = `${result.fileName} cannot be used. Choose SPAU.PA or keep practicing.`;
+      detail.textContent = `${result.fileName} cannot be used. Choose SPAU.PA to start.`;
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
       root.dataset.serfboundRecoverableState = "file-error";
       renderGeneratedScene();
-      setSourceState(root, "Practice");
+      setSourceState(root, "No data");
       syncGameReadiness(root);
       setResetEnabled(root, false);
       break;
     case "missing":
       state.textContent = "No game data";
-      detail.textContent = "Import SPAU.PA when ready. Practice is available now.";
+      detail.textContent = "Import SPAU.PA to start a local game.";
       root.dataset.serfboundCatalogState = "unread";
       root.dataset.serfboundStorageState = "empty";
       root.dataset.serfboundRecoverableState = "none";
       renderGeneratedScene();
-      setSourceState(root, "Practice");
+      setSourceState(root, "No data");
       syncGameReadiness(root);
       setResetEnabled(root, false);
       break;
@@ -310,7 +333,7 @@ async function importSelectedArchive(
   try {
     const bytes = await file.arrayBuffer();
     const catalog = parseDosPaCatalog(bytes);
-    renderCatalogScene(buildTypedAssetCatalog(catalog));
+    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, validation.normalizedName);
     const record = createStoredImportedArchiveRecord({
       fileName: validation.fileName,
       normalizedName: validation.normalizedName,
@@ -339,9 +362,9 @@ async function importSelectedArchive(
     root.dataset.serfboundRecoverableState = "parse-error";
     renderGeneratedScene();
     state.textContent = "Data could not be read";
-    detail.textContent = "Choose SPAU.PA again or keep practicing.";
+    detail.textContent = "Choose SPAU.PA again to start.";
     root.dataset.serfboundDataError = errorMessage(error);
-    setSourceState(root, "Practice");
+    setSourceState(root, "No data");
     syncGameReadiness(root);
     setResetEnabled(root, false);
   }
@@ -376,7 +399,7 @@ function applyStoredArchiveRecord(
 ): void {
   try {
     const catalog = parseDosPaCatalog(record.bytes);
-    renderCatalogScene(buildTypedAssetCatalog(catalog));
+    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, record.normalizedName);
     applyParsedCatalogState(root, catalog, "restored", record);
   } catch (error) {
     root.dataset.serfboundDataState = "unsupported";
@@ -435,8 +458,8 @@ async function clearSelectedArchive(
   root.dataset.serfboundGameState = "setup";
   renderGeneratedScene();
   getDataStateElement(root).textContent = "No game data";
-  getDataDetailElement(root).textContent = "Saved data cleared. Practice is available now.";
-  setSourceState(root, "Practice");
+  getDataDetailElement(root).textContent = "Saved data cleared. Import SPAU.PA to start.";
+  setSourceState(root, "No data");
   syncGameReadiness(root);
   setResetEnabled(root, false);
 }
@@ -446,8 +469,8 @@ function applyStorageErrorState(root: HTMLElement, message: string): void {
   root.dataset.serfboundRecoverableState = "storage-error";
   root.dataset.serfboundStorageMessage = message;
   getDataStateElement(root).textContent = "Saved data unavailable";
-  getDataDetailElement(root).textContent = "Practice is available now. Try importing SPAU.PA again.";
-  setSourceState(root, "Practice");
+  getDataDetailElement(root).textContent = "Try importing SPAU.PA again.";
+  setSourceState(root, "No data");
   syncGameReadiness(root);
 }
 
@@ -478,7 +501,7 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
   }
 
   sceneState.textContent =
-    scene.assetSummary.source === "dos-pa-catalog" ? "Imported terrain" : "Practice terrain";
+    scene.assetSummary.source === "dos-pa-catalog" ? "Imported terrain" : "Preview terrain";
   sceneDetail.textContent =
     scene.assetSummary.source === "dos-pa-catalog"
       ? `${scene.assetSummary.definedArchiveEntries ?? 0} resources are ready for play.`
@@ -488,7 +511,7 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
 function attachPointerMapInteraction(
   root: HTMLElement,
   canvas: HTMLCanvasElement,
-  commandRouter: SerfboundCommandRouter,
+  getCommandRouter: () => SerfboundCommandRouter,
 ): void {
   canvas.addEventListener("pointermove", (event) => {
     const interaction = resolveCanvasPointer(canvas, event);
@@ -501,7 +524,7 @@ function attachPointerMapInteraction(
     applyPointerSelectionState(root, interaction);
     applyCommandResultState(
       root,
-      commandRouter.dispatch({
+      getCommandRouter().dispatch({
         type: "debug.inspect-map-tile",
         source: "pointer",
         map: interaction.map,
@@ -581,15 +604,37 @@ function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResu
   getCommandDetailElement(root).textContent = "Try another action or select a different tile.";
 }
 
-function applyRunningGameState(root: HTMLElement): void {
-  const startMode = root.dataset.serfboundDataState === "supported" ? "imported-data" : "practice";
+function applyLocalGameStartResult(
+  root: HTMLElement,
+  result: SerfboundLocalGameStartResult,
+  typedAssetCatalog: TypedAssetCatalog | undefined,
+): void {
+  if (result.status === "rejected") {
+    root.dataset.serfboundLocalGameState = "rejected";
+    root.dataset.serfboundLocalGameRejectReason = result.reason;
+    root.dataset.serfboundGameState = "setup";
+    getGameStateElement(root).textContent = "Data needed";
+    getGameDetailElement(root).textContent = "Import SPAU.PA before starting a local game.";
+    getStartGameButton(root).disabled = typedAssetCatalog === undefined;
+    return;
+  }
+
+  const snapshot = result.snapshot;
   root.dataset.serfboundGameState = "running";
-  root.dataset.serfboundStartMode = startMode;
+  root.dataset.serfboundStartMode = "imported-data";
+  root.dataset.serfboundLocalGameState = "running";
+  root.dataset.serfboundLocalGameMode = snapshot.mode;
+  root.dataset.serfboundLocalGameSeed = snapshot.settings.seedString;
+  root.dataset.serfboundLocalGameMapSize = String(snapshot.settings.mapSize);
+  root.dataset.serfboundLocalGameMapTiles = String(snapshot.state.map.tileCount);
+  root.dataset.serfboundLocalGameDataEntries = String(snapshot.data.entryCount);
+  delete root.dataset.serfboundLocalGameRejectReason;
   getGameStateElement(root).textContent = "Running";
   getGameDetailElement(root).textContent =
-    startMode === "imported-data"
-      ? "Settlement running with imported data."
-      : "Practice settlement running.";
+    `Local game started: map ${snapshot.state.map.columns}x${snapshot.state.map.rows}.`;
+  getSceneStateElement(root).textContent = "Settlement map";
+  getSceneDetailElement(root).textContent =
+    `${snapshot.data.definedArchiveEntries} resources initialized with seed ${snapshot.settings.seedString}.`;
   const startButton = getStartGameButton(root);
   startButton.textContent = "Running";
   startButton.disabled = true;
@@ -602,14 +647,29 @@ function syncGameReadiness(root: HTMLElement): void {
 
   const hasImportedData = root.dataset.serfboundDataState === "supported";
   root.dataset.serfboundGameState = hasImportedData ? "ready" : "setup";
-  root.dataset.serfboundStartMode = hasImportedData ? "imported-data" : "practice";
-  getGameStateElement(root).textContent = hasImportedData ? "Ready" : "Setup";
+  root.dataset.serfboundStartMode = hasImportedData ? "imported-data" : "import-required";
+  root.dataset.serfboundLocalGameState = "none";
+  getGameStateElement(root).textContent = hasImportedData ? "Ready" : "Data needed";
   getGameDetailElement(root).textContent = hasImportedData
     ? "Imported data is ready. Start when prepared."
-    : "Start a practice settlement or import data first.";
+    : "Import game data first.";
   const startButton = getStartGameButton(root);
   startButton.textContent = "Start game";
-  startButton.disabled = false;
+  startButton.disabled = !hasImportedData;
+}
+
+function localGameDataSourceFromCatalog(
+  catalog: DosPaCatalog,
+  archiveName: string,
+): SerfboundLocalGameDataSource {
+  return {
+    kind: "imported-dos-pa-catalog",
+    archiveName,
+    byteLength: catalog.header.declaredSize,
+    entryCount: catalog.header.entryCount,
+    definedArchiveEntries: catalog.entrySummary.defined,
+    fixupCount: catalog.fixupSummary.count,
+  };
 }
 
 function getPointerStateElement(root: HTMLElement): HTMLElement {
@@ -679,6 +739,24 @@ function getGameDetailElement(root: HTMLElement): HTMLElement {
   const detail = root.querySelector<HTMLElement>("[data-testid='game-detail']");
   if (detail === null) {
     throw new Error("Serfbound shell game detail did not mount.");
+  }
+
+  return detail;
+}
+
+function getSceneStateElement(root: HTMLElement): HTMLElement {
+  const state = root.querySelector<HTMLElement>("[data-testid='scene-state']");
+  if (state === null) {
+    throw new Error("Serfbound shell scene state did not mount.");
+  }
+
+  return state;
+}
+
+function getSceneDetailElement(root: HTMLElement): HTMLElement {
+  const detail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
+  if (detail === null) {
+    throw new Error("Serfbound shell scene detail did not mount.");
   }
 
   return detail;

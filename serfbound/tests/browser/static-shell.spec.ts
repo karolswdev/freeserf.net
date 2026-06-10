@@ -14,6 +14,8 @@ const basicPanelsDesktopScreenshotPath =
   "../pm/roadmap/serfbound/phase-6-ui-input-shell/artifacts/story-03-basic-panels-desktop.png";
 const basicPanelsMobileScreenshotPath =
   "../pm/roadmap/serfbound/phase-6-ui-input-shell/artifacts/story-03-basic-panels-mobile.png";
+const localGameStartedScreenshotPath =
+  "../pm/roadmap/serfbound/phase-7-playable-slice/artifacts/story-01-local-game-started-desktop.png";
 
 function createGeneratedPaArchive(): Buffer {
   const bytes = Buffer.alloc(32);
@@ -32,6 +34,7 @@ test("static app shell renders without original data or a desktop companion", as
   await mkdir(dirname(screenshotPath), { recursive: true });
   await mkdir(dirname(renderSceneScreenshotPath), { recursive: true });
   await mkdir(dirname(basicPanelsDesktopScreenshotPath), { recursive: true });
+  await mkdir(dirname(localGameStartedScreenshotPath), { recursive: true });
   await page.goto("/");
 
   const shell = page.getByTestId("serfbound-shell");
@@ -39,12 +42,12 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByRole("heading", { name: "Serfbound" })).toBeVisible();
   await expect(page.getByTestId("runtime-pill")).toHaveText("Ready");
   await expect(page.getByTestId("data-state")).toHaveText("No game data");
-  await expect(page.getByTestId("game-state")).toHaveText("Setup");
+  await expect(page.getByTestId("game-state")).toHaveText("Data needed");
   await expect(page.getByTestId("game-detail")).toHaveText(
-    "Start a practice settlement or import data first.",
+    "Import game data first.",
   );
-  await expect(page.getByTestId("start-game-button")).toBeEnabled();
-  await expect(page.getByTestId("scene-state")).toHaveText("Practice terrain");
+  await expect(page.getByTestId("start-game-button")).toBeDisabled();
+  await expect(page.getByTestId("scene-state")).toHaveText("Preview terrain");
   await expect(page.getByTestId("scene-detail")).toHaveText("Select land to inspect it.");
   await expect(page.getByTestId("selected-tile-state")).toHaveText("No tile selected");
   await expect(page.getByTestId("command-state")).toHaveText("No action selected");
@@ -63,7 +66,8 @@ test("static app shell renders without original data or a desktop companion", as
     "missing",
   );
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-state", "setup");
-  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-start-mode", "practice");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-start-mode", "import-required");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-game-state", "none");
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-renderer", "webgl2");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-scene-source",
@@ -82,7 +86,7 @@ test("static app shell renders without original data or a desktop companion", as
   });
   await expect(page.getByTestId("data-state")).toHaveText("File not usable");
   await expect(page.getByTestId("data-detail")).toHaveText(
-    "README.txt cannot be used. Choose SPAU.PA or keep practicing.",
+    "README.txt cannot be used. Choose SPAU.PA to start.",
   );
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-data-state",
@@ -92,7 +96,7 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-recoverable-state",
     "file-error",
   );
-  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+  await expect(page.getByTestId("start-game-button")).toBeDisabled();
 
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",
@@ -141,6 +145,7 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByTestId("source-state")).toHaveText("Imported data");
   await expect(page.getByTestId("scene-state")).toHaveText("Imported terrain");
   await expect(page.getByTestId("game-state")).toHaveText("Ready");
+  await expect(page.getByTestId("start-game-button")).toBeEnabled();
   await expect(page.getByTestId("data-reset-button")).toBeEnabled();
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-storage-state",
@@ -149,7 +154,11 @@ test("static app shell renders without original data or a desktop companion", as
   await page.getByTestId("start-game-button").click();
   await expect(page.getByTestId("game-state")).toHaveText("Running");
   await expect(page.getByTestId("game-detail")).toHaveText(
-    "Settlement running with imported data.",
+    "Local game started: map 64x64.",
+  );
+  await expect(page.getByTestId("scene-state")).toHaveText("Settlement map");
+  await expect(page.getByTestId("scene-detail")).toHaveText(
+    "2 resources initialized with seed 3128716831287168.",
   );
   await expect(page.getByTestId("start-game-button")).toBeDisabled();
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-state", "running");
@@ -157,16 +166,38 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-start-mode",
     "imported-data",
   );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-game-state",
+    "running",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-game-mode",
+    "local-single-player",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-game-seed",
+    "3128716831287168",
+  );
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-game-map-size", "3");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-game-map-tiles",
+    "4096",
+  );
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-local-game-data-entries",
+    "2",
+  );
+  await page.screenshot({ fullPage: true, path: localGameStartedScreenshotPath });
 
   await page.getByTestId("data-reset-button").click();
   await expect(page.getByTestId("data-state")).toHaveText("No game data");
   await expect(page.getByTestId("data-detail")).toHaveText(
-    "Saved data cleared. Practice is available now.",
+    "Saved data cleared. Import SPAU.PA to start.",
   );
-  await expect(page.getByTestId("game-state")).toHaveText("Setup");
-  await expect(page.getByTestId("start-game-button")).toBeEnabled();
+  await expect(page.getByTestId("game-state")).toHaveText("Data needed");
+  await expect(page.getByTestId("start-game-button")).toBeDisabled();
   await expect(page.getByTestId("data-reset-button")).toBeDisabled();
-  await expect(page.getByTestId("scene-state")).toHaveText("Practice terrain");
+  await expect(page.getByTestId("scene-state")).toHaveText("Preview terrain");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-storage-state",
     "cleared",
@@ -239,7 +270,7 @@ test("render layer scene stays framed on desktop and mobile viewports", async ({
   ] as const) {
     await page.setViewportSize(viewport.size);
     await page.goto("/");
-    await expect(page.getByTestId("scene-state")).toHaveText("Practice terrain");
+    await expect(page.getByTestId("scene-state")).toHaveText("Preview terrain");
     await expect(page.locator("#app")).toHaveAttribute("data-serfbound-renderer", "webgl2");
     await waitForCanvasResize(page);
     await assertSceneLayoutIsFramed(page, viewport.name);
