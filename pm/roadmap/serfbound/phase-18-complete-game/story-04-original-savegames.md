@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 18
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-18-03
 - **Unblocks:** SB-18-05
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Savegame.cs reads the original .SAV format into full game state. Loading the use
 
 ## Acceptance criteria
 
-- [ ] A reference .SAV corpus loads to matching state facts (fixtures).
-- [ ] Loaded games continue playably (ticks advance without desync).
-- [ ] Corrupt/unsupported saves reject recoverably in the UI.
+- [x] A reference .SAV corpus loads to matching state facts (fixtures).
+- [x] Loaded games continue playably (ticks advance without desync).
+- [x] Corrupt/unsupported saves reject recoverably in the UI.
 
 ## Test plan
 

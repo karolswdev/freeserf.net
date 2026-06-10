@@ -818,4 +818,5 @@ export * from "./world-commands.js";
 export * from "./serfs.js";
 export * from "./missions.js";
 export * from "./ai.js";
+export * from "./dos-savegame.js";
 export * from "./inventory.js";
