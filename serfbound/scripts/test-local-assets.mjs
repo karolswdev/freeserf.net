@@ -132,7 +132,7 @@ assert.equal(scene.assetSummary.source, "dos-pa-catalog");
 assert.equal(scene.assetSummary.definedArchiveEntries, typedCatalog.source.definedArchiveEntries);
 assert.equal(scene.assetSummary.mapGroundStatus.startsWith("available:"), true);
 assert.equal(scene.assetSummary.mapObjectsStatus.startsWith("partial:"), true);
-assert.equal(scene.layers.length, 5);
+assert.equal(scene.layers.length, 6);
 assert.equal(scene.primitives.length > 100, true);
 
 // SB-10-01: real DOS palette and sprite payloads must decode, not just catalog.

@@ -40,7 +40,11 @@ test("first render-layer scene is generated, layered, sorted, and engine-backed"
   );
   assert.equal(scene.assetSummary.source, "generated-fixture");
   assert.equal(scene.assetSummary.mapGroundStatus, "generated-fixture");
-  assert.equal(scene.layers.every((layer) => layer.primitiveCount > 0), true);
+  // The ui layer fills only on decoded scenes (SB-16-01 chrome).
+  assert.equal(
+    scene.layers.every((layer) => layer.primitiveCount > 0 || layer.key === "ui"),
+    true,
+  );
   assert.equal(scene.tilePrimitiveCount > 100, true);
 
   for (let index = 1; index < scene.primitives.length; index += 1) {

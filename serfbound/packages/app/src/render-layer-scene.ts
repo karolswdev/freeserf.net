@@ -4,7 +4,13 @@ import {
   composeMaskedTile,
   composeSerfTorso,
   decodeDosResourceSprite,
+  decodeUiCursor,
+  decodeUiFontGlyph,
+  decodeUiFrame,
+  decodeUiIcon,
+  decodeUiPanelButton,
   parseSerfAnimationTable,
+  uiFontGlyphCount,
   type ComposedSerfTorso,
   type SerfAnimationTable,
   terrainGroundSpriteIndex,
@@ -26,7 +32,7 @@ import {
   type RenderSize,
 } from "@serfbound/engine";
 
-export const renderLayerOrder = ["terrain", "paths", "shadows", "objects", "markers"] as const;
+export const renderLayerOrder = ["terrain", "paths", "shadows", "objects", "markers", "ui"] as const;
 
 export type RenderLayerKey = (typeof renderLayerOrder)[number];
 
@@ -39,6 +45,8 @@ export type RenderSpritePrimitive = {
   readonly y: number;
   readonly sortY: number;
   readonly sortX: number;
+  // Integer pixel-art scale (UI chrome renders at 2x; map sprites at 1x).
+  readonly scale?: number;
 };
 
 export type DecodedMapObjectSprite = {
@@ -64,6 +72,13 @@ export type DecodedRenderAssets = {
   readonly serfAnimationTable: SerfAnimationTable | null;
   readonly rawSerfTorsos: ReadonlyMap<number, ComposedSerfTorso>;
   readonly rawSerfHeads: ReadonlyMap<number, DecodedDosSprite>;
+  // Decoded UI chrome (SB-16-01): font glyphs, icon sheet, panel buttons,
+  // popup frame pieces, and the cursor.
+  readonly rawFontGlyphs: readonly (DecodedDosSprite | null)[];
+  readonly rawIcons: ReadonlyMap<number, DecodedDosSprite>;
+  readonly rawPanelButtons: ReadonlyMap<number, DecodedDosSprite>;
+  readonly rawPopupFrames: readonly (DecodedDosSprite | null)[];
+  readonly rawCursor: DecodedDosSprite | null;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -638,6 +653,36 @@ export function buildDecodedRenderAssets(
     }
   }
 
+  // UI chrome: the 44 font glyphs, icon sheet, panel buttons, popup
+  // frames, and the cursor (partial archives skip what they lack).
+  const rawFontGlyphs: (DecodedDosSprite | null)[] = [];
+  for (let glyph = 0; glyph < uiFontGlyphCount; glyph += 1) {
+    rawFontGlyphs.push(decodeUiSafely(() => decodeUiFontGlyph(archive, glyph)));
+  }
+
+  const rawIcons = new Map<number, DecodedDosSprite>();
+  for (let icon = 0; icon < 380; icon += 1) {
+    const sprite = decodeUiSafely(() => decodeUiIcon(archive, icon));
+    if (sprite !== null) {
+      rawIcons.set(icon, sprite);
+    }
+  }
+
+  const rawPanelButtons = new Map<number, DecodedDosSprite>();
+  for (let button = 0; button < 30; button += 1) {
+    const sprite = decodeUiSafely(() => decodeUiPanelButton(archive, button));
+    if (sprite !== null) {
+      rawPanelButtons.set(button, sprite);
+    }
+  }
+
+  const rawPopupFrames: (DecodedDosSprite | null)[] = [];
+  for (let frame = 0; frame < 10; frame += 1) {
+    rawPopupFrames.push(decodeUiSafely(() => decodeUiFrame(archive, "framePopup", frame)));
+  }
+
+  const rawCursor = decodeUiSafely(() => decodeUiCursor(archive));
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
@@ -655,7 +700,20 @@ export function buildDecodedRenderAssets(
     serfAnimationTable,
     rawSerfTorsos,
     rawSerfHeads,
+    rawFontGlyphs,
+    rawIcons,
+    rawPanelButtons,
+    rawPopupFrames,
+    rawCursor,
   };
+}
+
+function decodeUiSafely(decode: () => DecodedDosSprite | null): DecodedDosSprite | null {
+  try {
+    return decode();
+  } catch {
+    return null;
+  }
 }
 
 function decodeSafely(
@@ -1044,10 +1102,11 @@ function renderDecodedSpriteScene(
       continue;
     }
 
+    const spriteScale = sprite.scale ?? 1;
     const x0 = sprite.x;
     const y0 = sprite.y;
-    const x1 = sprite.x + region.width;
-    const y1 = sprite.y + region.height;
+    const x1 = sprite.x + region.width * spriteScale;
+    const y1 = sprite.y + region.height * spriteScale;
     const u0 = region.x / atlas.width;
     const v0 = region.y / atlas.height;
     const u1 = (region.x + region.width) / atlas.width;

@@ -2,6 +2,7 @@ import {
   buildSpriteAtlas,
   composeMaskedTile,
   composeSerfTorso,
+  layoutUiText,
   parseSerfAnimationTable,
   terrainGroundSpriteIndex,
   triangleMaskCodeDown,
@@ -52,6 +53,9 @@ export type LandscapeRenderAssets = {
   readonly pathComboCount: number;
   readonly serfAnimationTable: SerfAnimationTable | null;
   readonly serfBodyCount: number;
+  // Decoded UI chrome counts (SB-16-01 foundation evidence).
+  readonly uiGlyphCount: number;
+  readonly uiIconCount: number;
 };
 
 // RenderSerf.AppearanceIndex1/2 map an animation frame's sprite byte to the
@@ -339,6 +343,31 @@ export function buildLandscapeRenderAssets(
     sprites[`serfh:${head}`] = sprite;
   }
 
+  // Decoded UI chrome (SB-16-01): font glyphs, icons, panel buttons,
+  // popup frames, and the cursor. UI sprites anchor at their top-left
+  // (header offsets only matter for map placement).
+  let uiGlyphCount = 0;
+  decodedAssets.rawFontGlyphs.forEach((glyph, index) => {
+    if (glyph !== null) {
+      sprites[`uif:${index}`] = stripOffsets(glyph);
+      uiGlyphCount += 1;
+    }
+  });
+  for (const [index, icon] of decodedAssets.rawIcons) {
+    sprites[`uii:${index}`] = stripOffsets(icon);
+  }
+  for (const [index, button] of decodedAssets.rawPanelButtons) {
+    sprites[`uip:${index}`] = stripOffsets(button);
+  }
+  decodedAssets.rawPopupFrames.forEach((frame, index) => {
+    if (frame !== null) {
+      sprites[`uifr:${index}`] = stripOffsets(frame);
+    }
+  });
+  if (decodedAssets.rawCursor !== null) {
+    sprites["uic"] = stripOffsets(decodedAssets.rawCursor);
+  }
+
   // Waves: 16 frames, each in three shore variants per the reference
   // (full, masked by up mask 40, masked by down mask 40; masks widened to the
   // 48px wave width).
@@ -392,6 +421,8 @@ export function buildLandscapeRenderAssets(
     pathComboCount,
     serfAnimationTable: decodedAssets.serfAnimationTable,
     serfBodyCount,
+    uiGlyphCount,
+    uiIconCount: decodedAssets.rawIcons.size,
   };
 }
 
@@ -718,6 +749,32 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
     pushSprite("markers", "obj:flag", screen.x, screen.y, screen.y + structure.id / 1000, screen.x);
   }
 
+  // UI chrome overlay (SB-16-01 foundation): decoded font text, an icon,
+  // a popup frame piece, and the cursor at 2x integer scale, in screen
+  // space above the map (the panel bar and popups build on this layer).
+  const uiScale = 2;
+  if (atlas.regions["uif:0"] !== undefined && options.world !== undefined) {
+    const inventory = options.world.inventoryForPlayer(0);
+    const plankCount = inventory === null ? 0 : inventory.resources[7];
+    const stoneCount = inventory === null ? 0 : inventory.resources[9];
+    const hudText = `PLANK:${plankCount} STONE:${stoneCount}`;
+    const textX = 30 * uiScale;
+    const textY = 6 * uiScale;
+    for (const placement of layoutUiText(hudText)) {
+      pushUiSprite(
+        sprites, atlas, `uif:${placement.glyphIndex}`,
+        textX + placement.x * uiScale, textY, uiScale,
+      );
+    }
+
+    pushUiSprite(sprites, atlas, "uii:0", 6 * uiScale, 2 * uiScale, uiScale);
+    pushUiSprite(sprites, atlas, "uifr:0", 0, 24 * uiScale, uiScale);
+    pushUiSprite(
+      sprites, atlas, "uic",
+      options.size.width - 20 * uiScale, 2 * uiScale, uiScale,
+    );
+  }
+
   const sortedSprites = sprites.sort(compareLandscapeSprite);
 
   return {
@@ -742,6 +799,21 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
       mapShadowsStatus: "landscape",
     },
   };
+}
+
+function pushUiSprite(
+  sprites: RenderSpritePrimitive[],
+  atlas: SpriteAtlas,
+  key: string,
+  x: number,
+  y: number,
+  scale: number,
+): void {
+  if (atlas.regions[key] === undefined) {
+    return;
+  }
+
+  sprites.push({ layer: "ui", key, x, y, sortY: y, sortX: x, scale });
 }
 
 function compareLandscapeSprite(

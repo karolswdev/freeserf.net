@@ -45,6 +45,21 @@ export {
   type SpriteAtlasRegion,
 } from "./sprite-atlas.js";
 
+export {
+  decodeUiCursor,
+  decodeUiFontGlyph,
+  decodeUiFrame,
+  decodeUiIcon,
+  decodeUiPanelButton,
+  layoutUiText,
+  mapCharacterToGlyphIndex,
+  uiFontAdvance,
+  uiFontGlyphCount,
+  uiResourceBase,
+  type UiFrameKind,
+  type UiTextGlyphPlacement,
+} from "./ui-art.js";
+
 export type AssetImportBoundary = {
   readonly source: "user-provided-local-file";
   readonly storesOriginalPayloadInGit: false;

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 16
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-15-04
 - **Unblocks:** SB-16-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Authentic chrome needs the decoded font glyphs, icon sheet, frame borders, and c
 
 ## Acceptance criteria
 
-- [ ] Text renders pixel-correct with the decoded font at 1x/2x scales.
-- [ ] Icons, frames, and the cursor render from decoded art.
-- [ ] A scaling decision is recorded with visual comparisons.
+- [x] Text renders pixel-correct with the decoded font at 1x/2x scales.
+- [x] Icons, frames, and the cursor render from decoded art.
+- [x] A scaling decision is recorded with visual comparisons.
 
 ## Test plan
 

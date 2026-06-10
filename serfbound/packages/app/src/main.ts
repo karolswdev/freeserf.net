@@ -402,6 +402,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     }
 
     currentLandscapeAssets = buildLandscapeRenderAssets(currentDecodedAssets, game.landscape()) ?? undefined;
+    // Decoded UI chrome status (SB-16-01): glyph and icon counts.
+    if (currentLandscapeAssets !== undefined) {
+      root.dataset.serfboundUiArt =
+        `glyphs:${currentLandscapeAssets.uiGlyphCount},icons:${currentLandscapeAssets.uiIconCount}`;
+    } else {
+      delete root.dataset.serfboundUiArt;
+    }
+
     currentScroll = { column: 0, row: 0 };
     currentTick = 0;
     syncWaveAnimation();

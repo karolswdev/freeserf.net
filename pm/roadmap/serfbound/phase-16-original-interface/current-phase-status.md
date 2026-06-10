@@ -1,7 +1,7 @@
 # Phase 16 — The Original Interface
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -32,7 +32,7 @@ original.
 
 ## Exit criteria (evidence required)
 
-- [ ] Text renders with the decoded game font; icons/frames/cursors come from
+- [x] Text renders with the decoded game font; icons/frames/cursors come from
   decoded art. (SB-16-01)
 - [ ] The panel bar drives the game: build mode, stats access, settings,
   game speed. (SB-16-02)
@@ -46,7 +46,7 @@ original.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-16-01 | Render decoded UI art: fonts, icons, frames, cursors | backlog | story-01-ui-art-foundation.md | — |
+| SB-16-01 | Render decoded UI art: fonts, icons, frames, cursors | done | story-01-ui-art-foundation.md | evidence-story-01.md |
 | SB-16-02 | Build the authentic panel bar | backlog | story-02-authentic-panel-bar.md | — |
 | SB-16-03 | Build the popup system | backlog | story-03-popup-system.md | — |
 | SB-16-04 | Minimap and notifications | backlog | story-04-minimap-notifications.md | — |
@@ -54,7 +54,10 @@ original.
 
 ## Where we are
 
-Scaffolded; starts after Phase 15 closes.
+SB-16-01 is done: the decoded game font, icons, frames, panel buttons,
+and cursor render through a new 2x integer-scaled ui layer above the map,
+proven with real SPAU.PA data (the live HUD reads the castle stock in the
+original font). SB-16-02 (the authentic panel bar) is next.
 
 ## Active risks
 
@@ -66,7 +69,9 @@ Scaffolded; starts after Phase 15 closes.
 
 ## Decisions made (this phase)
 
-- none yet.
+- UI chrome renders at 2x integer scale via a `scale` field on sprite
+  primitives through the NEAREST-filtered WebGL path; non-integer scaling
+  rejected (SB-16-01).
 
 ## Decisions deferred
 

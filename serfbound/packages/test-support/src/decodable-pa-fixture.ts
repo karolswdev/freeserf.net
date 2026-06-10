@@ -4,7 +4,7 @@
 // without any original game data. Colors are synthetic, not original art.
 
 const headerByteLength = 10;
-const entryCount = 2600;
+const entryCount = 4000;
 
 type FixtureEntry = {
   readonly index: number;
@@ -181,6 +181,33 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
       bytes: concatBytes([spriteHeader(8, 8, -4, -4), fullCoverageRuns(8 * 8, 240 + border)]),
     });
   }
+
+  // UI art: 44 font glyphs (750..793, 8x8 transparent), shadows (810..853),
+  // 20 icons (870..889, 16x16 solid), 4 popup frame pieces (660..663),
+  // 5 panel buttons (1750..1754, 32x32 solid), and the cursor (3999).
+  for (let glyph = 0; glyph < 44; glyph += 1) {
+    entries.push({
+      index: 750 + glyph,
+      bytes: concatBytes([spriteHeader(8, 8), fullCoverageRuns(8 * 8, 30 + glyph)]),
+    });
+    entries.push({
+      index: 810 + glyph,
+      bytes: concatBytes([spriteHeader(8, 8), fullCoverageRuns(8 * 8, 1)]),
+    });
+  }
+  for (let icon = 0; icon < 20; icon += 1) {
+    entries.push({ index: 870 + icon, bytes: solidSprite(16, 16, 120 + icon * 3) });
+  }
+  for (let frame = 0; frame < 4; frame += 1) {
+    entries.push({ index: 660 + frame, bytes: solidSprite(16, 144, 80 + frame * 5) });
+  }
+  for (let button = 0; button < 5; button += 1) {
+    entries.push({ index: 1750 + button, bytes: solidSprite(32, 32, 160 + button * 4) });
+  }
+  entries.push({
+    index: 3999,
+    bytes: concatBytes([spriteHeader(16, 16), fullCoverageRuns(16 * 16, 250)]),
+  });
 
   // Flag frame 0 (map_object 128 -> entry 1378) with its shadow (1628).
   entries.push({

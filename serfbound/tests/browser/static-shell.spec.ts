@@ -82,7 +82,7 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-scene-source",
     "generated-fixture",
   );
-  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-layer-count", "5");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-layer-count", "6");
 
   await page.screenshot({ fullPage: true, path: screenshotPath });
   await page.screenshot({ fullPage: true, path: renderSceneScreenshotPath });
