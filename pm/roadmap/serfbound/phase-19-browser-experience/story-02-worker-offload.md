@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 19
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-19-01
 - **Unblocks:** SB-19-03
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Phase 8 deferred Web Workers until measured stop signals trip. With full-game lo
 
 ## Acceptance criteria
 
-- [ ] A decision record exists with measurements either way.
-- [ ] If adopted - parity fixtures pass identically under workers.
-- [ ] If adopted - worker crash recovers without losing the session.
+- [x] A decision record exists with measurements either way.
+- [x] If adopted - parity fixtures pass identically under workers.
+- [x] If adopted - worker crash recovers without losing the session.
 
 ## Test plan
 
