@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 19
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-19-04
 - **Unblocks:** SB-20-01
 - **Owner:** unassigned
@@ -18,10 +18,10 @@ The first five minutes and every-player concerns - a guided first-run that gets 
 
 ## Acceptance criteria
 
-- [ ] A new user reaches gameplay from a clean profile guided end-to-end (browser-tested).
-- [ ] Core loop playable by keyboard
-- [ ]  audit findings fixed or recorded.
-- [ ] Settings persist and apply across reloads and devices.
+- [x] A new user reaches gameplay from a clean profile guided end-to-end (browser-tested).
+- [x] Core loop playable by keyboard
+- [x]  audit findings fixed or recorded.
+- [x] Settings persist and apply across reloads and devices.
 
 ## Test plan
 

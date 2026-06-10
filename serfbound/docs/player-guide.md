@@ -87,3 +87,31 @@ data.
 If you move between `http` and `https`, change subdomains, or change ports,
 your browser treats that as a different origin. Reimport `SPAU.PA` on the new
 origin.
+
+
+## Playing with the original interface
+
+Once your data is imported, the title screen on the canvas is the front
+door: tap or click SEED to reroll the world, SUPPLIES to cycle your
+starting stock, MISSION to pick a campaign mission, and START (or press
+Enter) to play. In the game, the original panel bar drives everything:
+the build button opens the construction menus, the road button lays
+roads, and the map/stats/sett buttons open the minimap, the resource
+stats, and the knight/audio settings.
+
+Keyboard play: arrow keys scroll the map, Enter starts the configured
+game from the title screen, and 0/1/2/4 pause or set the game speed.
+Game sessions autosave automatically while running.
+
+## Sound and music
+
+Sound effects and music decode from your own data and start after your
+first click or tap (browsers require a gesture). Mute switches live in
+the sett popup and persist on this device.
+
+## Installing and playing offline
+
+Serfbound installs as an app from your browser's install option. The app
+shell works offline; your imported data and saves live in this device's
+browser storage, so the game keeps playing without a network. Original
+game data is never uploaded or cached outside your device.

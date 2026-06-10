@@ -255,6 +255,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       </section>
       <aside class="status-panel" aria-label="Serfbound status">
         <div>
+          <p
+            class="visually-hidden"
+            data-testid="notification-live"
+            aria-live="polite"
+          ></p>
+          <div
+            class="status-panel__detail"
+            data-testid="onboarding-banner"
+            role="note"
+          >First run: 1) locate your original Settlers SPAU.PA file, 2) use Import data below (it stays on this device), 3) press START on the title screen.</div>
           <p class="status-panel__label">Data</p>
           <p class="status-panel__value" data-testid="data-state">No game data</p>
         </div>
@@ -473,10 +483,23 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let lastDoneBuildingCount = 0;
   const setNotice = (notice: string | undefined) => {
     currentNotice = notice;
+    const live = root.querySelector<HTMLElement>("[data-testid='notification-live']");
     if (notice === undefined) {
       delete root.dataset.serfboundNotification;
+      if (live !== null) {
+        live.textContent = "";
+      }
     } else {
       root.dataset.serfboundNotification = notice;
+      if (live !== null) {
+        live.textContent = notice;
+      }
+    }
+  };
+  const syncOnboarding = () => {
+    const banner = root.querySelector<HTMLElement>("[data-testid='onboarding-banner']");
+    if (banner !== null) {
+      banner.hidden = root.dataset.serfboundDataState === "supported";
     }
   };
   // The authentic panel bar's build slot mirrors what the selected tile
@@ -511,6 +534,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     });
   };
   const renderCurrentScene = () => {
+    syncOnboarding();
     const panelButtons = computePanelButtons();
     if (panelButtons === undefined) {
       delete root.dataset.serfboundPanelButtons;
@@ -1004,6 +1028,19 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         setGameSpeed(Number(event.key));
         return;
       }
+    }
+
+    // Keyboard play: Enter starts the configured game from the title
+    // screen (the pointer-free path to the same custom/mission start).
+    if (event.key === "Enter" && currentWorld === undefined && initScreenSettings() !== undefined) {
+      event.preventDefault();
+      if (initMission === undefined) {
+        startGameNowRef?.({ seedString: initSeedString, initialSupplies: initSupplies });
+      } else {
+        startGameNowRef?.({ mission: initMission });
+      }
+
+      return;
     }
 
     const scrollKeys: Record<string, readonly [number, number]> = {
@@ -1810,6 +1847,15 @@ function renderScene(
   const sceneDetail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
   if (sceneState === null || sceneDetail === null) {
     throw new Error("Serfbound shell scene status did not mount.");
+  }
+
+  // A running catalog-mode game owns its status texts (the settlement
+  // map summary); re-renders must not clobber them.
+  if (
+    scene.assetSummary.source === "dos-pa-catalog" &&
+    root.dataset.serfboundGameState === "running"
+  ) {
+    return;
   }
 
   if (scene.assetSummary.source === "dos-pa-decoded") {

@@ -1,7 +1,7 @@
 # Phase 19 — First-Class Browser Experience
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -39,7 +39,7 @@ polished first-run experience and real accessibility.
   physical-device notes join the launch checklist)
 - [x] Installable PWA with offline shell; imported data and saves work
   offline. (SB-19-04)
-- [ ] First-run onboarding guides asset import; keyboard/contrast/motion
+- [x] First-run onboarding guides asset import; keyboard/contrast/motion
   accessibility audited and fixed. (SB-19-05)
 
 ## Story status
@@ -50,15 +50,16 @@ polished first-run experience and real accessibility.
 | SB-19-02 | Worker offload decision and implementation | done | story-02-worker-offload.md | evidence-story-02.md |
 | SB-19-03 | Touch and mobile play | done | story-03-touch-mobile-play.md | evidence-story-03.md |
 | SB-19-04 | PWA install and offline shell | done | story-04-pwa-offline-shell.md | evidence-story-04.md |
-| SB-19-05 | Onboarding, accessibility, and settings | backlog | story-05-onboarding-accessibility.md | — |
+| SB-19-05 | Onboarding, accessibility, and settings | done | story-05-onboarding-accessibility.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-19-04 is done: the app installs as a PWA and plays offline — the
-worker precaches the shell and hashed assets at first visit, original
-data never touches the cache, and the offline e2e boots the imported
-game without a network. SB-19-05 (onboarding and accessibility) closes
-the phase.
+The phase is closed. It is a first-class browser product: measured scale
+headroom (no optimization warranted, worker offload rejected on
+evidence), touch play on phone viewports through the responsive
+authentic UI, an installable offline-capable PWA that never caches
+original data, first-run onboarding, live-region accessibility, and
+keyboard play. See final-summary.md.
 
 ## Active risks
 

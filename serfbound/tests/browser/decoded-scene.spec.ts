@@ -17,6 +17,9 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "generated-fixture",
   );
 
+  // First-run onboarding guides the import, then steps aside.
+  await expect(page.getByTestId("onboarding-banner")).toBeVisible();
+
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",
     mimeType: "application/octet-stream",
@@ -24,6 +27,7 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   });
 
   await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.getByTestId("onboarding-banner")).toBeHidden();
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-scene-source",
     "dos-pa-decoded",
@@ -296,11 +300,13 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     { timeout: 150_000 },
   );
 
-  // The completed building surfaced a notification in the game font.
+  // The completed building surfaced a notification in the game font and
+  // announced it to assistive tech through the live region.
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-notification",
     "BUILDING COMPLETE",
   );
+  await expect(page.getByTestId("notification-live")).toHaveText("BUILDING COMPLETE");
 
   // Speed and autosave: the running session autosaved at least once
   // during construction, and the speed keys drive the multiplier.

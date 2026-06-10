@@ -1,12 +1,12 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-19-browser-experience](./phase-19-browser-experience/current-phase-status.md)
-**Status:** Phases 0–18 complete. It is a complete game: the 31-mission
-campaign starts exactly, classic AI opponents found, build, garrison, and
-attack through replayable world actions, original DOS saves parse with
-the reference layout, and speeds/autosave/long sessions hold up. Phase 19
-(the browser experience) is next.
+**Current phase:** [phase-20-launch-operations](./phase-20-launch-operations/current-phase-status.md)
+**Status:** Phases 0–19 complete. It is a first-class browser product:
+measured scale headroom, touch play through the responsive authentic UI,
+an installable offline-capable PWA that never caches original data,
+first-run onboarding, and accessibility. Phase 20 (launch and operations)
+is next.
 
 ## Vision
 
@@ -105,8 +105,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 16 | Rebuild the original interface browser-native | complete | [phase-16-original-interface](./phase-16-original-interface/) |
 | 17 | Sound effects and music through WebAudio | complete | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
 | 18 | Missions, classic AI, and original savegames | complete | [phase-18-complete-game](./phase-18-complete-game/) |
-| 19 | First-class browser experience: performance, mobile, PWA | ready | [phase-19-browser-experience](./phase-19-browser-experience/) |
-| 20 | Public launch and live operations | planned | [phase-20-launch-operations](./phase-20-launch-operations/) |
+| 19 | First-class browser experience: performance, mobile, PWA | complete | [phase-19-browser-experience](./phase-19-browser-experience/) |
+| 20 | Public launch and live operations | ready | [phase-20-launch-operations](./phase-20-launch-operations/) |
 
 ## Delivery Gates
 
@@ -241,6 +241,10 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current browser-experience proof:** scale baselines measured and
+  CI-guarded (size-6 full sim ~2M ticks/s, ~3ms scene builds), worker
+  offload rejected on evidence, touch play proven on a phone viewport,
+  and the PWA's offline shell boots imported games without a network.
 - **Current complete-game proof:** the 31-mission campaign table is
   ported exactly with start-screen selection; AI opponents play through
   recorded world actions (fixture-deterministic founding, the reference
