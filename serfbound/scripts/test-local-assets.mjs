@@ -303,6 +303,20 @@ for (const sfxId of Object.values(sfxType)) {
 }
 assert.equal(decodedSfxCount > 20, true, "most reference clips decode from real data");
 
+// SB-17-02: the XMI music track parses from real data when present.
+const { parseXmiTrack } = await import("../packages/assets/dist/index.js");
+let xmiNote = "no XMI track in this archive";
+const xmiEvents = parseXmiTrack(spriteArchive, 0);
+if (xmiEvents !== null) {
+  assert.equal(xmiEvents.length > 50, true, "the track carries events");
+  assert.equal(
+    xmiEvents.some((event) => event.kind === "noteOn"),
+    true,
+    "the track carries notes",
+  );
+  xmiNote = `XMI track 0 parsed with ${xmiEvents.length} events`;
+}
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, object sprites, ${animationTable.length} serf animations, player-color torsos, and ${decodedSfxCount} DOS sound effects; composed terrain into a ${realAtlas.width}x${realAtlas.height} atlas and a decoded scene with ${decodedScene.sprites.length} sprites.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, object sprites, ${animationTable.length} serf animations, player-color torsos, and ${decodedSfxCount} DOS sound effects (${xmiNote}); composed terrain into a ${realAtlas.width}x${realAtlas.height} atlas and a decoded scene with ${decodedScene.sprites.length} sprites.`,
 );

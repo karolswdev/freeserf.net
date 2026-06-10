@@ -268,6 +268,8 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   // mapping has fired clips (the build commands clicked in).
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-audio", "unlocked");
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-last-sfx", /^\d+$/);
+  // The XMI track parsed and the oscillator synth is playing it.
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-music", "playing");
 
   // The stats updated live: construction logistics drew planks from the
   // castle stock while the settlement built itself.

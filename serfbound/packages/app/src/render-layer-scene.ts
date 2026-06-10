@@ -10,10 +10,12 @@ import {
   decodeUiIcon,
   decodeSfxSamples,
   decodeUiLogo,
+  parseXmiTrack,
   decodeUiPanelButton,
   layoutUiText,
   sfxType,
   parseSerfAnimationTable,
+  type XmiEvent,
   uiFontGlyphCount,
   type ComposedSerfTorso,
   type SerfAnimationTable,
@@ -87,6 +89,8 @@ export type DecodedRenderAssets = {
   readonly rawLogo: DecodedDosSprite | null;
   // Decoded DOS sound effects (SB-17-01), PCM16 by clip id.
   readonly rawSfx: ReadonlyMap<number, Int16Array>;
+  // Parsed XMI music events for track 0 (SB-17-02).
+  readonly rawMusic: XmiEvent[] | null;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -722,6 +726,14 @@ export function buildDecodedRenderAssets(
   const rawCursor = decodeUiSafely(() => decodeUiCursor(archive));
   const rawLogo = decodeUiSafely(() => decodeUiLogo(archive));
 
+  // Music: parse XMI track 0 when the archive defines it.
+  let rawMusic: XmiEvent[] | null = null;
+  try {
+    rawMusic = parseXmiTrack(archive, 0);
+  } catch {
+    rawMusic = null;
+  }
+
   // Sound effects: decode every reference clip the archive defines.
   const rawSfx = new Map<number, Int16Array>();
   for (const sfxId of Object.values(sfxType)) {
@@ -788,6 +800,7 @@ export function buildDecodedRenderAssets(
     rawCursor,
     rawLogo,
     rawSfx,
+    rawMusic,
   };
 }
 

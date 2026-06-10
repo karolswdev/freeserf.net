@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 17
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-17-01
 - **Unblocks:** SB-17-03
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Original music ships as XMI (extended MIDI). The reference converts XMI to MIDI 
 
 ## Acceptance criteria
 
-- [ ] XMI parsing matches reference event streams on fixtures.
-- [ ] A decision record compares prototypes (quality, size, latency).
-- [ ] Classic tracks play in-browser from imported data (manual evidence).
+- [x] XMI parsing matches reference event streams on fixtures.
+- [x] A decision record compares prototypes (quality, size, latency).
+- [x] Classic tracks play in-browser from imported data (manual evidence).
 
 ## Test plan
 

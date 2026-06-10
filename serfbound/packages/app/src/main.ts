@@ -365,6 +365,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   activeAudioService = audioService;
   const syncAudioState = () => {
     root.dataset.serfboundAudio = audioService.state;
+    root.dataset.serfboundMusic = audioService.musicState;
     if (audioService.lastSfx !== null) {
       root.dataset.serfboundLastSfx = String(audioService.lastSfx);
     }
@@ -599,6 +600,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     currentDecodedAssets = buildDecodedRenderAssets(archiveBytes, catalog) ?? undefined;
     if (currentDecodedAssets !== undefined) {
       audioService.loadClips(currentDecodedAssets.rawSfx);
+      audioService.loadMusic(currentDecodedAssets.rawMusic);
     }
     syncAudioState();
     currentImportedDataSource = localGameDataSourceFromCatalog(catalog, archiveName);
@@ -847,6 +849,10 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let dragState: { x: number; y: number } | undefined;
   canvas.addEventListener("pointerdown", (event) => {
     audioService.unlock();
+    if (audioService.musicState === "ready") {
+      audioService.playMusic();
+    }
+
     syncAudioState();
     if (currentLandscapeAssets !== undefined) {
       dragState = { x: event.clientX, y: event.clientY };

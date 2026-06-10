@@ -212,6 +212,19 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
   for (let piece = 0; piece < 26; piece += 1) {
     entries.push({ index: 1780 + piece, bytes: solidSprite(8, 40, 90 + piece * 2) });
   }
+  // Music: one synthetic XMI track at entry 3990 (FORM/XDIR + XMID with a
+  // tempo meta, an instrument change, and two duration-carrying notes).
+  entries.push({
+    index: 3990,
+    bytes: Uint8Array.from([
+      70, 79, 82, 77, 0, 0, 0, 0, 88, 68, 73, 82, 73, 78, 70, 79, 2, 0, 0, 0,
+      1, 0, 67, 65, 84, 32, 0, 0, 0, 0, 88, 77, 73, 68, 70, 79, 82, 77, 0, 0,
+      0, 0, 88, 77, 73, 68, 84, 73, 77, 66, 2, 0, 0, 0, 0, 0, 69, 86, 78, 84,
+      0, 0, 0, 0, 255, 81, 3, 7, 161, 32, 192, 5, 144, 60, 100, 48, 48, 144,
+      64, 90, 24,
+    ]),
+  });
+
   // Sound effects: raw 8-bit PCM payloads at 3900 + id.
   for (const sfx of [1, 2, 4, 8, 34, 42, 76]) {
     const pcm = new Uint8Array(64);

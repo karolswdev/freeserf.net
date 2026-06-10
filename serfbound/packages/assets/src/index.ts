@@ -46,6 +46,13 @@ export {
 } from "./sprite-atlas.js";
 
 export {
+  parseXmi,
+  parseXmiTrack,
+  xmiArchiveBase,
+  type XmiEvent,
+} from "./audio-xmi.js";
+
+export {
   convertSfxToPcm16,
   decodeSfxSamples,
   dosSfxLevel,
