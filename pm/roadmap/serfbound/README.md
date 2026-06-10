@@ -1,21 +1,18 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [23 — Correspondence Foundations](./phase-23-correspondence-foundations/)
-**Status:** Phases 0–22 complete; Serfbound v0.1.0 shipped launch-ready
-(see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)),
-and Phase 21 closed the launch-review punch list: authentic frame
-chrome, font-shadow readability, native-resolution rendering with
-1x/2x/3x view scales, and touch gestures (see
-[phase-21-presentation-fidelity/final-summary.md](./phase-21-presentation-fidelity/final-summary.md)).
-Phase 22 closed with two browser tabs playing one lockstep game over a
-BroadcastChannel — zero servers, agreeing state checksums (see
-[phase-22-multiplayer-foundations/final-summary.md](./phase-22-multiplayer-foundations/final-summary.md)).
-The multiplayer track is re-ordered correspondence-first (decision in
-the Phase 23 status doc): async "offline chess" play over the lockstep
-core (23 — match model, digests/recap, and the hot-seat turn flow shipped), then
-identity/challenges/the turn mailbox (24), data breadth and
-localization (25), with realtime WebRTC play as Phase 26.
+**Current phase:** [24 — Community and Identity](./phase-24-community-identity/)
+**Status:** Phases 0–23 complete; Serfbound v0.1.0 shipped launch-ready
+(see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)).
+Post-launch so far: Phase 21 closed the launch-review punch list
+(authentic chrome, font shadows, native-resolution view scales, touch
+gestures); Phase 22 shipped realtime lockstep between two tabs with
+zero servers; Phase 23 shipped correspondence play — offline-chess
+Serfbound with trustless turn windows, recaps, digests, hot-seat
+pass-and-play, and two-tab async matches (see
+[phase-23-correspondence-foundations/final-summary.md](./phase-23-correspondence-foundations/final-summary.md)).
+Remaining: identity/challenges/the turn mailbox (24), data breadth and
+localization (25), realtime WebRTC online play (26).
 
 ## Vision
 
@@ -118,7 +115,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
-| 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | in progress | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
+| 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | complete | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
 | 24 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
 | 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |
 | 26 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-26-realtime-online-play](./phase-26-realtime-online-play/) |

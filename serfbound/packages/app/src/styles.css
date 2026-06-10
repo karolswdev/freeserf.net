@@ -34,7 +34,10 @@ input {
 .serfbound-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(268px, 336px);
-  min-height: 100vh;
+  /* The game stays in view; the status panel scrolls its own overflow
+     (the action list keeps growing — it must not push the map below
+     the fold). */
+  height: 100vh;
 }
 
 .scene {
@@ -169,6 +172,9 @@ h1 {
 @media (max-width: 760px) {
   .serfbound-shell {
     grid-template-columns: 1fr;
+    /* Stacked layout scrolls as one page. */
+    height: auto;
+    min-height: 100vh;
   }
 
   .scene {

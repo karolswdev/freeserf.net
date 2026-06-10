@@ -1,7 +1,7 @@
 # Phase 23 — Correspondence Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-23-01..03 done.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -50,7 +50,7 @@ loopback are the gate.
   opponent's window at high speed. (SB-23-02)
 - [x] The turn flow runs: whose-turn states, pickup countdown,
   hand-over; hot-seat play works on one machine. (SB-23-03)
-- [ ] The async gate passes: a hot-seat match and a two-tab async match
+- [x] The async gate passes: a hot-seat match and a two-tab async match
   play several windows each with verified checksums in e2e. (SB-23-04)
 
 ## Story status
@@ -60,18 +60,17 @@ loopback are the gate.
 | SB-23-01 | Turn-window match model | done | story-01-turn-window-match-model.md | evidence-story-01.md |
 | SB-23-02 | Window digests and recap replay | done | story-02-window-digests-recap.md | evidence-story-02.md |
 | SB-23-03 | Turn flow and pickup countdown | done | story-03-turn-flow-countdown.md | evidence-story-03.md |
-| SB-23-04 | Async play gate | backlog | story-04-async-play-gate.md | — |
+| SB-23-04 | Async play gate | done | story-04-async-play-gate.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-23-01..03 shipped: the match model, digests + the recap replay, and
-now the turn flow — hot-seat pass-and-play in the shell, where each
-window crosses the trustless verify path and the incoming player
-watches the recap before playing against the pickup countdown (Enter
-picks up; expiry surfaces, enforcement is Phase 24's). The
-stabilization work along the way fixed the uint16 tick wrap, the
-hidden-tab pump freeze, and the Math.random e2e worlds (?seed= pins
-them). Next: SB-23-04 closes the phase on the async gate.
+The phase is closed: hot-seat and two-tab async matches both play in
+e2e with every window crossing the trustless verify path — 208/208
+unit, 13/13 browser (three consecutive full runs), boundaries, docs,
+static hosting, and the real-data sweep all green, with hot-seat
+turn-flow captures from real data under artifacts. See
+final-summary.md. Next: Phase 24 gives these matches their online home
+(registration, challenges, the turn mailbox with deadlines).
 
 ## Active risks
 

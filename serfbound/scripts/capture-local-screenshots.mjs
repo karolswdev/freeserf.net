@@ -102,10 +102,28 @@ try {
   await page.screenshot({ fullPage: true, path: flagShot });
 
   const spriteCount = await page.locator("#app").getAttribute("data-serfbound-sprite-count");
+
+  // The correspondence turn flow on real data (SB-23-04): a hot-seat
+  // window plays out to the hand-over screen with its countdown. Reuse
+  // the page — its IndexedDB holds the imported data.
+  const turnPage = page;
+  await turnPage.goto(`${previewUrl}?seed=6235842872325272&window=512`);
+  await turnPage
+    .locator("#app[data-serfbound-scene-source='dos-pa-decoded']")
+    .waitFor({ timeout: 15_000 });
+  await turnPage.getByTestId("hotseat-button").click();
+  await turnPage.locator("#app[data-serfbound-cor-mode='your-window']").waitFor();
+  const windowShot = `${artifactsDir}/${namePrefix}-hotseat-window.png`;
+  await turnPage.screenshot({ fullPage: true, path: windowShot });
+  await turnPage
+    .locator("#app[data-serfbound-cor-mode='handover']")
+    .waitFor({ timeout: 30_000 });
+  const handoverShot = `${artifactsDir}/${namePrefix}-hotseat-handover.png`;
+  await turnPage.screenshot({ fullPage: true, path: handoverShot });
   await browser.close();
 
   console.log(
-    `serfbound-local-screenshots-ok: ${spriteCount} decoded sprites on screen; saved ${terrainShot}, ${canvasShot}, ${flagShot}`,
+    `serfbound-local-screenshots-ok: ${spriteCount} decoded sprites on screen; saved ${terrainShot}, ${canvasShot}, ${flagShot}, ${windowShot}, ${handoverShot}`,
   );
 } catch (error) {
   console.error(

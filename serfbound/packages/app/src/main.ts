@@ -11,6 +11,7 @@ import {
 import { PointerGestureTracker } from "./gestures.js";
 import { SerfboundLoopbackMultiplayer } from "./multiplayer.js";
 import { HotseatController } from "./hotseat.js";
+import { SerfboundAsyncLoopbackMatch } from "./async-match.js";
 import { digestLines } from "./recap.js";
 import {
   SerfboundAiPlayer,
@@ -105,6 +106,7 @@ export * from "./gestures.js";
 export * from "./multiplayer.js";
 export * from "./recap.js";
 export * from "./hotseat.js";
+export * from "./async-match.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -410,6 +412,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         >Hot-seat 2P (pass and play)</button>
         <button
           class="secondary-action"
+          data-testid="async-host-button"
+          type="button"
+        >Async 2P host (this browser)</button>
+        <button
+          class="secondary-action"
+          data-testid="async-join-button"
+          type="button"
+        >Async 2P join (this browser)</button>
+        <button
+          class="secondary-action"
           data-testid="error-report-button"
           type="button"
         >Copy error report</button>
@@ -462,6 +474,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentLocalPlayer = 0;
   // Hot-seat correspondence (SB-23-03).
   let currentHotseat: HotseatController | undefined;
+  // Two-tab async correspondence (SB-23-04).
+  let currentAsync: SerfboundAsyncLoopbackMatch | undefined;
   // Game speed: ticks per frame scale by the reference-style multiplier
   // (0 pauses). Keys: 1/2/4 set speeds, 0 pauses.
   let gameSpeedMultiplier = 1;
@@ -733,7 +747,30 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         root.dataset.serfboundGameState === "running" &&
         gameSpeedMultiplier > 0
       ) {
-        if (currentHotseat !== undefined) {
+        if (currentAsync !== undefined && currentAsync.match !== undefined) {
+          // Async correspondence: this tab plays only its own windows;
+          // between them it waits (or recaps the opponent's move).
+          currentAsync.tick(16);
+          const match = currentAsync.match;
+          currentWorld = match.world;
+          currentSerfEngine = match.serfEngine;
+          const status = currentAsync.status;
+          if (status.mode === "awaiting-move") {
+            setNotice("WAITING FOR OPPONENT");
+          } else if (status.mode === "move-arrived") {
+            setNotice("OPPONENT MOVED - PRESS ENTER");
+          } else if (status.mode === "recap") {
+            setNotice("RECAP - WATCHING");
+          } else if (
+            status.mode === "your-window" &&
+            root.dataset.serfboundNotification !== "YOUR WINDOW"
+          ) {
+            setNotice("YOUR WINDOW");
+          }
+
+          syncAsyncState();
+          syncWorldState(root, currentWorld);
+        } else if (currentHotseat !== undefined) {
           // Hot-seat correspondence: the controller owns window play,
           // hand-over, and the recap; the shell renders whichever match
           // is current and keeps command authority on the active player.
@@ -1206,7 +1243,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       return;
     }
 
-    // Hot-seat: Enter picks the turn up from the hand-over screen.
+    // Correspondence: Enter picks an arrived turn up (async match or
+    // hot-seat hand-over).
+    if (event.key === "Enter" && currentAsync !== undefined) {
+      event.preventDefault();
+      currentAsync.pickup();
+      return;
+    }
+
     if (event.key === "Enter" && currentHotseat !== undefined) {
       event.preventDefault();
       currentHotseat.pickup();
@@ -1604,6 +1648,77 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   root
     .querySelector<HTMLButtonElement>("[data-testid='hotseat-button']")
     ?.addEventListener("click", startHotseat);
+  // Two-tab async correspondence (SB-23-04): each tab runs its own full
+  // match; window moves cross the loopback channel (the Phase 24
+  // mailbox's stand-in). Tabs act at their own pace.
+  const syncAsyncState = () => {
+    if (currentAsync === undefined) {
+      return;
+    }
+
+    const status = currentAsync.status;
+    root.dataset.serfboundCorMode = status.mode;
+    root.dataset.serfboundCorWindow = String(status.window);
+    root.dataset.serfboundCorPlayer = String(status.localPlayer);
+    root.dataset.serfboundCorChecksum = String(status.checksum >>> 0);
+    if (status.boundaryChecksum !== null) {
+      root.dataset.serfboundCorBoundary = String(status.boundaryChecksum >>> 0);
+    }
+
+    if (status.digest !== null) {
+      root.dataset.serfboundCorDigest = digestLines(status.digest).join(" / ");
+    }
+
+    if (status.failureReason !== null) {
+      root.dataset.serfboundCorFailure = status.failureReason;
+    }
+  };
+  const startAsync = (role: "host" | "join") => {
+    if (currentImportedDataSource === undefined || currentWorld !== undefined) {
+      return;
+    }
+
+    currentAsync = new SerfboundAsyncLoopbackMatch({
+      role,
+      appVersion: "0.1.0",
+      data: currentImportedDataSource,
+      windowTicks: hotseatWindowTicks,
+      settings: {
+        seedString: initSeedString,
+        mapSize: 3,
+        playerCount: 2,
+        initialSupplies: initSupplies,
+        playerSupplies: null,
+      },
+      onReady: () => {
+        const match = currentAsync?.match;
+        if (match === undefined || currentAsync === undefined) {
+          return;
+        }
+
+        currentBuiltStructures = [];
+        startLandscapeRendering({ landscape: () => match.world });
+        commandRouter = new SerfboundCommandRouter(match.state, match.world);
+        commandRouter.localPlayer = currentAsync.localPlayer;
+        commandRouter.onWorldAction = (action) => currentAsync?.queue(action);
+        currentWorld = match.world;
+        currentSerfEngine = match.serfEngine;
+        currentLocalPlayer = currentAsync.localPlayer;
+        root.dataset.serfboundGameState = "running";
+        getGameStateElement(root).textContent = "Running";
+        syncAsyncState();
+        syncWorldState(root, currentWorld);
+        renderCurrentScene();
+      },
+    });
+    syncAsyncState();
+  };
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='async-host-button']")
+    ?.addEventListener("click", () => startAsync("host"));
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='async-join-button']")
+    ?.addEventListener("click", () => startAsync("join"));
   startButton.addEventListener("click", () => {
     // With the init screen up (decoded mode), the shell button is the
     // accessible path to the same custom game; the catalog-only fallback
