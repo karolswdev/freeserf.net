@@ -181,6 +181,19 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   await canvas.click({ position: roadSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-road-mode", "idle");
 
+  // The popup system: the stats slot opens the resources box, a click
+  // outside closes it, and the build slot opens the build menu.
+  const statsSlot = { x: panelX + (64 + 3 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
+  await canvas.click({ position: statsSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "stats");
+  await canvas.click({ position: { x: 30, y: 300 }, force: true });
+  await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
+  const buildSlot = { x: panelX + 64 * 2 + 32, y: panelY + 4 * 2 + 32 };
+  await canvas.click({ position: buildSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "buildBasic");
+  await canvas.click({ position: { x: 30, y: 300 }, force: true });
+  await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
+
   // Connect the lumberjack's flag so builders and materials can reach it;
   // construction is serf-driven and completes only over a connected road.
   let lumberjackRoadBuilt = false;

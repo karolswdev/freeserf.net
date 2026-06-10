@@ -36,7 +36,7 @@ original.
   decoded art. (SB-16-01)
 - [x] The panel bar drives the game: build mode, stats access, settings,
   game speed. (SB-16-02; stats/settings slots open with their popups)
-- [ ] The popup system covers build menus, stats, and settings with original
+- [x] The popup system covers build menus, stats, and settings with original
   layouts. (SB-16-03)
 - [ ] Minimap renders the world, supports click-to-navigate, and
   notifications surface events. (SB-16-04)
@@ -48,16 +48,17 @@ original.
 |---|---|---|---|---|
 | SB-16-01 | Render decoded UI art: fonts, icons, frames, cursors | done | story-01-ui-art-foundation.md | evidence-story-01.md |
 | SB-16-02 | Build the authentic panel bar | done | story-02-authentic-panel-bar.md | evidence-story-02.md |
-| SB-16-03 | Build the popup system | backlog | story-03-popup-system.md | — |
+| SB-16-03 | Build the popup system | done | story-03-popup-system.md | evidence-story-03.md |
 | SB-16-04 | Minimap and notifications | backlog | story-04-minimap-notifications.md | — |
 | SB-16-05 | Authentic game start screen | backlog | story-05-game-start-screen.md | — |
 
 ## Where we are
 
-SB-16-02 is done: the authentic panel bar renders from frame_bottom and
-panel_button art at the reference layout, mirrors build possibility and
-road mode in its slots, and drives castle/flag building and road mode from
-canvas clicks. SB-16-03 (the popup system) is next.
+SB-16-03 is done: the popup system covers the three build-menu pages at
+the reference positions (placing buildings at the selected tile), the
+exact resources box with live counts, and the sett popup cycling knight
+occupation into live player settings — deferred popups are recorded in
+evidence. SB-16-04 (minimap and notifications) is next.
 
 ## Active risks
 

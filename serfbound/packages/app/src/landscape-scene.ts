@@ -1,5 +1,16 @@
 import { panelBackgroundLayout, panelBarRect } from "./panel-bar.js";
 import {
+  buildPopupPages,
+  popupBackgroundIcon,
+  popupFlipButton,
+  popupHeight,
+  popupRect,
+  popupWidth,
+  resourceStatsLayout,
+  settOccupationRows,
+  type PopupKind,
+} from "./popup.js";
+import {
   buildSpriteAtlas,
   composeMaskedTile,
   composeSerfTorso,
@@ -481,6 +492,8 @@ export type LandscapeSceneOptions = {
   // The authentic panel bar: the five slots' panel_button sprite ids
   // (SB-16-02; computed from game state by the shell).
   readonly panel?: { readonly buttons: readonly number[] };
+  // The open popup, if any (SB-16-03).
+  readonly popup?: { readonly kind: PopupKind };
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -800,6 +813,74 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         rect.x + (64 + slot * 48) * uiScale, rect.y + 4 * uiScale, uiScale,
       );
     });
+  }
+
+  // The popup system (SB-16-03): a 144x160 box with a tiled background
+  // pattern, frame_popup borders, and the reference content layouts.
+  if (options.popup !== undefined && options.world !== undefined) {
+    const rect = popupRect(options.size, uiScale);
+    const pushPopupText = (text: string, x: number, y: number): void => {
+      for (const placement of layoutUiText(text)) {
+        pushUiSprite(
+          sprites, atlas, `uif:${placement.glyphIndex}`,
+          rect.x + (x + placement.x) * uiScale, rect.y + y * uiScale, uiScale,
+        );
+      }
+    };
+
+    // Interior: the DiagonalGreen 16x16 pattern tiled over the box.
+    for (let tileY = 0; tileY < popupHeight; tileY += 16) {
+      for (let tileX = 0; tileX < popupWidth; tileX += 16) {
+        pushUiSprite(
+          sprites, atlas, `uii:${popupBackgroundIcon}`,
+          rect.x + tileX * uiScale, rect.y + tileY * uiScale, uiScale,
+        );
+      }
+    }
+
+    // Borders from frame_popup art.
+    pushUiSprite(sprites, atlas, "uifr:0", rect.x, rect.y, uiScale);
+    pushUiSprite(
+      sprites, atlas, "uifr:1",
+      rect.x + (popupWidth - 16) * uiScale, rect.y, uiScale,
+    );
+
+    const kind = options.popup.kind;
+    if (kind.startsWith("build")) {
+      for (const item of buildPopupPages[kind] ?? []) {
+        const key =
+          item.building === "flag" ? "obj:flag" : `mo:${mapBuildingSprite[item.building]}`;
+        pushUiSprite(
+          sprites, atlas, key,
+          rect.x + item.x * uiScale, rect.y + item.y * uiScale, uiScale,
+        );
+      }
+
+      // The flip button cycles the pages.
+      pushUiSprite(
+        sprites, atlas, "uii:60",
+        rect.x + popupFlipButton.x * uiScale, rect.y + popupFlipButton.y * uiScale, uiScale,
+      );
+    } else if (kind === "stats") {
+      const inventory = options.world.inventoryForPlayer(0);
+      for (const entry of resourceStatsLayout) {
+        pushUiSprite(
+          sprites, atlas, `uii:${entry.icon}`,
+          rect.x + entry.iconX * uiScale, rect.y + entry.iconY * uiScale, uiScale,
+        );
+        const count = inventory === null ? 0 : (inventory.resources[entry.resource] ?? 0);
+        pushPopupText(String(count), entry.countX, entry.countY);
+      }
+    } else if (kind === "sett") {
+      const player = options.world.players[0];
+      pushPopupText("KNIGHTS", 8, 8);
+      settOccupationRows.forEach((row, threat) => {
+        const occupation = player?.knightOccupation[threat] ?? 0;
+        const maxLevel = (occupation >> 4) & 0xf;
+        pushPopupText(`THREAT ${threat} LEVEL ${maxLevel}`, 8, row.y);
+      });
+      pushPopupText(`MORALE ${player?.knightMorale ?? 0}`, 8, 144);
+    }
   }
 
   const sortedSprites = sprites.sort(compareLandscapeSprite);

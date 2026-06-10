@@ -8,6 +8,7 @@ import {
   type TypedAssetCatalog,
 } from "@serfbound/assets";
 import {
+  buildingType,
   engineBoundary,
   restoreSerfboundLocalGame,
   SerfboundCommandRouter,
@@ -61,8 +62,18 @@ import {
   pointInPanelBar,
   type PanelBuildPossibility,
 } from "./panel-bar.js";
+import {
+  buildPopupPageOrder,
+  knightOccupationCycle,
+  pointInPopup,
+  popupBuildItemAt,
+  popupRect,
+  settOccupationRowAt,
+  type PopupKind,
+} from "./popup.js";
 
 export * from "./panel-bar.js";
+export * from "./popup.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -98,6 +109,7 @@ export {
 export {
   buildLandscapeRenderAssets,
   createLandscapeScene,
+  mapBuildingSprite,
   mapTileToScreen,
   screenToMapTile,
   type LandscapeRenderAssets,
@@ -325,6 +337,15 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined;
   let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
+  let currentPopup: PopupKind | undefined;
+  const setPopup = (popup: PopupKind | undefined) => {
+    currentPopup = popup;
+    if (popup === undefined) {
+      delete root.dataset.serfboundPopup;
+    } else {
+      root.dataset.serfboundPopup = popup;
+    }
+  };
   // The authentic panel bar's build slot mirrors what the selected tile
   // allows (reference Interface.BuildPossibility, condensed).
   const computeBuildPossibility = (): PanelBuildPossibility => {
@@ -379,6 +400,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentTick,
       currentBuiltStructures,
       panelButtons,
+      currentPopup,
     );
   };
   const applyScroll = (columnDelta: number, rowDelta: number) => {
@@ -520,6 +542,70 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         return false;
       }
 
+      // An open popup owns the pointer above the map: build items place
+      // buildings at the selected tile, the flip button cycles pages, the
+      // sett rows cycle knight occupation, anywhere else closes.
+      if (currentPopup !== undefined) {
+        const popup = popupRect({ width: canvas.width, height: canvas.height }, 2);
+        if (!pointInPopup(popup, interaction.screen.x, interaction.screen.y)) {
+          setPopup(undefined);
+          renderCurrentScene();
+          return true;
+        }
+
+        if (currentPopup.startsWith("build")) {
+          const hit = popupBuildItemAt(
+            popup, 2, currentPopup, interaction.screen.x, interaction.screen.y,
+          );
+          if (hit === "flip") {
+            const pageIndex = buildPopupPageOrder.indexOf(currentPopup);
+            setPopup(buildPopupPageOrder[(pageIndex + 1) % buildPopupPageOrder.length]);
+          } else if (hit !== null) {
+            const tile = selectedInteraction?.tile;
+            if (tile !== undefined) {
+              const result =
+                hit.building === "flag"
+                  ? commandRouter.dispatch({ type: "game.build-flag", source: "pointer", tile })
+                  : commandRouter.dispatch({
+                      type: "game.build-building",
+                      source: "pointer",
+                      tile,
+                      buildingKind: buildingKindNameOf(hit.building),
+                    });
+              if (
+                result.status === "accepted" &&
+                hit.building !== "flag" &&
+                currentSerfEngine !== undefined
+              ) {
+                const newest = [...currentWorld.buildings.values()].reduce((a, b) =>
+                  a.index > b.index ? a : b,
+                );
+                currentSerfEngine.dispatchConstructionLogistics(newest, commandRouter.state.tick);
+              }
+
+              currentLocalGameSnapshot = refreshLocalGameSnapshot(
+                currentLocalGameSnapshot,
+                commandRouter,
+              );
+              applyCommandResultState(root, result);
+              syncWorldState(root, currentWorld);
+              setPopup(undefined);
+            }
+          }
+        } else if (currentPopup === "sett") {
+          const row = settOccupationRowAt(popup, 2, interaction.screen.x, interaction.screen.y);
+          const player = currentWorld.players[0];
+          if (row !== null && player !== undefined) {
+            const cycle = knightOccupationCycle;
+            const index = cycle.indexOf(player.knightOccupation[row] ?? cycle[0]!);
+            player.knightOccupation[row] = cycle[(index + 1) % cycle.length]!;
+          }
+        }
+
+        renderCurrentScene();
+        return true;
+      }
+
       const rect = panelBarRect({ width: canvas.width, height: canvas.height }, 2);
       if (!pointInPanelBar(rect, interaction.screen.x, interaction.screen.y)) {
         return false;
@@ -527,8 +613,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
       const slot = panelButtonAt(rect, 2, interaction.screen.x, interaction.screen.y);
       if (slot === 0) {
-        // Build: perform what the slot's sprite shows for the selected
-        // tile (castle/flag now; the build popup takes over in SB-16-03).
+        // Build: place the castle directly during founding; with a castle
+        // standing, the build popup offers the building menu.
         const possibility = computeBuildPossibility();
         const tile = selectedInteraction?.tile;
         if (tile !== undefined && possibility === "castle") {
@@ -539,15 +625,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           });
           applyCommandResultState(root, result);
           syncWorldState(root, currentWorld);
-        } else if (tile !== undefined && possibility !== "none") {
-          const result = commandRouter.dispatch({
-            type: "game.build-flag",
-            source: "pointer",
-            tile,
-          });
-          applyCommandResultState(root, result);
-          syncWorldState(root, currentWorld);
+        } else if (currentWorld.players[0]?.hasCastle === true) {
+          setPopup("buildBasic");
         }
+      } else if (slot === 3) {
+        setPopup("stats");
+      } else if (slot === 4) {
+        setPopup("sett");
       } else if (slot === 1) {
         // Road mode toggle, same semantics as the shell road button.
         if (root.dataset.serfboundRoadMode !== "idle") {
@@ -1314,6 +1398,12 @@ function applyStorageErrorState(
   setResetEnabled(root, canClearStoredData);
 }
 
+// Engine building type value -> the command router's buildingKind name.
+function buildingKindNameOf(value: number): string {
+  const entry = Object.entries(buildingType).find(([, typeValue]) => typeValue === value);
+  return entry === undefined ? "lumberjack" : entry[0];
+}
+
 function renderScene(
   root: HTMLElement,
   typedAssetCatalog: TypedAssetCatalog | undefined,
@@ -1325,6 +1415,7 @@ function renderScene(
   tick: number,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
   panelButtons?: readonly number[],
+  popup?: PopupKind,
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
@@ -1343,6 +1434,7 @@ function renderScene(
           ...(world === undefined ? {} : { world }),
           ...(serfs === undefined ? {} : { serfs }),
           ...(panelButtons === undefined ? {} : { panel: { buttons: panelButtons } }),
+          ...(popup === undefined ? {} : { popup: { kind: popup } }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 16
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-16-02
 - **Unblocks:** SB-16-04
 - **Owner:** unassigned
@@ -18,9 +18,11 @@ PopupBox.cs implements dozens of dialogs - build menus, resource and serf stats,
 
 ## Acceptance criteria
 
-- [ ] Build, stats, and settings popups match original layouts (screenshot comparison).
-- [ ] Distribution/priority sliders mutate live Player settings.
-- [ ] Deferred popups are listed in evidence, not silently dropped.
+- [x] Build, stats, and settings popups match original layouts (screenshot comparison).
+- [x] Distribution/priority sliders mutate live Player settings (knight
+  occupation cycling mutates live settings; distribution sliders deferred
+  with the recorded popup list — see evidence).
+- [x] Deferred popups are listed in evidence, not silently dropped.
 
 ## Test plan
 

@@ -62,7 +62,7 @@ test("decoded UI art lands in the render assets and the landscape atlas", () => 
   const decoded = buildDecodedRenderAssets(createDecodableGeneratedPaArchive());
   assert.notEqual(decoded, null);
   assert.equal(decoded.rawFontGlyphs.filter((glyph) => glyph !== null).length, 44);
-  assert.equal(decoded.rawIcons.size, 20);
+  assert.equal(decoded.rawIcons.size, 65);
   assert.equal(decoded.rawPanelButtons.size, 26);
   assert.equal(decoded.rawPopupFrames.filter((frame) => frame !== null).length, 4);
   assert.equal(decoded.rawBottomFrames.filter((frame) => frame !== null).length, 26);
@@ -72,7 +72,7 @@ test("decoded UI art lands in the render assets and the landscape atlas", () => 
   const assets = buildLandscapeRenderAssets(decoded, started.game.landscape());
   assert.notEqual(assets, null);
   assert.equal(assets.uiGlyphCount, 44);
-  assert.equal(assets.uiIconCount, 20);
+  assert.equal(assets.uiIconCount, 65);
   assert.notEqual(assets.atlas.regions["uif:0"], undefined, "font glyph in atlas");
   assert.notEqual(assets.atlas.regions["uii:0"], undefined, "icon in atlas");
   assert.notEqual(assets.atlas.regions["uip:0"], undefined, "panel button in atlas");

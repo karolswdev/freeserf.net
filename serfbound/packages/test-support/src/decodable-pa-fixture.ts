@@ -195,9 +195,11 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
       bytes: concatBytes([spriteHeader(8, 8), fullCoverageRuns(8 * 8, 1)]),
     });
   }
-  for (let icon = 0; icon < 20; icon += 1) {
-    entries.push({ index: 870 + icon, bytes: solidSprite(16, 16, 120 + icon * 3) });
+  for (let icon = 0; icon < 64; icon += 1) {
+    entries.push({ index: 870 + icon, bytes: solidSprite(16, 16, 120 + ((icon * 3) % 90)) });
   }
+  // The popup background pattern icon (DiagonalGreen).
+  entries.push({ index: 870 + 310, bytes: solidSprite(16, 16, 70) });
   for (let frame = 0; frame < 4; frame += 1) {
     entries.push({ index: 660 + frame, bytes: solidSprite(16, 144, 80 + frame * 5) });
   }
