@@ -111,6 +111,14 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
     bytes: concatBytes([spriteHeader(32, 10, -16, -4), fullCoverageRuns(32 * 10, null)]),
   });
 
+  // 16 water wave sprites (map_waves -> entries 630..645), 48x19 transparent.
+  for (let wave = 0; wave < 16; wave += 1) {
+    entries.push({
+      index: 630 + wave,
+      bytes: concatBytes([spriteHeader(48, 19), fullCoverageRuns(48 * 19, 220 + wave)]),
+    });
+  }
+
   // Flag frame 0 (map_object 128 -> entry 1378) with its shadow (1628).
   entries.push({
     index: 1378,

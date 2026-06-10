@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 11
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-11-04
 - **Unblocks:** SB-12-01
 - **Owner:** unassigned
@@ -23,10 +23,10 @@ were explicitly deferred in Phase 10 and complete the authentic world look.
 
 ## Acceptance criteria
 
-- [ ] Water triangles show animated waves with correct masking against shores.
-- [ ] Map borders render with authentic border sprites.
-- [ ] Animation pauses when the tab is hidden and respects reduced-motion.
-- [ ] Real-data screenshots (and a short capture) recorded as evidence.
+- [x] Water triangles show animated waves with correct masking against shores.
+- [x] Map borders render with authentic border sprites.
+- [x] Animation pauses when the tab is hidden and respects reduced-motion.
+- [x] Real-data screenshots (and a short capture) recorded as evidence.
 
 ## Test plan
 

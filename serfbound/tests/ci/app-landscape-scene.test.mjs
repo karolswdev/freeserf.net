@@ -130,3 +130,44 @@ test("built flags track their map tile across scrolls", () => {
     "flag culled when far outside the viewport",
   );
 });
+
+test("waves animate on water and mask at shores per the reference rules", () => {
+  assert.equal(landscapeAssets.waveFrameCount, 16, "all 16 wave frames composed");
+  for (const variant of ["full", "up", "down"]) {
+    assert.notEqual(
+      landscapeAssets.atlas.regions[`wave:0:${variant}`],
+      undefined,
+      `wave variant ${variant} exists`,
+    );
+  }
+
+  const sceneAtTick = (tick) =>
+    createLandscapeScene({
+      size: { width: 960, height: 540 },
+      assets: landscapeAssets,
+      scroll: { column: 0, row: 0 },
+      tick,
+    });
+
+  const sceneA = sceneAtTick(0);
+  const waves = sceneA.sprites.filter((sprite) => sprite.key.startsWith("wave:"));
+  assert.equal(waves.length > 0, true, "waves render over water");
+  assert.equal(
+    waves.every((sprite) => sprite.layer === "paths"),
+    true,
+    "waves draw on the layer above terrain",
+  );
+
+  // Advancing the tick by 8 advances every wave frame by one.
+  const sceneB = sceneAtTick(8);
+  const wavesB = sceneB.sprites.filter((sprite) => sprite.key.startsWith("wave:"));
+  assert.equal(wavesB.length, waves.length);
+  const frameOf = (key) => Number(key.split(":")[1]);
+  for (let index = 0; index < waves.length; index += 1) {
+    assert.equal(
+      frameOf(wavesB[index].key),
+      (frameOf(waves[index].key) + 1) & 0xf,
+      "wave frame advanced by one",
+    );
+  }
+});

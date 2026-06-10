@@ -99,7 +99,9 @@ decodes real palettes and sprites, composes terrain triangles, and builds a
 decoded render scene.
 
 To capture decoded-scene screenshots from real local data (used for phase
-evidence; same opt-in environment variables):
+evidence; same opt-in environment variables; `SERFBOUND_CAPTURE_DIR` and
+`SERFBOUND_CAPTURE_PREFIX` select the output folder and file prefix,
+defaulting to uncommitted `.tmp/browser-screenshots/`):
 
 ```bash
 SERFBOUND_RUN_LOCAL_ASSET_TESTS=1 \

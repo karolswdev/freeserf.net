@@ -1,7 +1,7 @@
 # Phase 11 — Original Map and Scrollable World
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -38,8 +38,9 @@ borders.
   deposits per the reference rules. (SB-11-03)
 - [x] The browser viewport scrolls and wraps over the full generated map with
   decoded art, replacing the fixed synthetic field. (SB-11-04)
-- [ ] Water animates with wave sprites and map edges render border sprites,
-  with real-data screenshot evidence. (SB-11-05)
+- [x] Water animates with wave sprites, with real-data screenshot evidence;
+  "map edges" re-scoped with source evidence (the world is a torus; border
+  art is territory-border art and ships with Phase 12 territory). (SB-11-05)
 
 ## Story status
 
@@ -49,14 +50,15 @@ borders.
 | SB-11-02 | Port the classic map generator | done | story-02-port-classic-map-generator.md | evidence-story-02.md |
 | SB-11-03 | Place map objects and minerals | done | story-03-map-objects-and-minerals.md | evidence-story-03.md |
 | SB-11-04 | Scroll the generated world in the viewport | done | story-04-scrolling-wrapping-viewport.md | evidence-story-04.md |
-| SB-11-05 | Render waves and map borders | in-progress | story-05-waves-and-map-borders.md | — |
+| SB-11-05 | Render waves and map borders | done | story-05-waves-and-map-borders.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-11-04 is done: running games render the classic generator's world with
-real art in a scrolling, wrapping viewport (arrow keys + drag), with real-data
-screenshot evidence under artifacts/. SB-11-05 (waves and borders) is in
-progress.
+Phase 11 is complete. Running games render the classic generator's world —
+parity-proven tile-for-tile against reference fixtures — with real art,
+animated water, and a scrolling, wrapping viewport. Real-data screenshot
+evidence lives under artifacts/. The territory-border re-scope is recorded in
+SB-11-05's evidence.
 
 ## Active risks
 
@@ -75,6 +77,9 @@ progress.
 - 2026-06-10 — The generator ports as one unit (heights through minerals)
   because its RNG stream spans all stages; SB-11-03 re-scopes to exposing the
   landscape through engine game state — SB-11-02.
+- 2026-06-10 — The freeserf world is a torus: there is no map edge to draw.
+  `map_border` art belongs to player territory borders
+  (`RenderBorderSegment`) and ships with Phase 12 — SB-11-05.
 
 ## Decisions deferred
 

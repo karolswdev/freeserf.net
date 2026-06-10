@@ -44,6 +44,7 @@ export type LandscapeRenderAssets = {
   readonly landscape: ClassicMapLandscape;
   readonly terrainComboCount: number;
   readonly objectSpriteCount: number;
+  readonly waveFrameCount: number;
 };
 
 function wrap(value: number, period: number): number {
@@ -180,12 +181,66 @@ export function buildLandscapeRenderAssets(
     }
   }
 
+  // Waves: 16 frames, each in three shore variants per the reference
+  // (full, masked by up mask 40, masked by down mask 40; masks widened to the
+  // 48px wave width).
+  let waveFrameCount = 0;
+  const upShoreMask = widenMask(decodedAssets.rawMasksUp[40] ?? null, 48, 25);
+  const downShoreMask = widenMask(decodedAssets.rawMasksDown[40] ?? null, 48, 25);
+  for (let frame = 0; frame < 16; frame += 1) {
+    const wave = decodedAssets.rawWaves[frame];
+    if (wave === null || wave === undefined) {
+      continue;
+    }
+
+    sprites[`wave:${frame}:full`] = stripOffsets(wave);
+    if (upShoreMask !== null) {
+      sprites[`wave:${frame}:up`] = stripOffsets(composeMaskedTile(wave, upShoreMask));
+    }
+
+    if (downShoreMask !== null) {
+      sprites[`wave:${frame}:down`] = stripOffsets(composeMaskedTile(wave, downShoreMask));
+    }
+
+    waveFrameCount += 1;
+  }
+
   return {
     atlas: buildSpriteAtlas(sprites),
     landscape,
     terrainComboCount,
     objectSpriteCount,
+    waveFrameCount,
   };
+}
+
+// Waves draw at computed positions, not via their sprite header offsets.
+function stripOffsets(sprite: DecodedDosSprite): DecodedDosSprite {
+  return { ...sprite, deltaX: 0, deltaY: 0, offsetX: 0, offsetY: 0 };
+}
+
+// Mirrors the reference Sprite.ClearTo: the mask keeps its pixels at the top
+// left of a larger transparent canvas.
+function widenMask(
+  mask: DecodedDosSprite | null,
+  width: number,
+  height: number,
+): DecodedDosSprite | null {
+  if (mask === null) {
+    return null;
+  }
+
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < Math.min(mask.height, height); y += 1) {
+    const sourceOffset = y * mask.width * 4;
+    const targetOffset = y * width * 4;
+    rgba.set(
+      mask.rgba.subarray(sourceOffset, sourceOffset + Math.min(mask.width, width) * 4),
+      targetOffset,
+    );
+  }
+
+  return { deltaX: 0, deltaY: 0, width, height, offsetX: 0, offsetY: 0, rgba };
 }
 
 export type LandscapeSceneOptions = {
@@ -194,6 +249,8 @@ export type LandscapeSceneOptions = {
   readonly scroll: MapScroll;
   readonly builtStructures?: readonly SerfboundBuiltStructure[];
   readonly definedArchiveEntries?: number;
+  // Animation tick; wave frames advance every 8 ticks like the reference.
+  readonly tick?: number;
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -268,6 +325,23 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         const spriteIndex = objectType - 8;
         pushSprite("shadows", `mos:${spriteIndex}`, apexX, apexY, apexY, apexX);
         pushSprite("objects", `mo:${spriteIndex}`, apexX, apexY, apexY, apexX);
+      }
+
+      // Waves animate on water; the reference picks the frame from the map
+      // position and tick, and masks the shore rows (UpdateWave).
+      if (options.assets.waveFrameCount > 0) {
+        const typeUp = landscape.typesUp[position]!;
+        const typeDown = landscape.typesDown[position]!;
+        const frame = ((position ^ 5) + ((options.tick ?? 0) >> 3)) & 0xf;
+        const waveX = apexX - tileWidth / 2;
+        const waveY = r * tileHeight;
+        if (typeUp <= 3 && typeDown <= 3) {
+          pushSprite("paths", `wave:${frame}:full`, waveX, waveY, waveY, waveX);
+        } else if (typeDown <= 3) {
+          pushSprite("paths", `wave:${frame}:down`, waveX + 16, waveY - 4, waveY, waveX);
+        } else if (typeUp <= 3) {
+          pushSprite("paths", `wave:${frame}:up`, waveX, waveY, waveY, waveX);
+        }
       }
     }
   }

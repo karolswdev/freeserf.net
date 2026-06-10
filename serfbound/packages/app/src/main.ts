@@ -304,6 +304,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentDecodedAssets,
       currentLandscapeAssets,
       currentScroll,
+      currentTick,
       currentBuiltStructures,
     );
   };
@@ -321,20 +322,55 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     };
     renderCurrentScene();
   };
+  let currentTick = 0;
+  let waveTimer: ReturnType<typeof setInterval> | undefined;
+  const stopWaveAnimation = () => {
+    if (waveTimer !== undefined) {
+      clearInterval(waveTimer);
+      waveTimer = undefined;
+    }
+  };
+  const syncWaveAnimation = () => {
+    const reducedMotion =
+      typeof globalThis.matchMedia === "function" &&
+      globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const shouldAnimate =
+      currentLandscapeAssets !== undefined &&
+      currentLandscapeAssets.waveFrameCount > 0 &&
+      !reducedMotion &&
+      !root.ownerDocument.hidden;
+    if (!shouldAnimate) {
+      stopWaveAnimation();
+      return;
+    }
+
+    // Wave frames advance every 8 ticks in the reference; ticking by 8 every
+    // 175ms reproduces the original cadence without per-frame rebuilds.
+    waveTimer ??= setInterval(() => {
+      currentTick = (currentTick + 8) % 1024;
+      renderCurrentScene();
+    }, 175);
+  };
+  root.ownerDocument.addEventListener("visibilitychange", syncWaveAnimation);
   const startLandscapeRendering = (game: { landscape(): Parameters<typeof buildLandscapeRenderAssets>[1] }) => {
     if (currentDecodedAssets === undefined) {
       currentLandscapeAssets = undefined;
+      syncWaveAnimation();
       return;
     }
 
     currentLandscapeAssets = buildLandscapeRenderAssets(currentDecodedAssets, game.landscape()) ?? undefined;
     currentScroll = { column: 0, row: 0 };
+    currentTick = 0;
+    syncWaveAnimation();
   };
   const renderGeneratedScene = () => {
     currentTypedAssetCatalog = undefined;
     currentDecodedAssets = undefined;
     currentLandscapeAssets = undefined;
     currentScroll = { column: 0, row: 0 };
+    currentTick = 0;
+    stopWaveAnimation();
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
     currentLocalGameSnapshot = undefined;
@@ -991,6 +1027,7 @@ function renderScene(
   decodedAssets: DecodedRenderAssets | undefined,
   landscapeAssets: LandscapeRenderAssets | undefined,
   scroll: MapScroll,
+  tick: number,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
@@ -1005,6 +1042,7 @@ function renderScene(
           size,
           assets: landscapeAssets,
           scroll,
+          tick,
           builtStructures,
           ...(decodedAssets === undefined
             ? {}

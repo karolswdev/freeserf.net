@@ -48,11 +48,12 @@ export type DecodedRenderAssets = {
   readonly terrainTriangleCount: number;
   readonly objectKeys: readonly string[];
   readonly definedArchiveEntries: number;
-  // Raw decoded sprites for landscape-specific composition (SB-11-04).
+  // Raw decoded sprites for landscape-specific composition (SB-11-04/05).
   readonly rawGrounds: readonly (DecodedDosSprite | null)[];
   readonly rawMasksUp: readonly (DecodedDosSprite | null)[];
   readonly rawMasksDown: readonly (DecodedDosSprite | null)[];
   readonly rawMapObjects: ReadonlyMap<number, DecodedMapObjectSprite>;
+  readonly rawWaves: readonly (DecodedDosSprite | null)[];
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -578,6 +579,11 @@ export function buildDecodedRenderAssets(
     });
   }
 
+  const rawWaves: (DecodedDosSprite | null)[] = [];
+  for (let waveIndex = 0; waveIndex < 16; waveIndex += 1) {
+    rawWaves.push(decodeSafely(archive, "map_waves", waveIndex));
+  }
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
@@ -588,6 +594,7 @@ export function buildDecodedRenderAssets(
     rawMasksUp,
     rawMasksDown,
     rawMapObjects,
+    rawWaves,
   };
 }
 
