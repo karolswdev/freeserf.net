@@ -25,7 +25,8 @@ test("init screen rows hit-test: seed, supplies, start", () => {
   const rect = initScreenRect({ width: 1280, height: 720 }, 2);
   assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 24 * 2 + 4), "seed");
   assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 56 * 2 + 4), "supplies");
-  assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 100 * 2 + 4), "start");
+  assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 86 * 2 + 4), "mission");
+  assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 104 * 2 + 4), "start");
   assert.equal(initScreenRowAt(rect, 2, rect.x + 100, rect.y + 4), null);
   assert.equal(initScreenRowAt(rect, 2, rect.x - 4, rect.y + 50), null);
 });

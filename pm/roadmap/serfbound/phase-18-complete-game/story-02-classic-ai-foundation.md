@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 18
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-18-01
 - **Unblocks:** SB-18-03
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ AI.cs drives computer players through a state machine (AIStates/) making periodi
 
 ## Acceptance criteria
 
-- [ ] AI state transitions match reference traces on seeded runs.
-- [ ] AI places its castle matching reference fixture decisions.
-- [ ] Decision logs are capturable for fixtures.
+- [x] AI state transitions match reference traces on seeded runs.
+- [x] AI places its castle matching reference fixture decisions.
+- [x] Decision logs are capturable for fixtures.
 
 ## Test plan
 

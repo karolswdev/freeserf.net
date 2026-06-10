@@ -9,6 +9,7 @@ import {
   type TypedAssetCatalog,
 } from "@serfbound/assets";
 import {
+  SerfboundAiPlayer,
   buildingType,
   engineBoundary,
   findSerfboundMission,
@@ -359,6 +360,26 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
   let currentPopup: PopupKind | undefined;
+  let currentAiPlayers: SerfboundAiPlayer[] = [];
+  // AI drivers for every non-human slot of the running game.
+  const attachAiPlayers = (game: SerfboundLocalGame) => {
+    currentAiPlayers = [];
+    const playerCount = game.settings.playerCount ?? 1;
+    if (playerCount <= 1 || currentWorld === undefined || currentSerfEngine === undefined) {
+      root.dataset.serfboundAiCount = "0";
+      return;
+    }
+
+    for (let playerIndex = 1; playerIndex < playerCount; playerIndex += 1) {
+      currentAiPlayers.push(
+        new SerfboundAiPlayer(currentWorld, currentSerfEngine, playerIndex, (action) =>
+          game.state.recordWorldAction(action),
+        ),
+      );
+    }
+
+    root.dataset.serfboundAiCount = String(currentAiPlayers.length);
+  };
   const setPopup = (popup: PopupKind | undefined) => {
     currentPopup = popup;
     if (popup === undefined) {
@@ -536,6 +557,10 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         }
 
         if (currentSerfEngine !== undefined) {
+          for (const ai of currentAiPlayers) {
+            ai.update(commandRouter.state.tick);
+          }
+
           if (currentSerfEngine.onProduct === undefined) {
             let lastWorkSfxAt = 0;
             currentSerfEngine.onProduct = (_buildingTypeValue, product) => {
@@ -1045,6 +1070,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentWorld = currentLandscapeAssets === undefined ? undefined : result.game.world();
       currentSerfEngine =
         currentLandscapeAssets === undefined ? undefined : result.game.serfEngine();
+      attachAiPlayers(result.game);
       renderCurrentScene();
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
@@ -1213,6 +1239,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         currentWorld = currentLandscapeAssets === undefined ? undefined : restored.game.world();
         currentSerfEngine =
           currentLandscapeAssets === undefined ? undefined : restored.game.serfEngine();
+        attachAiPlayers(restored.game);
         applyRunningLocalGameSnapshot(root, restored.snapshot);
         syncWorldState(root, currentWorld);
         renderCurrentScene();

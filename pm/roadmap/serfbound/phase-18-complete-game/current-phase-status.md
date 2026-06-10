@@ -40,17 +40,18 @@ speed/long-session robustness.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-18-01 | Missions and game setup variants | done | story-01-missions-and-setup.md | evidence-story-01.md |
-| SB-18-02 | Classic AI foundation | backlog | story-02-classic-ai-foundation.md | — |
+| SB-18-02 | Classic AI foundation | done | story-02-classic-ai-foundation.md | evidence-story-02.md |
 | SB-18-03 | Classic AI economy and military behaviors | backlog | story-03-classic-ai-behaviors.md | — |
 | SB-18-04 | Load original DOS savegames | backlog | story-04-original-savegames.md | — |
 | SB-18-05 | Speed, autosave, and the played-mission gate | backlog | story-05-speed-autosave-gate.md | — |
 
 ## Where we are
 
-SB-18-01 is done: the 31-mission campaign table is ported exactly, the
-start screen's MISSION row selects and launches missions with the right
-seeds, slots, and per-player supplies, and pinned AI castles found as
-replayable world actions. SB-18-02 (the classic AI foundation) is next.
+SB-18-02 is done: AI opponents found castles deterministically, establish
+the reference opening build order over their own pathfinder roads, and
+their buildings complete through serf labor — every decision recorded as
+a replayable world action and fixtured on seeded runs. SB-18-03 (economy
+and military behaviors) is next.
 
 ## Active risks
 
