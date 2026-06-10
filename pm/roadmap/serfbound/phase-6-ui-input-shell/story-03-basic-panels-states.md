@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 6
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-2-04, SB-4-04, SB-6-02
 - **Unblocks:** SB-7-01, SB-7-02, SB-7-04
 - **Owner:** unassigned
@@ -37,6 +37,11 @@ parity yet.
 - **Design handoff:** Screenshot evidence for first playable UI shell.
 
 ## Notes / open questions
+
+Shipped player-facing Data, Game, Map, Hover, Selected Tile, and Action panels.
+The shell now exposes missing data, imported data, running game, and recoverable
+file-error states, with a visible `Start game` path and desktop/mobile
+screenshot evidence.
 
 Use restrained operational UI. This is a game tool surface, not a marketing
 page.

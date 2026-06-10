@@ -205,6 +205,10 @@ For Serfbound specifically, every implementation story must identify:
   `SerfboundCommandRouter`; `@serfbound/app` routes canvas tile selection
   through `debug.inspect-map-tile`, records deterministic command results, and
   reserves `game.build` as a structured deferred Phase 7 route.
+- **Current first playable UI shell:** `@serfbound/app` exposes player-facing
+  Data, Game, Map, Hover, Selected Tile, and Action panels, a visible
+  `Start game` path, recoverable unsupported-data states, and desktop/mobile
+  screenshot evidence under `phase-6-ui-input-shell/artifacts/`.
 
 ## Glossary
 

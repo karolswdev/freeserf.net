@@ -33,7 +33,7 @@ input {
 
 .serfbound-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(232px, 304px);
+  grid-template-columns: minmax(0, 1fr) minmax(268px, 336px);
   min-height: 100vh;
 }
 
@@ -97,11 +97,12 @@ h1 {
 
 .status-panel {
   display: grid;
-  align-content: center;
-  gap: 22px;
+  align-content: start;
+  gap: 16px;
   border-left: 1px solid rgba(242, 236, 216, 0.12);
   padding: 28px;
   background: #20241f;
+  overflow-y: auto;
 }
 
 .status-panel__value {
@@ -113,7 +114,7 @@ h1 {
 }
 
 .status-panel__detail {
-  margin: -12px 0 0;
+  margin: -8px 0 0;
   color: #a7b9a8;
   font-size: 0.9rem;
   overflow-wrap: anywhere;
@@ -191,6 +192,10 @@ h1 {
     border-left: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 18px;
+  }
+
+  .status-panel__detail {
+    grid-column: 1 / -1;
   }
 
   .primary-action,

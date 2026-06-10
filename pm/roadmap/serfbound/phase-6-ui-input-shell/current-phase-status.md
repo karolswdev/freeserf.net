@@ -30,7 +30,7 @@ shell that is ergonomic enough for the first playable slice.
 - [x] Pointer input maps to map positions through tested conversion logic.
 - [x] Keyboard shortcuts are chosen or deferred with explicit browser conflicts.
 - [x] Basic game command routing exists from UI to engine state.
-- [ ] Missing/invalid data and import flows are user-recoverable.
+- [x] Missing/invalid data and import flows are user-recoverable.
 - [ ] Manual browser checks cover mouse, trackpad, and touch viability at a
   minimum exploratory level.
 
@@ -40,17 +40,16 @@ shell that is ergonomic enough for the first playable slice.
 |---|---|---|---|---|
 | SB-6-01 | Implement pointer-to-map interaction | done | story-01-pointer-map-interaction.md | evidence-story-01.md |
 | SB-6-02 | Add command routing shell | done | story-02-command-routing-shell.md | evidence-story-02.md |
-| SB-6-03 | Build basic panels and states | ready | story-03-basic-panels-states.md | — |
-| SB-6-04 | Verify interaction ergonomics | backlog | story-04-interaction-ergonomics.md | — |
+| SB-6-03 | Build basic panels and states | done | story-03-basic-panels-states.md | evidence-story-03.md |
+| SB-6-04 | Verify interaction ergonomics | ready | story-04-interaction-ergonomics.md | — |
 
 ## Where we are
 
-Phase 6 is in progress. SB-6-02 added a DOM-free `SerfboundCommandRouter`
-inside `@serfbound/engine`, routes browser canvas selection through
-`debug.inspect-map-tile`, and reserves `game.build` as an explicit deferred
-Phase 7 route. The next responsible move is SB-6-03: build the basic panels and
-states around imported data, running-game state, selected tile, and recoverable
-errors.
+Phase 6 is in progress. SB-6-03 added player-facing Data, Game, Map, Hover,
+Selected Tile, and Action panels, a visible `Start game` path, recoverable
+file-error states, and desktop/mobile panel screenshots. The next responsible
+move is SB-6-04: run the manual interaction ergonomics script and close or stop
+on any blocking input issues.
 
 ## Active risks
 
@@ -75,6 +74,10 @@ errors.
   Phase 6 will prefer browser-safe bindings over legacy shortcuts that collide
   with browser navigation, find, reload, text editing, or assistive technology
   conventions — SB-6-02.
+- 2026-06-09 — Keep Phase 6 panels restrained and player-facing: Data, Game,
+  Map, Hover, Selected Tile, and Action are the first playable shell; technical
+  proof stays in `data-serfbound-*` attributes and tests, not visible copy —
+  SB-6-03.
 
 ## Decisions deferred
 
