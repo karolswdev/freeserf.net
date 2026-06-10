@@ -4,7 +4,7 @@
 // without any original game data. Colors are synthetic, not original art.
 
 const headerByteLength = 10;
-const entryCount = 1700;
+const entryCount = 2600;
 
 type FixtureEntry = {
   readonly index: number;
@@ -77,6 +77,26 @@ function solidSprite(width: number, height: number, paletteIndex: number): Uint8
   return concatBytes([spriteHeader(width, height), body]);
 }
 
+function fixtureAnimationTable(): Uint8Array {
+  // 200 big-endian offsets followed by 200 four-frame animations.
+  const offsetsBytes = 200 * 4;
+  const frameBytes = 200 * 4 * 3;
+  const table = new Uint8Array(4 + offsetsBytes + frameBytes);
+  const view = new DataView(table.buffer);
+  view.setUint32(0, table.byteLength, false);
+  for (let animation = 0; animation < 200; animation += 1) {
+    view.setUint32(4 + animation * 4, offsetsBytes + animation * 12, false);
+    for (let frame = 0; frame < 4; frame += 1) {
+      const base = 4 + offsetsBytes + animation * 12 + frame * 3;
+      table[base] = (animation + frame) & 0xff;
+      view.setInt8(base + 1, frame - 2);
+      view.setInt8(base + 2, -frame);
+    }
+  }
+
+  return table;
+}
+
 export function createDecodableGeneratedPaArchive(): Uint8Array {
   const entries: FixtureEntry[] = [];
 
@@ -129,6 +149,19 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
       bytes: concatBytes([spriteHeader(48, 19), fullCoverageRuns(48 * 19, 220 + wave)]),
     });
   }
+
+  // Serf animation table (entry 2): size check + 200 offsets + frames.
+  entries.push({ index: 2, bytes: fixtureAnimationTable() });
+
+  // Serf torso body 0 (2500) and its arms (1850), 16x16 transparent.
+  entries.push({
+    index: 2500,
+    bytes: concatBytes([spriteHeader(16, 16, -8, -15), fullCoverageRuns(16 * 16, 64)]),
+  });
+  entries.push({
+    index: 1850,
+    bytes: concatBytes([spriteHeader(16, 16, -8, -15), fullCoverageRuns(16 * 16, 32)]),
+  });
 
   // Building sprites (map_object 0x98..0xc0 -> entries 1402..1442) with
   // shadows, plus 10 territory border sprites (map_border 610..619).

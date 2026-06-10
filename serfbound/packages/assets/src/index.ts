@@ -14,6 +14,18 @@ export {
 } from "./dos-sprites.js";
 
 export {
+  composeSerfTorso,
+  createDifferenceMask,
+  getMasked,
+  makeAlphaMask,
+  parseSerfAnimationTable,
+  stick,
+  type ComposedSerfTorso,
+  type SerfAnimationFrame,
+  type SerfAnimationTable,
+} from "./serf-sprites.js";
+
+export {
   composeMaskedTile,
   terrainGroundSpriteIndex,
   terrainTypeCount,

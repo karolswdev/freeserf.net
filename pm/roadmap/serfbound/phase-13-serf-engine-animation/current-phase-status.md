@@ -1,7 +1,7 @@
 # Phase 13 — Serf Engine and Animation
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -30,7 +30,7 @@ construction.
 
 ## Exit criteria (evidence required)
 
-- [ ] Serf sprites composite torso/head/arms with player colors from real
+- [x] Serf sprites composite torso/head/arms with player colors from real
   data and animate via the decoded animation table. (SB-13-01)
 - [ ] The serf scheduler spawns, idles, and walks serfs with
   reference-matching pathing on fixture maps. (SB-13-02)
@@ -44,15 +44,17 @@ construction.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-13-01 | Decode serf animation and player-color sprites | backlog | story-01-serf-animation-sprites.md | — |
-| SB-13-02 | Port the serf state machine core | backlog | story-02-serf-state-machine-core.md | — |
+| SB-13-01 | Decode serf animation and player-color sprites | done | story-01-serf-animation-sprites.md | evidence-story-01.md |
+| SB-13-02 | Port the serf state machine core | in-progress | story-02-serf-state-machine-core.md | — |
 | SB-13-03 | Transporters move resources along roads | backlog | story-03-transporters-on-roads.md | — |
 | SB-13-04 | Builders and diggers construct buildings | backlog | story-04-builders-and-diggers.md | — |
 | SB-13-05 | Animated settlement visual gate | backlog | story-05-animated-settlement-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 12 closes.
+SB-13-01 is done: the animation table parses from real data (200
+animations), and serf torsos compose with player-color masks via the ported
+sprite operations. SB-13-02 (state machine core) is in progress.
 
 ## Active risks
 

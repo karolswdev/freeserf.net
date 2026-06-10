@@ -253,6 +253,36 @@ assert.equal(
   "built flag renders the real flag sprite",
 );
 
+// SB-13-01: the serf animation table and player-color torsos decode from
+// real data.
+const { composeSerfTorso, parseSerfAnimationTable } = await import(
+  "../packages/assets/dist/index.js"
+);
+const animationTable = parseSerfAnimationTable(spriteArchive);
+assert.equal(animationTable.length, 200, "200 serf animations");
+assert.equal(
+  animationTable.some((animation) => animation.length > 0),
+  true,
+  "animations carry frames",
+);
+assert.equal(
+  animationTable.every((animation) =>
+    animation.every(
+      (frame) => frame.sprite >= 0 && frame.sprite <= 255 && Math.abs(frame.x) <= 127,
+    ),
+  ),
+  true,
+  "frames stay in range",
+);
+
+const torso = composeSerfTorso(spriteArchive, 0);
+assert.notEqual(torso, null, "serf torso 0 composes");
+assert.equal(torso.sprite.width > 0 && torso.sprite.height > 0, true);
+const torsoMaskPixels = torso.playerMask.rgba.filter(
+  (value, index) => index % 4 === 3 && value === 0xff,
+).length;
+assert.equal(torsoMaskPixels > 0, true, "player-color region exists");
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites, composed real terrain triangles into a ${realAtlas.width}x${realAtlas.height} atlas, and built a decoded scene with ${decodedScene.sprites.length} sprites.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, object sprites, ${animationTable.length} serf animations, and player-color torsos; composed terrain into a ${realAtlas.width}x${realAtlas.height} atlas and a decoded scene with ${decodedScene.sprites.length} sprites.`,
 );

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 13
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-12-05
 - **Unblocks:** SB-13-02
 - **Owner:** unassigned
@@ -24,11 +24,11 @@ sticks arms from `DATA_SERF_ARMS`.
 
 ## Acceptance criteria
 
-- [ ] Animation table parses with the reference size check and exposes
+- [x] Animation table parses with the reference size check and exposes
   per-animation frame sequences.
-- [ ] Serf sprites composite with at least two distinct player colors from
+- [x] Serf sprites composite with at least two distinct player colors from
   real data (opt-in check) and from synthetic fixtures in CI.
-- [ ] Head/torso/arm combination matches reference offsets.
+- [x] Head/torso/arm combination matches reference offsets.
 
 ## Test plan
 
