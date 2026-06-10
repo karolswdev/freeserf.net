@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "kind": "serfbound.scale-baseline",
+  "measuredAtIso": "2026-06-10T12:22:27.082Z",
+  "budgets": {
+    "minTicksPerSecondAtSize6": 200000,
+    "maxSceneBuildMsAt1280": 50
+  },
+  "simulations": [
+    {
+      "mapSize": 3,
+      "columns": 64,
+      "rows": 64,
+      "totalTicks": 500000,
+      "wallMs": 220.4,
+      "ticksPerSecond": 2268959,
+      "heapBeforeMb": 7.1,
+      "heapAfterMb": 7.5,
+      "aiBuildings": 15,
+      "serfs": 11
+    },
+    {
+      "mapSize": 4,
+      "columns": 128,
+      "rows": 64,
+      "totalTicks": 500000,
+      "wallMs": 340.7,
+      "ticksPerSecond": 1467459,
+      "heapBeforeMb": 7.4,
+      "heapAfterMb": 7.1,
+      "aiBuildings": 12,
+      "serfs": 12
+    },
+    {
+      "mapSize": 5,
+      "columns": 128,
+      "rows": 128,
+      "totalTicks": 500000,
+      "wallMs": 280.7,
+      "ticksPerSecond": 1781388,
+      "heapBeforeMb": 9.1,
+      "heapAfterMb": 8.5,
+      "aiBuildings": 13,
+      "serfs": 12
+    },
+    {
+      "mapSize": 6,
+      "columns": 256,
+      "rows": 128,
+      "totalTicks": 500000,
+      "wallMs": 242.9,
+      "ticksPerSecond": 2058646,
+      "heapBeforeMb": 7.8,
+      "heapAfterMb": 9.1,
+      "aiBuildings": 15,
+      "serfs": 12
+    }
+  ],
+  "sceneRuns": [
+    {
+      "mapSize": 3,
+      "builds": 30,
+      "averageBuildMs": 2.88
+    },
+    {
+      "mapSize": 5,
+      "builds": 30,
+      "averageBuildMs": 2.22
+    }
+  ]
+}

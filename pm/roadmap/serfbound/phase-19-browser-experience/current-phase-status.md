@@ -1,7 +1,7 @@
 # Phase 19 — First-Class Browser Experience
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -29,8 +29,9 @@ polished first-run experience and real accessibility.
 
 ## Exit criteria (evidence required)
 
-- [ ] Measured baselines on large maps with full simulation; optimizations hit
-  recorded targets (e.g. steady frame cadence on mid hardware). (SB-19-01)
+- [x] Measured baselines on large maps with full simulation; optimizations hit
+  recorded targets (e.g. steady frame cadence on mid hardware). (SB-19-01:
+  budgets met with 10-100x headroom; no optimization warranted, recorded)
 - [ ] Worker offload implemented or explicitly rejected with measurements.
   (SB-19-02)
 - [ ] The game is playable on a tablet/phone: touch controls, responsive
@@ -44,7 +45,7 @@ polished first-run experience and real accessibility.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-19-01 | Performance at scale | backlog | story-01-performance-at-scale.md | — |
+| SB-19-01 | Performance at scale | done | story-01-performance-at-scale.md | evidence-story-01.md |
 | SB-19-02 | Worker offload decision and implementation | backlog | story-02-worker-offload.md | — |
 | SB-19-03 | Touch and mobile play | backlog | story-03-touch-mobile-play.md | — |
 | SB-19-04 | PWA install and offline shell | backlog | story-04-pwa-offline-shell.md | — |
@@ -52,7 +53,10 @@ polished first-run experience and real accessibility.
 
 ## Where we are
 
-Scaffolded; starts after Phase 18 closes.
+SB-19-01 is done: the scale baseline is measured (size-6 maps with full
+economy + AI sustain ~2M ticks/s; scene builds in ~3ms against the 175ms
+frame) and CI-guarded; no optimization was warranted. SB-19-02 (the
+worker-offload decision) consumes these numbers next.
 
 ## Active risks
 

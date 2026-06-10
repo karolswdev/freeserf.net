@@ -26,7 +26,8 @@
     "test:docs": "node scripts/check-docs.mjs",
     "test:release:static": "npm run release:static && node scripts/test-static-hosting.mjs",
     "test:unit": "npm run build && node --test tests/ci/*.test.mjs",
-    "test:local:assets": "node scripts/test-local-assets.mjs"
+    "test:local:assets": "node scripts/test-local-assets.mjs",
+    "measure:scale": "node scripts/measure-scale.mjs"
   },
   "workspaces": [
     "packages/*"

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 19
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-18-05
 - **Unblocks:** SB-19-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ A 512x512 map with a full economy, hundreds of serfs, and AI opponents is the st
 
 ## Acceptance criteria
 
-- [ ] Baselines and budgets recorded for defined scenarios.
-- [ ] Optimizations hit budgets with before/after measurements.
-- [ ] No sim behavior change (parity fixtures still green).
+- [x] Baselines and budgets recorded for defined scenarios.
+- [x] Optimizations hit budgets with before/after measurements.
+- [x] No sim behavior change (parity fixtures still green).
 
 ## Test plan
 
