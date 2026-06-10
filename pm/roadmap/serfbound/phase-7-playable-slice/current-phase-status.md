@@ -34,7 +34,7 @@ saves/loads state.
 - [x] One visible build/road/flag interaction mutates engine state and rendered
   output.
 - [ ] The playable path runs in the browser with no desktop companion process.
-- [ ] Save/load works in browser persistence and passes at least one round-trip
+- [x] Save/load works in browser persistence and passes at least one round-trip
   test.
 - [ ] Manual verification steps and screenshots/video are stored as evidence.
 
@@ -44,16 +44,16 @@ saves/loads state.
 |---|---|---|---|---|
 | SB-7-01 | Start local game from imported data | done | story-01-start-local-game.md | evidence-story-01.md |
 | SB-7-02 | Implement first visible build action | done | story-02-first-visible-build-action.md | evidence-story-02.md |
-| SB-7-03 | Add browser save/load loop | ready | story-03-browser-save-load-loop.md | — |
-| SB-7-04 | Verify playable loop manually | backlog | story-04-playable-loop-verification.md | — |
+| SB-7-03 | Add browser save/load loop | done | story-03-browser-save-load-loop.md | evidence-story-03.md |
+| SB-7-04 | Verify playable loop manually | ready | story-04-playable-loop-verification.md | — |
 
 ## Where we are
 
-Phase 7 is in progress. SB-7-02 added the first visible browser-playable action:
-select a tile in a running local game, build a flag through `game.build`, mutate
-engine state, render the flag back onto the WebGL2 map, and reject duplicate or
-deferred build requests recoverably. The next responsible move is SB-7-03:
-persist and restore the local game snapshot in the browser.
+Phase 7 is in progress. SB-7-03 added browser-local save/load for the first
+playable slice: save the running local game snapshot, reload the browser, load
+the saved state after imported data restores, recover the built flag state, and
+clear missing/corrupt save paths without crashing. The next responsible move is
+SB-7-04: execute and record the manual end-to-end playable-loop verification.
 
 ## Active risks
 
@@ -75,8 +75,13 @@ persist and restore the local game snapshot in the browser.
   huts, terrain/buildability rules, ownership, logistics, and economy effects
   are deferred until later simulation stories; SB-7-02 proves the browser
   UI-engine-render loop only.
+- 2026-06-09 — Store Serfbound browser saves separately from original imported
+  data. Save records carry `schemaVersion: 1`, imported-data source metadata,
+  and a `serfbound.local-game` snapshot; original savegame compatibility stays
+  out of scope — SB-7-03.
 
 ## Decisions deferred
 
 - Original placement rules, roads, huts, worker logistics, and economy effects.
-- Browser save/load for running game snapshots — SB-7-03.
+- Original savegame import/export compatibility.
+- Manual end-to-end proof with browser/device metadata — SB-7-04.

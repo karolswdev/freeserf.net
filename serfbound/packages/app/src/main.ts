@@ -9,12 +9,14 @@ import {
 } from "@serfbound/assets";
 import {
   engineBoundary,
+  restoreSerfboundLocalGame,
   SerfboundCommandRouter,
   startSerfboundLocalGame,
   uint16,
   type SerfboundBuiltStructure,
   type SerfboundCommandResult,
   type SerfboundLocalGameDataSource,
+  type SerfboundLocalGameSnapshot,
   type SerfboundLocalGameStartResult,
 } from "@serfbound/engine";
 import {
@@ -26,6 +28,14 @@ import {
   type ImportedArchiveStore,
   type StoredImportedArchiveRecord,
 } from "./imported-data-store.js";
+import {
+  BrowserIndexedDbLocalGameSaveStore,
+  clearLocalGameSaveRecord,
+  createStoredLocalGameSaveRecord,
+  saveLocalGameSaveRecord,
+  type LocalGameSaveStore,
+  type StoredLocalGameSaveRecord,
+} from "./local-game-save-store.js";
 import {
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
@@ -47,6 +57,19 @@ export {
   type StoredImportedArchiveMetadata,
   type StoredImportedArchiveRecord,
 } from "./imported-data-store.js";
+export {
+  BrowserIndexedDbLocalGameSaveStore,
+  clearLocalGameSaveRecord,
+  createStoredLocalGameSaveRecord,
+  currentLocalGameSaveKey,
+  localGameSaveDatabaseName,
+  localGameSaveStoreName,
+  saveLocalGameSaveRecord,
+  type LocalGameSaveOperationResult,
+  type LocalGameSaveStore,
+  type StoredLocalGameSaveMetadata,
+  type StoredLocalGameSaveRecord,
+} from "./local-game-save-store.js";
 export {
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
@@ -81,6 +104,7 @@ export function bootstrapSummary(): AppBootstrapSummary {
 
 export type MountSerfboundOptions = {
   readonly importedArchiveStore?: ImportedArchiveStore;
+  readonly localGameSaveStore?: LocalGameSaveStore;
 };
 
 type SceneRenderGenerated = () => void;
@@ -97,6 +121,8 @@ type PointerMapInteractionHandlers = {
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
     options.importedArchiveStore ?? new BrowserIndexedDbImportedArchiveStore();
+  const localGameSaveStore =
+    options.localGameSaveStore ?? new BrowserIndexedDbLocalGameSaveStore();
   const summary = bootstrapSummary();
   root.dataset.serfboundRuntime = summary.runtime;
   root.dataset.serfboundDataState = summary.dataState;
@@ -161,6 +187,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           <p class="status-panel__value" data-testid="command-state">No action selected</p>
         </div>
         <p class="status-panel__detail" data-testid="command-detail">Select a tile to inspect available actions.</p>
+        <div>
+          <p class="status-panel__label">Save</p>
+          <p class="status-panel__value" data-testid="save-state">No saved game</p>
+        </div>
+        <p class="status-panel__detail" data-testid="save-detail">Start a game to save.</p>
         <input
           id="data-import"
           class="import-input"
@@ -180,7 +211,25 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           type="button"
           disabled
         >Start game</button>
+        <button
+          class="secondary-action"
+          data-testid="save-game-button"
+          type="button"
+          disabled
+        >Save game</button>
+        <button
+          class="secondary-action"
+          data-testid="load-game-button"
+          type="button"
+          disabled
+        >Load game</button>
         <label class="secondary-action" for="data-import">Import data</label>
+        <button
+          class="secondary-action"
+          data-testid="clear-save-button"
+          type="button"
+          disabled
+        >Clear save</button>
         <button
           class="secondary-action"
           data-testid="data-reset-button"
@@ -201,6 +250,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
+  let currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined;
+  let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
   const renderCurrentScene = () => {
     renderScene(root, currentTypedAssetCatalog, currentBuiltStructures);
@@ -209,6 +260,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     currentTypedAssetCatalog = undefined;
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
+    currentLocalGameSnapshot = undefined;
     selectedInteraction = undefined;
     commandRouter = new SerfboundCommandRouter();
     root.dataset.serfboundCommandState = "idle";
@@ -221,6 +273,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     getCommandStateElement(root).textContent = "No action selected";
     getCommandDetailElement(root).textContent = "Select a tile to inspect available actions.";
     getBuildFlagButton(root).disabled = true;
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
     renderCurrentScene();
   };
   const renderCatalogScene = (
@@ -230,6 +283,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   ) => {
     currentTypedAssetCatalog = typedAssetCatalog;
     currentImportedDataSource = localGameDataSourceFromCatalog(catalog, archiveName);
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
     renderCurrentScene();
   };
 
@@ -286,9 +340,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     if (result.status === "started") {
       commandRouter = new SerfboundCommandRouter(result.game.state);
       currentBuiltStructures = [];
+      currentLocalGameSnapshot = result.snapshot;
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
   });
 
   const buildFlagButton = root.querySelector<HTMLButtonElement>("[data-testid='build-flag-button']");
@@ -309,17 +365,228 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       tile: interaction.tile,
     });
     currentBuiltStructures = result.snapshot.builtStructures;
+    currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
     applyCommandResultState(root, result);
     renderCurrentScene();
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
   });
 
-  void restorePersistedArchive(
-    root,
-    importedArchiveStore,
-    renderCatalogScene,
-    renderGeneratedScene,
-  );
+  const saveButton = getSaveGameButton(root);
+  saveButton.addEventListener("click", () => {
+    const snapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
+    if (snapshot === undefined) {
+      return;
+    }
+
+    currentLocalGameSnapshot = snapshot;
+    void saveCurrentLocalGame(
+      root,
+      localGameSaveStore,
+      snapshot,
+      (record) => {
+        currentSavedLocalGame = record;
+        syncLocalGameSaveControls(
+          root,
+          currentLocalGameSnapshot,
+          currentSavedLocalGame,
+          currentImportedDataSource,
+        );
+      },
+    );
+  });
+
+  const loadButton = getLoadGameButton(root);
+  loadButton.addEventListener("click", () => {
+    void loadCurrentLocalGame(
+      root,
+      localGameSaveStore,
+      currentImportedDataSource,
+      (record, snapshot) => {
+        const restored = restoreSerfboundLocalGame(snapshot);
+        if (restored.status === "rejected") {
+          applyLocalGameSaveErrorState(root, restored.message);
+          return;
+        }
+
+        currentSavedLocalGame = record;
+        currentLocalGameSnapshot = restored.snapshot;
+        currentBuiltStructures = restored.snapshot.state.builtStructures;
+        selectedInteraction = undefined;
+        commandRouter = new SerfboundCommandRouter(restored.game.state);
+        applyRunningLocalGameSnapshot(root, restored.snapshot);
+        renderCurrentScene();
+        syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+        applyLocalGameLoadedState(root, record);
+        syncLocalGameSaveControls(
+          root,
+          currentLocalGameSnapshot,
+          currentSavedLocalGame,
+          currentImportedDataSource,
+        );
+      },
+      (record) => {
+        currentSavedLocalGame = record;
+        syncLocalGameSaveControls(
+          root,
+          currentLocalGameSnapshot,
+          currentSavedLocalGame,
+          currentImportedDataSource,
+        );
+      },
+    );
+  });
+
+  const clearSaveButton = getClearSaveButton(root);
+  clearSaveButton.addEventListener("click", () => {
+    void clearCurrentLocalGameSave(
+      root,
+      localGameSaveStore,
+      () => {
+        currentSavedLocalGame = undefined;
+        syncLocalGameSaveControls(
+          root,
+          currentLocalGameSnapshot,
+          currentSavedLocalGame,
+          currentImportedDataSource,
+        );
+      },
+    );
+  });
+
+  void (async () => {
+    await restorePersistedArchive(
+      root,
+      importedArchiveStore,
+      renderCatalogScene,
+      renderGeneratedScene,
+    );
+    currentSavedLocalGame = await restorePersistedLocalGameSave(root, localGameSaveStore);
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
+  })();
+}
+
+async function restorePersistedLocalGameSave(
+  root: HTMLElement,
+  localGameSaveStore: LocalGameSaveStore,
+): Promise<StoredLocalGameSaveRecord | undefined> {
+  root.dataset.serfboundLocalSaveState = "loading";
+
+  try {
+    const record = await localGameSaveStore.loadCurrent();
+    if (record === null) {
+      applyNoLocalGameSaveState(root, "No saved game", "Start a game to save.");
+      return undefined;
+    }
+
+    applyLocalGameSaveAvailableState(root, record);
+    return record;
+  } catch (error) {
+    applyLocalGameSaveErrorState(root, `Saved game restore failed: ${errorMessage(error)}`);
+    return undefined;
+  }
+}
+
+async function saveCurrentLocalGame(
+  root: HTMLElement,
+  localGameSaveStore: LocalGameSaveStore,
+  snapshot: SerfboundLocalGameSnapshot,
+  onSaved: (record: StoredLocalGameSaveRecord) => void,
+): Promise<void> {
+  root.dataset.serfboundLocalSaveState = "saving";
+  getSaveStateElement(root).textContent = "Saving game";
+  getSaveDetailElement(root).textContent = "Writing the current browser game state.";
+
+  const record = createStoredLocalGameSaveRecord({ snapshot });
+  const result = await saveLocalGameSaveRecord(localGameSaveStore, record);
+  if (result.state === "error") {
+    applyLocalGameSaveErrorState(root, `Could not save game: ${result.message}`);
+    return;
+  }
+
+  onSaved(record);
+  root.dataset.serfboundLocalSaveState = "persisted";
+  root.dataset.serfboundLocalSaveSavedAt = record.savedAtIso;
+  root.dataset.serfboundLocalSaveSource = record.dataSource.archiveName;
+  getSaveStateElement(root).textContent = "Game saved";
+  getSaveDetailElement(root).textContent =
+    `Saved ${record.snapshot.state.builtStructures.length} built structures.`;
+}
+
+async function loadCurrentLocalGame(
+  root: HTMLElement,
+  localGameSaveStore: LocalGameSaveStore,
+  currentImportedDataSource: SerfboundLocalGameDataSource | undefined,
+  onLoaded: (
+    record: StoredLocalGameSaveRecord,
+    snapshot: SerfboundLocalGameSnapshot,
+  ) => void,
+  onAvailable: (record: StoredLocalGameSaveRecord | undefined) => void,
+): Promise<void> {
+  root.dataset.serfboundLocalSaveState = "loading";
+  getSaveStateElement(root).textContent = "Loading game";
+  getSaveDetailElement(root).textContent = "Reading the current browser save.";
+
+  let record: StoredLocalGameSaveRecord | null;
+  try {
+    record = await localGameSaveStore.loadCurrent();
+  } catch (error) {
+    applyLocalGameSaveErrorState(root, `Could not load saved game: ${errorMessage(error)}`);
+    return;
+  }
+
+  if (record === null) {
+    onAvailable(undefined);
+    applyNoLocalGameSaveState(root, "No saved game", "Start a game to save.");
+    return;
+  }
+
+  onAvailable(record);
+  if (currentImportedDataSource === undefined) {
+    applyLocalGameSaveErrorState(root, "Import data before loading a saved game.");
+    return;
+  }
+
+  if (!localGameDataSourcesMatch(currentImportedDataSource, record.dataSource)) {
+    applyLocalGameSaveErrorState(root, "Saved game uses another imported data source.");
+    return;
+  }
+
+  onLoaded(record, record.snapshot);
+}
+
+async function clearCurrentLocalGameSave(
+  root: HTMLElement,
+  localGameSaveStore: LocalGameSaveStore,
+  onCleared: () => void,
+): Promise<void> {
+  const result = await clearLocalGameSaveRecord(localGameSaveStore);
+  if (result.state === "error") {
+    applyLocalGameSaveErrorState(root, `Could not clear saved game: ${result.message}`);
+    return;
+  }
+
+  onCleared();
+  delete root.dataset.serfboundLocalSaveSavedAt;
+  delete root.dataset.serfboundLocalSaveSource;
+  applyNoLocalGameSaveState(root, "No saved game", "Saved game cleared.");
+}
+
+function refreshLocalGameSnapshot(
+  snapshot: SerfboundLocalGameSnapshot | undefined,
+  commandRouter: SerfboundCommandRouter,
+): SerfboundLocalGameSnapshot | undefined {
+  if (snapshot === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...snapshot,
+    data: { ...snapshot.data },
+    settings: { ...snapshot.settings },
+    state: commandRouter.state.snapshot(),
+    renderer: { ...snapshot.renderer },
+  };
 }
 
 function applyArchiveValidation(
@@ -726,7 +993,13 @@ function applyLocalGameStartResult(
     return;
   }
 
-  const snapshot = result.snapshot;
+  applyRunningLocalGameSnapshot(root, result.snapshot);
+}
+
+function applyRunningLocalGameSnapshot(
+  root: HTMLElement,
+  snapshot: SerfboundLocalGameSnapshot,
+): void {
   root.dataset.serfboundGameState = "running";
   root.dataset.serfboundStartMode = "imported-data";
   root.dataset.serfboundLocalGameState = "running";
@@ -745,6 +1018,77 @@ function applyLocalGameStartResult(
   const startButton = getStartGameButton(root);
   startButton.textContent = "Running";
   startButton.disabled = true;
+}
+
+function applyLocalGameSaveAvailableState(
+  root: HTMLElement,
+  record: StoredLocalGameSaveRecord,
+): void {
+  root.dataset.serfboundLocalSaveState = "available";
+  root.dataset.serfboundLocalSaveSavedAt = record.savedAtIso;
+  root.dataset.serfboundLocalSaveSource = record.dataSource.archiveName;
+  getSaveStateElement(root).textContent = "Saved game";
+  getSaveDetailElement(root).textContent =
+    `${record.snapshot.state.builtStructures.length} built structures saved.`;
+}
+
+function applyLocalGameLoadedState(
+  root: HTMLElement,
+  record: StoredLocalGameSaveRecord,
+): void {
+  root.dataset.serfboundLocalSaveState = "loaded";
+  root.dataset.serfboundLocalSaveSavedAt = record.savedAtIso;
+  root.dataset.serfboundLocalSaveSource = record.dataSource.archiveName;
+  getSaveStateElement(root).textContent = "Game loaded";
+  getSaveDetailElement(root).textContent =
+    `${record.snapshot.state.builtStructures.length} built structures restored.`;
+}
+
+function applyNoLocalGameSaveState(
+  root: HTMLElement,
+  stateText: string,
+  detailText: string,
+): void {
+  root.dataset.serfboundLocalSaveState = "empty";
+  getSaveStateElement(root).textContent = stateText;
+  getSaveDetailElement(root).textContent = detailText;
+}
+
+function applyLocalGameSaveErrorState(root: HTMLElement, message: string): void {
+  root.dataset.serfboundLocalSaveState = "error";
+  root.dataset.serfboundRecoverableState = "save-error";
+  root.dataset.serfboundLocalSaveMessage = message;
+  getSaveStateElement(root).textContent = "Save unavailable";
+  getSaveDetailElement(root).textContent = message;
+}
+
+function syncLocalGameSaveControls(
+  root: HTMLElement,
+  currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined,
+  currentSavedLocalGame: StoredLocalGameSaveRecord | undefined,
+  currentImportedDataSource: SerfboundLocalGameDataSource | undefined,
+): void {
+  getSaveGameButton(root).disabled =
+    root.dataset.serfboundGameState !== "running" || currentLocalGameSnapshot === undefined;
+  getLoadGameButton(root).disabled =
+    currentSavedLocalGame === undefined ||
+    currentImportedDataSource === undefined ||
+    !localGameDataSourcesMatch(currentImportedDataSource, currentSavedLocalGame.dataSource);
+  getClearSaveButton(root).disabled = currentSavedLocalGame === undefined;
+}
+
+function localGameDataSourcesMatch(
+  left: SerfboundLocalGameDataSource,
+  right: SerfboundLocalGameDataSource,
+): boolean {
+  return (
+    left.kind === right.kind &&
+    left.archiveName === right.archiveName &&
+    left.byteLength === right.byteLength &&
+    left.entryCount === right.entryCount &&
+    left.definedArchiveEntries === right.definedArchiveEntries &&
+    left.fixupCount === right.fixupCount
+  );
 }
 
 function syncGameReadiness(root: HTMLElement): void {
@@ -833,6 +1177,24 @@ function getCommandDetailElement(root: HTMLElement): HTMLElement {
   return detail;
 }
 
+function getSaveStateElement(root: HTMLElement): HTMLElement {
+  const state = root.querySelector<HTMLElement>("[data-testid='save-state']");
+  if (state === null) {
+    throw new Error("Serfbound shell save state did not mount.");
+  }
+
+  return state;
+}
+
+function getSaveDetailElement(root: HTMLElement): HTMLElement {
+  const detail = root.querySelector<HTMLElement>("[data-testid='save-detail']");
+  if (detail === null) {
+    throw new Error("Serfbound shell save detail did not mount.");
+  }
+
+  return detail;
+}
+
 function getGameStateElement(root: HTMLElement): HTMLElement {
   const state = root.querySelector<HTMLElement>("[data-testid='game-state']");
   if (state === null) {
@@ -882,6 +1244,33 @@ function getBuildFlagButton(root: HTMLElement): HTMLButtonElement {
   const button = root.querySelector<HTMLButtonElement>("[data-testid='build-flag-button']");
   if (button === null) {
     throw new Error("Serfbound shell build flag button did not mount.");
+  }
+
+  return button;
+}
+
+function getSaveGameButton(root: HTMLElement): HTMLButtonElement {
+  const button = root.querySelector<HTMLButtonElement>("[data-testid='save-game-button']");
+  if (button === null) {
+    throw new Error("Serfbound shell save game button did not mount.");
+  }
+
+  return button;
+}
+
+function getLoadGameButton(root: HTMLElement): HTMLButtonElement {
+  const button = root.querySelector<HTMLButtonElement>("[data-testid='load-game-button']");
+  if (button === null) {
+    throw new Error("Serfbound shell load game button did not mount.");
+  }
+
+  return button;
+}
+
+function getClearSaveButton(root: HTMLElement): HTMLButtonElement {
+  const button = root.querySelector<HTMLButtonElement>("[data-testid='clear-save-button']");
+  if (button === null) {
+    throw new Error("Serfbound shell clear save button did not mount.");
   }
 
   return button;

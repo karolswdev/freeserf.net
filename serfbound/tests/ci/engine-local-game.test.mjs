@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   deriveLocalGameSeedString,
+  restoreSerfboundLocalGame,
   startSerfboundLocalGame,
 } from "@serfbound/engine";
 
@@ -91,4 +92,68 @@ test("startSerfboundLocalGame rejects missing data and invalid settings", () => 
     reason: "invalid-seed",
     message: "Local game seed must contain 16 digits from 1 to 8.",
   });
+});
+
+test("restoreSerfboundLocalGame resumes a saved first-slice snapshot", () => {
+  const started = startSerfboundLocalGame({
+    data: generatedCatalogData,
+  });
+  assert.equal(started.status, "started");
+  started.game.state.buildFlag({ column: 27, row: 21, position: 1371 });
+  started.game.state.advanceTicks(4);
+
+  const savedSnapshot = started.game.snapshot();
+  const restored = restoreSerfboundLocalGame(savedSnapshot);
+
+  assert.equal(restored.status, "started");
+  assert.deepEqual(restored.snapshot, savedSnapshot);
+  assert.deepEqual(restored.game.state.builtStructures, [
+    {
+      id: 1,
+      kind: "flag",
+      placedAtTick: 0,
+      tile: { column: 27, row: 21, position: 1371 },
+    },
+  ]);
+
+  started.game.state.advanceTicks(3);
+  restored.game.state.advanceTicks(3);
+  assert.deepEqual(restored.game.snapshot(), started.game.snapshot());
+});
+
+test("restoreSerfboundLocalGame rejects corrupt saved snapshots recoverably", () => {
+  assert.deepEqual(restoreSerfboundLocalGame(null), {
+    status: "rejected",
+    reason: "invalid-snapshot",
+    message: "Saved local game data is not a Serfbound local game snapshot.",
+  });
+
+  const started = startSerfboundLocalGame({
+    data: generatedCatalogData,
+  });
+  assert.equal(started.status, "started");
+
+  assert.deepEqual(
+    restoreSerfboundLocalGame({
+      ...started.snapshot,
+      settings: { ...started.snapshot.settings, seedString: "bad-seed" },
+    }),
+    {
+      status: "rejected",
+      reason: "invalid-seed",
+      message: "Saved local game seed is invalid.",
+    },
+  );
+
+  assert.deepEqual(
+    restoreSerfboundLocalGame({
+      ...started.snapshot,
+      state: { ...started.snapshot.state, random: { state: null } },
+    }),
+    {
+      status: "rejected",
+      reason: "invalid-snapshot",
+      message: "Saved local game state could not be restored.",
+    },
+  );
 });

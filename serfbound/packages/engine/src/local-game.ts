@@ -38,6 +38,10 @@ export type SerfboundLocalGameStartRejectionReason =
   | "missing-imported-data"
   | "invalid-map-size"
   | "invalid-seed";
+export type SerfboundLocalGameRestoreRejectionReason =
+  | "invalid-snapshot"
+  | "invalid-map-size"
+  | "invalid-seed";
 
 export type SerfboundLocalGameStarted = {
   readonly status: "started";
@@ -54,6 +58,14 @@ export type SerfboundLocalGameRejected = {
 export type SerfboundLocalGameStartResult =
   | SerfboundLocalGameStarted
   | SerfboundLocalGameRejected;
+export type SerfboundLocalGameRestoreRejected = {
+  readonly status: "rejected";
+  readonly reason: SerfboundLocalGameRestoreRejectionReason;
+  readonly message: string;
+};
+export type SerfboundLocalGameRestoreResult =
+  | SerfboundLocalGameStarted
+  | SerfboundLocalGameRestoreRejected;
 
 export class SerfboundLocalGame {
   readonly mode = "local-single-player";
@@ -140,6 +152,64 @@ export function startSerfboundLocalGame(
   };
 }
 
+export function restoreSerfboundLocalGame(
+  snapshot: unknown,
+): SerfboundLocalGameRestoreResult {
+  if (!isLocalGameSnapshotShape(snapshot)) {
+    return {
+      status: "rejected",
+      reason: "invalid-snapshot",
+      message: "Saved local game data is not a Serfbound local game snapshot.",
+    };
+  }
+
+  if (
+    !Number.isInteger(snapshot.settings.mapSize) ||
+    snapshot.settings.mapSize < 1 ||
+    snapshot.settings.mapSize > 23 ||
+    snapshot.state.map.size !== snapshot.settings.mapSize
+  ) {
+    return {
+      status: "rejected",
+      reason: "invalid-map-size",
+      message: "Saved local game map size is invalid.",
+    };
+  }
+
+  try {
+    FreeserfRandom.fromStringSeed(snapshot.settings.seedString);
+  } catch {
+    return {
+      status: "rejected",
+      reason: "invalid-seed",
+      message: "Saved local game seed is invalid.",
+    };
+  }
+
+  let state: SerfboundGameState;
+  try {
+    state = SerfboundGameState.fromSnapshot(snapshot.state);
+  } catch {
+    return {
+      status: "rejected",
+      reason: "invalid-snapshot",
+      message: "Saved local game state could not be restored.",
+    };
+  }
+
+  const game = new SerfboundLocalGame(
+    { ...snapshot.data },
+    { ...snapshot.settings },
+    state,
+  );
+
+  return {
+    status: "started",
+    game,
+    snapshot: game.snapshot(),
+  };
+}
+
 export function deriveLocalGameSeedString(
   data: SerfboundLocalGameDataSource,
   mapSize = 3,
@@ -172,4 +242,76 @@ export function deriveLocalGameSeedString(
   }
 
   return seedDigits.join("");
+}
+
+function isLocalGameSnapshotShape(input: unknown): input is SerfboundLocalGameSnapshot {
+  if (!isRecord(input)) {
+    return false;
+  }
+
+  const snapshot = input as Partial<SerfboundLocalGameSnapshot>;
+  return (
+    snapshot.schemaVersion === 1 &&
+    snapshot.kind === "serfbound.local-game" &&
+    snapshot.mode === "local-single-player" &&
+    snapshot.status === "running" &&
+    isLocalGameDataSource(snapshot.data) &&
+    isLocalGameSettings(snapshot.settings) &&
+    isGameStateSnapshotShape(snapshot.state) &&
+    isRecord(snapshot.renderer) &&
+    snapshot.renderer.sceneSource === "dos-pa-catalog"
+  );
+}
+
+function isLocalGameDataSource(input: unknown): input is SerfboundLocalGameDataSource {
+  if (!isRecord(input)) {
+    return false;
+  }
+
+  const data = input as Partial<SerfboundLocalGameDataSource>;
+  return (
+    data.kind === "imported-dos-pa-catalog" &&
+    typeof data.archiveName === "string" &&
+    isNonNegativeInteger(data.byteLength) &&
+    isNonNegativeInteger(data.entryCount) &&
+    isNonNegativeInteger(data.definedArchiveEntries) &&
+    isNonNegativeInteger(data.fixupCount)
+  );
+}
+
+function isLocalGameSettings(input: unknown): input is SerfboundLocalGameSettings {
+  if (!isRecord(input)) {
+    return false;
+  }
+
+  const settings = input as Partial<SerfboundLocalGameSettings>;
+  return (
+    Number.isInteger(settings.mapSize) &&
+    typeof settings.seedString === "string"
+  );
+}
+
+function isGameStateSnapshotShape(input: unknown): input is SerfboundGameSnapshot {
+  if (!isRecord(input)) {
+    return false;
+  }
+
+  const snapshot = input as Partial<SerfboundGameSnapshot>;
+  return (
+    snapshot.schemaVersion === 1 &&
+    snapshot.kind === "serfbound.game-state-skeleton" &&
+    isRecord(snapshot.map) &&
+    isRecord(snapshot.clock) &&
+    isRecord(snapshot.random) &&
+    isRecord(snapshot.counters) &&
+    Array.isArray(snapshot.builtStructures)
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return Number.isInteger(value) && typeof value === "number" && value >= 0;
 }

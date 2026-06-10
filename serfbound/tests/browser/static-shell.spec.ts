@@ -51,6 +51,11 @@ test("static app shell renders without original data or a desktop companion", as
   );
   await expect(page.getByTestId("start-game-button")).toBeDisabled();
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
+  await expect(page.getByTestId("save-game-button")).toBeDisabled();
+  await expect(page.getByTestId("load-game-button")).toBeDisabled();
+  await expect(page.getByTestId("clear-save-button")).toBeDisabled();
+  await expect(page.getByTestId("save-state")).toHaveText("No saved game");
+  await expect(page.getByTestId("save-detail")).toHaveText("Start a game to save.");
   await expect(page.getByTestId("scene-state")).toHaveText("Preview terrain");
   await expect(page.getByTestId("scene-detail")).toHaveText("Select land to inspect it.");
   await expect(page.getByTestId("selected-tile-state")).toHaveText("No tile selected");
@@ -166,6 +171,9 @@ test("static app shell renders without original data or a desktop companion", as
   );
   await expect(page.getByTestId("start-game-button")).toBeDisabled();
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
+  await expect(page.getByTestId("save-game-button")).toBeEnabled();
+  await expect(page.getByTestId("load-game-button")).toBeDisabled();
+  await expect(page.getByTestId("clear-save-button")).toBeDisabled();
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-state", "running");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-start-mode",
@@ -214,6 +222,14 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByTestId("command-detail")).toContainText(/Flag placed at tile \d+,\d+/);
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
   await page.screenshot({ fullPage: true, path: firstBuildFlagScreenshotPath });
+  await page.getByTestId("save-game-button").click();
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-save-state", "persisted");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-save-source", "SPAU.PA");
+  await expect(page.getByTestId("save-state")).toHaveText("Game saved");
+  await expect(page.getByTestId("save-detail")).toHaveText("Saved 1 built structures.");
+  await expect(page.getByTestId("save-game-button")).toBeEnabled();
+  await expect(page.getByTestId("load-game-button")).toBeEnabled();
+  await expect(page.getByTestId("clear-save-button")).toBeEnabled();
 
   await page.getByTestId("build-flag-button").evaluate((button) => {
     if (!(button instanceof HTMLButtonElement)) {
@@ -239,6 +255,39 @@ test("static app shell renders without original data or a desktop companion", as
     "That tile already has a flag. Select another tile.",
   );
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-built-structure-count",
+    "1",
+  );
+
+  await page.reload();
+  await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.getByTestId("save-state")).toHaveText("Saved game");
+  await expect(page.getByTestId("save-detail")).toHaveText("1 built structures saved.");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-save-state", "available");
+  await expect(page.getByTestId("save-game-button")).toBeDisabled();
+  await expect(page.getByTestId("load-game-button")).toBeEnabled();
+  await expect(page.getByTestId("clear-save-button")).toBeEnabled();
+  await page.getByTestId("load-game-button").click();
+  await expect(page.getByTestId("game-state")).toHaveText("Running");
+  await expect(page.getByTestId("save-state")).toHaveText("Game loaded");
+  await expect(page.getByTestId("save-detail")).toHaveText("1 built structures restored.");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-state", "running");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-save-state", "loaded");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-built-structure-count",
+    "1",
+  );
+  await expect(page.getByTestId("save-game-button")).toBeEnabled();
+  await expect(page.getByTestId("load-game-button")).toBeEnabled();
+  await expect(page.getByTestId("clear-save-button")).toBeEnabled();
+  await page.getByTestId("clear-save-button").click();
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-local-save-state", "empty");
+  await expect(page.getByTestId("save-state")).toHaveText("No saved game");
+  await expect(page.getByTestId("save-detail")).toHaveText("Saved game cleared.");
+  await expect(page.getByTestId("save-game-button")).toBeEnabled();
+  await expect(page.getByTestId("load-game-button")).toBeDisabled();
+  await expect(page.getByTestId("clear-save-button")).toBeDisabled();
 
   await page.getByTestId("data-reset-button").click();
   await expect(page.getByTestId("data-state")).toHaveText("No game data");
@@ -248,6 +297,8 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByTestId("game-state")).toHaveText("Data needed");
   await expect(page.getByTestId("start-game-button")).toBeDisabled();
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
+  await expect(page.getByTestId("save-game-button")).toBeDisabled();
+  await expect(page.getByTestId("load-game-button")).toBeDisabled();
   await expect(page.getByTestId("data-reset-button")).toBeDisabled();
   await expect(page.getByTestId("scene-state")).toHaveText("Preview terrain");
   await expect(page.locator("#app")).toHaveAttribute(
@@ -290,6 +341,7 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByTestId("command-state")).toHaveText("Inspect land");
   await expect(page.getByTestId("command-detail")).toContainText(/Tile \d+,\d+ is selected/);
   await expect(page.getByTestId("build-flag-button")).toBeDisabled();
+  await expect(page.getByTestId("save-game-button")).toBeDisabled();
   await expect(shell).not.toContainText("debug.inspect-map-tile");
   await dispatchCanvasPointer(page, "pointermove", 0.25, 0.35, "touch");
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-type", "touch");

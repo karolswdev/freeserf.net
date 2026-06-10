@@ -224,6 +224,11 @@ For Serfbound specifically, every implementation story must identify:
   and deferred build targets recoverably, and `@serfbound/app` renders the built
   flag back onto the browser WebGL2 map with screenshot evidence under
   `phase-7-playable-slice/artifacts/`.
+- **Current browser save/load proof:** `@serfbound/engine` restores validated
+  `serfbound.local-game` snapshots; `@serfbound/app` saves versioned browser
+  records with imported-data source metadata in a dedicated IndexedDB store,
+  reloads saved state after browser reload, and keeps missing/corrupt save
+  paths recoverable.
 
 ## Glossary
 

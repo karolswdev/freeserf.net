@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 7
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-7-01, SB-3-03, SB-4-03
 - **Unblocks:** SB-7-04, SB-8-03
 - **Owner:** unassigned
@@ -21,11 +21,11 @@ Serfbound can persist engine state separately from imported original data.
 
 ## Acceptance criteria
 
-- [ ] Player can save current local game state.
-- [ ] Player can reload the browser and load the saved state.
-- [ ] Save data includes a version and source metadata.
-- [ ] Round-trip tests prove deterministic resume for the first slice.
-- [ ] Corrupt/missing save data is recoverable.
+- [x] Player can save current local game state.
+- [x] Player can reload the browser and load the saved state.
+- [x] Save data includes a version and source metadata.
+- [x] Round-trip tests prove deterministic resume for the first slice.
+- [x] Corrupt/missing save data is recoverable.
 
 ## Test plan
 
@@ -38,3 +38,12 @@ Serfbound can persist engine state separately from imported original data.
 
 Original savegame compatibility is a separate future decision. This story
 protects Serfbound's own browser state.
+
+Implemented save format:
+
+- Serfbound writes its own browser-local save record with `schemaVersion: 1`.
+- The save record stores `dataSource` metadata from the imported `SPAU.PA`
+  catalog and a `serfbound.local-game` snapshot.
+- The save is stored separately from imported original data in the
+  `serfbound-local-game-saves` IndexedDB database.
+- Original savegame import/export compatibility remains out of scope.
