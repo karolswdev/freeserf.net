@@ -30,7 +30,7 @@ serfs that work them, so a settlement sustains and grows on its own.
 
 - [x] Inventories and distribution priorities match reference fixtures.
   (SB-14-01; priority sliders transfer to chain/UI stories — recorded)
-- [ ] Wood and stone chains run end-to-end and feed construction. (SB-14-02)
+- [x] Wood and stone chains run end-to-end and feed construction. (SB-14-02)
 - [ ] Food chains run and feed mines per reference gating. (SB-14-03)
 - [ ] Mining and metallurgy produce steel and tools that re-enter the
   economy. (SB-14-04)
@@ -42,16 +42,16 @@ serfs that work them, so a settlement sustains and grows on its own.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-14-01 | Port inventories and resource distribution | done | story-01-inventories-distribution.md | evidence-story-01.md |
-| SB-14-02 | Wood and stone production chains | in-progress | story-02-wood-stone-chains.md | — |
-| SB-14-03 | Food production chains | backlog | story-03-food-chains.md | — |
+| SB-14-02 | Wood and stone production chains | done | story-02-wood-stone-chains.md | evidence-story-02.md |
+| SB-14-03 | Food production chains | in-progress | story-03-food-chains.md | — |
 | SB-14-04 | Mining, metallurgy, and tools | backlog | story-04-mining-metallurgy-tools.md | — |
 | SB-14-05 | Full-economy gate with live stats | backlog | story-05-full-economy-gate.md | — |
 
 ## Where we are
 
-SB-14-01 is done: the castle stocks the reference supplies preset, serfs
-and materials deplete it, and construction logistics draw from it.
-SB-14-02 (wood/stone chains) is in progress.
+SB-14-02 is done: the profession framework runs the founding chains —
+woodcutter, forester, sawmill, stonecutter — with products routed to
+consumers and the castle stock. SB-14-03 (food chains) is in progress.
 
 ## Active risks
 

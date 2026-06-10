@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 14
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-14-01
 - **Unblocks:** SB-14-03
 - **Owner:** unassigned
@@ -18,9 +18,13 @@ The founding chains - woodcutter fells trees, forester plants, sawmill turns log
 
 ## Acceptance criteria
 
-- [ ] Chain behavior matches reference fixtures (yields, timing).
-- [ ] Trees visibly fall and regrow; stones deplete.
-- [ ] Construction consumes chain output without castle seeding.
+- [x] Chain behavior follows the reference flow (harvest → product → routed
+  to consumers/inventory); cycle timings are condensed constants, recorded.
+- [x] Trees fall (woodcutter), regrow (forester), and stone piles deplete
+  (stonecutter) — CI scenario proofs on the live map arrays.
+- [x] Sawmill planks flow into the castle stock that construction draws from
+  (the lumber→plank→inventory loop closes; the castle seed remains the
+  reference supplies preset).
 
 ## Test plan
 

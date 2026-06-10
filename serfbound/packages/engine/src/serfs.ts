@@ -4,7 +4,17 @@ import {
   type SerfboundGameWorld,
   type WorldBuilding,
 } from "./game-world.js";
-import { inventoryTakeResource, inventoryTakeSerf, resourceType } from "./inventory.js";
+import {
+  inventoryTakeResource,
+  inventoryTakeSerf,
+  resourceType,
+} from "./inventory.js";
+import {
+  buildingType,
+  isStoneObject,
+  isTreeObject,
+  mapObject,
+} from "./map-generator-extra.js";
 
 // Serf state machine core ported from Freeserf.Core/Serf.cs (spawning,
 // walking, entering/leaving buildings). Professions, transport, and combat
@@ -24,9 +34,12 @@ export const serfState = {
   digging: 8,
   building: 9,
   idleOnPath: 10,
+  working: 11,
 } as const;
 
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
+
+const workedBuildingTypes = new Set<number>([2, 4, 9, 17]); // lumberjack, stonecutter, forester, sawmill
 
 const directionOrder: readonly Direction[] = ["Right", "DownRight", "Down", "Left", "UpLeft", "Up"];
 const reverseOf: Record<Direction, Direction> = {
@@ -90,6 +103,12 @@ export type WorldSerf = {
   carriedDestination: number;
   // Builder assignment: the building this serf constructs.
   buildTargetIndex: number;
+  // Profession assignment: the completed building this serf works.
+  workBuildingIndex: number;
+  // Profession work phase bookkeeping.
+  workPhase: number;
+  workCounter: number;
+  workTargetPosition: number;
 };
 
 export class SerfboundSerfEngine {
@@ -145,6 +164,10 @@ export class SerfboundSerfEngine {
       carriedResource: -1,
       carriedDestination: 0,
       buildTargetIndex: 0,
+      workBuildingIndex: 0,
+      workPhase: 0,
+      workCounter: 0,
+      workTargetPosition: -1,
     };
     this.#nextSerfIndex += 1;
     this.serfs.set(serf.index, serf);
@@ -205,6 +228,7 @@ export class SerfboundSerfEngine {
 
   // Game.UpdateSerfs equivalent.
   update(gameTick: number): void {
+    this.#sweepWorkerRequests(gameTick);
     for (const serf of [...this.serfs.values()]) {
       switch (serf.state) {
         case serfState.walking:
@@ -218,6 +242,9 @@ export class SerfboundSerfEngine {
           break;
         case serfState.building:
           this.#handleBuilding(serf, gameTick);
+          break;
+        case serfState.working:
+          this.#handleWorking(serf, gameTick);
           break;
         case serfState.leavingBuilding:
           this.#handleLeavingBuilding(serf, gameTick);
@@ -284,11 +311,27 @@ export class SerfboundSerfEngine {
         const flag = this.world.flagAt(serf.position)!;
         if (flag.index === serf.walkingDestination || serf.walkingDestination === 0) {
           // Assigned transporters take up duty at their road's flag before
-          // any building entry.
+          // any building entry. Idle transporters leave the collision map
+          // (the reference marks idle-on-path serfs passable).
           if (serf.roadDirection !== null && flag.index === serf.roadFlagIndex) {
             serf.state = serfState.idleOnPath;
             serf.counter = 0;
+            this.serfIndexes[serf.position] = 0;
             return;
+          }
+
+          // Profession workers settle into their completed building.
+          if (serf.workBuildingIndex !== 0 && flag.buildingIndex === serf.workBuildingIndex) {
+            const workplace = this.world.buildings.get(serf.workBuildingIndex);
+            if (workplace !== undefined && workplace.isDone) {
+              this.serfIndexes[serf.position] = 0;
+              serf.position = workplace.position;
+              serf.state = serfState.working;
+              serf.workPhase = 0;
+              serf.workCounter = 0;
+              serf.counter = 0;
+              return;
+            }
           }
 
           // Builders move onto their construction site and start working.
@@ -468,6 +511,7 @@ export class SerfboundSerfEngine {
           this.#deliverCarriedResource(serf, flag);
           serf.state = serfState.idleOnPath;
           serf.counter = 0;
+          this.serfIndexes[serf.position] = 0;
           return;
         }
 
@@ -475,6 +519,7 @@ export class SerfboundSerfEngine {
         if (direction === null) {
           serf.state = serfState.idleOnPath;
           serf.counter = 0;
+          this.serfIndexes[serf.position] = 0;
           return;
         }
 
@@ -511,6 +556,18 @@ export class SerfboundSerfEngine {
     }
 
     if (flag.index === serf.carriedDestination && flag.buildingIndex !== null) {
+      // Inventory flags store into the castle stock; other buildings tally.
+      if (flag.hasInventory) {
+        const inventory = this.world.inventoryForPlayer(flag.player);
+        if (inventory !== null) {
+          inventory.resources[serf.carriedResource] =
+            (inventory.resources[serf.carriedResource] ?? 0) + 1;
+          serf.carriedResource = -1;
+          serf.carriedDestination = 0;
+          return;
+        }
+      }
+
       const building = this.world.buildings.get(flag.buildingIndex);
       if (building !== undefined) {
         building.deliveredResources[serf.carriedResource] =
@@ -525,6 +582,158 @@ export class SerfboundSerfEngine {
     this.world.dropResource(flag.index, serf.carriedResource, serf.carriedDestination);
     serf.carriedResource = -1;
     serf.carriedDestination = 0;
+  }
+
+  readonly #staffedBuildings = new Set<number>();
+
+  // Completed production buildings request their profession worker from the
+  // castle (condensed Inventory.CallOutSerf profession dispatch).
+  #sweepWorkerRequests(gameTick: number): void {
+    for (const building of this.world.buildings.values()) {
+      if (!building.isDone || building.type === 24 || this.#staffedBuildings.has(building.index)) {
+        continue;
+      }
+
+      if (!workedBuildingTypes.has(building.type)) {
+        continue;
+      }
+
+      const worker = this.spawnGenericSerf(building.player, gameTick);
+      if (worker === null) {
+        continue;
+      }
+
+      this.#staffedBuildings.add(building.index);
+      worker.workBuildingIndex = building.index;
+      this.callOutSerf(worker, building.flagIndex, gameTick);
+    }
+  }
+
+  // Profession work cycles (condensed model, recorded in the phase docs):
+  // the worker stays at the building; map effects target the nearest
+  // candidate within the classic spiral; products drop at the building flag
+  // routed to demand (consumer buildings first, otherwise the inventory).
+  #handleWorking(serf: WorldSerf, gameTick: number): void {
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+    serf.workCounter += delta;
+
+    const building = this.world.buildings.get(serf.workBuildingIndex);
+    if (building === undefined) {
+      serf.state = serfState.null;
+      return;
+    }
+
+    switch (building.type) {
+      case buildingType.lumberjack:
+        this.#workHarvest(serf, building, 400, isTreeObject, mapObject.stub, resourceType.lumber);
+        break;
+      case buildingType.stonecutter:
+        this.#workHarvest(serf, building, 450, isStoneObject, mapObject.none, resourceType.stone);
+        break;
+      case buildingType.forester:
+        if (serf.workCounter >= 500) {
+          serf.workCounter = 0;
+          this.#plantTree(building);
+        }
+        break;
+      case buildingType.sawmill:
+        if (serf.workCounter >= 350) {
+          const stock = building.deliveredResources[resourceType.lumber] ?? 0;
+          if (stock > 0) {
+            serf.workCounter = 0;
+            building.deliveredResources[resourceType.lumber] = stock - 1;
+            this.#emitProduct(building, resourceType.plank);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  #workHarvest(
+    serf: WorldSerf,
+    building: WorldBuilding,
+    cycleTicks: number,
+    isTarget: (objectValue: number) => boolean,
+    remainder: number,
+    product: number,
+  ): void {
+    if (serf.workCounter < cycleTicks) {
+      return;
+    }
+
+    for (let offset = 1; offset < 151; offset += 1) {
+      const candidate = this.world.positionAddSpirally(building.position, offset);
+      if (isTarget(this.world.objectAt(candidate))) {
+        serf.workCounter = 0;
+        this.world.setObject(candidate, remainder, null);
+        this.#emitProduct(building, product);
+        return;
+      }
+    }
+
+    // Nothing left to harvest; idle until the map changes.
+    serf.workCounter = 0;
+  }
+
+  #plantTree(building: WorldBuilding): void {
+    for (let offset = 1; offset < 151; offset += 1) {
+      const candidate = this.world.positionAddSpirally(building.position, offset);
+      if (
+        this.world.objectAt(candidate) === mapObject.none &&
+        this.world.pathsAt(candidate) === 0 &&
+        this.world.hasOwner(candidate) &&
+        this.world.canBuildSmall(candidate)
+      ) {
+        // Condensed growth: the forester's sapling matures immediately
+        // (the reference NewTree growth timer is recorded follow-up work).
+        this.world.setObject(candidate, mapObject.tree0, null);
+        return;
+      }
+    }
+  }
+
+  // Route a product to demand: a connected consumer building wanting this
+  // resource first, otherwise the player's inventory flag.
+  #emitProduct(building: WorldBuilding, product: number): void {
+    const sourceFlag = this.world.flags.get(building.flagIndex);
+    if (sourceFlag === undefined) {
+      return;
+    }
+
+    let destination = 0;
+    if (product === resourceType.lumber) {
+      for (const consumer of this.world.buildings.values()) {
+        if (
+          consumer.isDone &&
+          consumer.type === buildingType.sawmill &&
+          (consumer.deliveredResources[resourceType.lumber] ?? 0) < 4 &&
+          this.#directionToward(building.flagIndex, consumer.flagIndex) !== null
+        ) {
+          destination = consumer.flagIndex;
+          break;
+        }
+      }
+    }
+
+    if (destination === 0) {
+      const inventory = this.world.inventoryForPlayer(building.player);
+      if (inventory !== null) {
+        destination = inventory.flagIndex;
+      }
+    }
+
+    if (destination !== 0 && destination !== building.flagIndex) {
+      this.world.dropResource(building.flagIndex, product, destination);
+    } else if (destination === building.flagIndex) {
+      // Producing straight onto the inventory flag (rare) stores directly.
+      const inventory = this.world.inventoryForPlayer(building.player);
+      if (inventory !== null) {
+        inventory.resources[product] = (inventory.resources[product] ?? 0) + 1;
+      }
+    }
   }
 
   // Builders work their site on the game clock; the world's construction
