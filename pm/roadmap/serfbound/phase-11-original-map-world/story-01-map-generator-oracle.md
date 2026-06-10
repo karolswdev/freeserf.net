@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 11
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-10-04
 - **Unblocks:** SB-11-02
 - **Owner:** unassigned
@@ -24,11 +24,11 @@ map generation before any generator code is written.
 
 ## Acceptance criteria
 
-- [ ] Fixture schema covers per-position height, type-up/type-down, object,
+- [x] Fixture schema covers per-position height, type-up/type-down, object,
   and mineral data plus generator parameters and seed.
-- [ ] At least one small map fixture (e.g. size 3) is committed and validated
+- [x] At least one small map fixture (e.g. size 3) is committed and validated
   by the existing oracle fixture contract checks.
-- [ ] Capture is reproducible: re-running the tool yields byte-identical
+- [x] Capture is reproducible: re-running the tool yields byte-identical
   fixtures.
 
 ## Test plan

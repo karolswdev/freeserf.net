@@ -1,7 +1,7 @@
 # Phase 11 — Original Map and Scrollable World
 
 **Last updated:** 2026-06-10.
-**Status:** ready (next phase).
+**Status:** in progress.
 
 ## Goal
 
@@ -31,9 +31,9 @@ borders.
 
 ## Exit criteria (evidence required)
 
-- [ ] A committed CI-safe oracle fixture records heights, terrain types, and
-  map objects for at least one small seed; the TypeScript generator matches it
-  exactly. (SB-11-01, SB-11-02)
+- [x] A committed CI-safe oracle fixture records heights, terrain types, and
+  map objects for at least one small seed (SB-11-01); the TypeScript generator
+  matches it exactly. (SB-11-02 pending)
 - [ ] Generated maps place trees, stones, deserts, water bodies, and mineral
   deposits per the reference rules. (SB-11-03)
 - [ ] The browser viewport scrolls and wraps over the full generated map with
@@ -45,16 +45,17 @@ borders.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-11-01 | Capture map generator oracle fixtures | ready | story-01-map-generator-oracle.md | — |
-| SB-11-02 | Port the classic map generator | backlog | story-02-port-classic-map-generator.md | — |
+| SB-11-01 | Capture map generator oracle fixtures | done | story-01-map-generator-oracle.md | evidence-story-01.md |
+| SB-11-02 | Port the classic map generator | in-progress | story-02-port-classic-map-generator.md | — |
 | SB-11-03 | Place map objects and minerals | backlog | story-03-map-objects-and-minerals.md | — |
 | SB-11-04 | Scroll the generated world in the viewport | backlog | story-04-scrolling-wrapping-viewport.md | — |
 | SB-11-05 | Render waves and map borders | backlog | story-05-waves-and-map-borders.md | — |
 
 ## Where we are
 
-Phase 11 is scaffolded and ready. It starts when SB-11-01 captures generator
-oracle fixtures from the reference implementation.
+SB-11-01 is done: a Python reference mirror of the classic generator emits
+reproducible two-seed fixtures (full landscape arrays + digests), validated by
+the fixture contract in CI. SB-11-02 (TypeScript port) is in progress.
 
 ## Active risks
 
@@ -66,7 +67,10 @@ oracle fixtures from the reference implementation.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-10 — With no .NET SDK available, the generator oracle follows the
+  Phase 1 pattern: a Python mirror of the C# source produces the fixture, and
+  the TypeScript port is derived independently from the C# source so that
+  fixture agreement means two independent derivations agree — SB-11-01.
 
 ## Decisions deferred
 

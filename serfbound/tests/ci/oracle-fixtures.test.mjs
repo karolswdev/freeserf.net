@@ -23,6 +23,11 @@ const fixtures = [
     path: new URL("map-geometry-facts.json", ciFixtureRoot),
     targetId: "map.geometry-facts",
   },
+  {
+    label: "map-generator-classic.json",
+    path: new URL("map-generator-classic.json", ciFixtureRoot),
+    targetId: "map.generator-classic",
+  },
 ];
 
 async function readFixture(fixture) {
@@ -101,4 +106,42 @@ test("map geometry fixture is consumed as data by CI-safe tests", async () => {
     position: 65,
     row: 1,
   });
+});
+
+test("map generator fixture carries complete landscape arrays per case", async () => {
+  const parsed = await readFixture(fixtures[2]);
+  assertOracleFixtureHeader(parsed, {
+    label: fixtures[2].label,
+    targetId: "map.generator-classic",
+    dataRequirement: "data-free / CI-safe",
+  });
+
+  assert.equal(parsed.cases.length >= 2, true, "at least two seeds captured");
+  for (const generatorCase of parsed.cases) {
+    const tileCount = generatorCase.columns * generatorCase.rows;
+    assert.equal(generatorCase.parameters.heightGenerator, "Midpoints");
+    assert.equal(generatorCase.parameters.preserveBugs, true);
+    for (const key of [
+      "heights",
+      "typesUp",
+      "typesDown",
+      "objects",
+      "minerals",
+      "resourceAmounts",
+    ]) {
+      assert.equal(
+        generatorCase[key].length,
+        tileCount,
+        `${key} covers every map position`,
+      );
+      assert.equal(typeof generatorCase.digests[key], "string");
+    }
+
+    assert.equal(generatorCase.heights.every((h) => h >= 0 && h <= 31), true);
+    assert.equal(generatorCase.typesUp.every((t) => t >= 0 && t <= 15), true);
+    assert.equal(generatorCase.typesUp.some((t) => t <= 3), true, "water exists");
+    assert.equal(generatorCase.typesUp.some((t) => t >= 4 && t <= 7), true, "grass exists");
+    assert.equal(generatorCase.objects.some((o) => o >= 8 && o <= 15), true, "trees exist");
+    assert.equal(generatorCase.minerals.some((m) => m !== 0), true, "minerals exist");
+  }
 });
