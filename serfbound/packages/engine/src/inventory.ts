@@ -92,6 +92,9 @@ export type WorldInventory = {
   readonly resources: Uint32Array;
   // Generic serf pool waiting inside (professions arrive with the chains).
   genericSerfs: number;
+  // Outbound resources waiting for a free slot on the inventory flag
+  // (the reference schedules these through MoveResourceOut).
+  readonly pendingOut: { resource: number; destinationFlagIndex: number }[];
 };
 
 export function createInventory(
@@ -110,6 +113,7 @@ export function createInventory(
     // Castle serf stocking, condensed: a base crew plus one per supply level
     // (the reference seeds serfs through GameInitBox player settings).
     genericSerfs: 5 + initialSupplies,
+    pendingOut: [],
   };
 }
 

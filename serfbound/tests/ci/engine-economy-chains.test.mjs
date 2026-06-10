@@ -168,3 +168,46 @@ test("the forester replants trees on open territory", () => {
 
   assert.equal(planted, true, "the forester planted a tree");
 });
+
+test("the bread chain runs: fields grow wheat, the mill grinds, the baker bakes", () => {
+  const { started, world, router, tileFor, castlePosition } = foundedGame();
+  const engine = started.game.serfEngine();
+  const castleFlagPosition = world.move(castlePosition, "DownRight");
+
+  const farm = buildConnected(
+    world, router, tileFor, castleFlagPosition,
+    world.geometry.positionAdd(castlePosition, 5, 2), "farm",
+  );
+  const mill = buildConnected(
+    world, router, tileFor, castleFlagPosition,
+    world.geometry.positionAdd(castlePosition, -4, 2), "mill",
+  );
+  const baker = buildConnected(
+    world, router, tileFor, castleFlagPosition,
+    world.geometry.positionAdd(castlePosition, 2, 5), "baker",
+  );
+
+  for (const building of [farm, mill, baker]) {
+    engine.dispatchConstructionLogistics(building, 0);
+  }
+
+  const inventory = world.inventoryForPlayer(0);
+  const breadBefore = inventory.resources[resourceType.bread];
+  let breadBaked = false;
+  let sowed = false;
+
+  for (let tick = 0; tick < 1500000 && !breadBaked; tick += 16) {
+    engine.update(tick);
+    if (!sowed && farm.isDone) {
+      for (let offset = 1; offset < 151 && !sowed; offset += 1) {
+        const value = world.objects[world.positionAddSpirally(farm.position, offset)];
+        sowed = value >= 105 && value <= 126;
+      }
+    }
+
+    breadBaked = inventory.resources[resourceType.bread] > breadBefore;
+  }
+
+  assert.equal(sowed, true, "the farmer sowed a field");
+  assert.equal(breadBaked, true, "bread reached the castle stock");
+});

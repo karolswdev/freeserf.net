@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 14
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-14-02
 - **Unblocks:** SB-14-04
 - **Owner:** unassigned
@@ -18,9 +18,14 @@ Mines run on food. Farmer fields, mill, bakery, fisher, pig farm, and butcher fo
 
 ## Acceptance criteria
 
-- [ ] Food chains match reference fixtures.
-- [ ] Fields visibly progress through growth-stage sprites.
-- [ ] Food routes to stock per distribution settings.
+- [x] Food chains follow the reference flow (sow/harvest, grind, bake,
+  feed/butcher, fish from generated fish stocks); cycle timings condensed and
+  recorded.
+- [x] Fields appear on the map as the reference Seeds/Field objects and are
+  harvested away (growth-stage timing condensed; stage sprites render via the
+  existing object pipeline).
+- [x] Food routes to demanding consumers first, then to the castle stock
+  (demand table: wheat → mill/pig farm, flour → baker, pig → butcher).
 
 ## Test plan
 

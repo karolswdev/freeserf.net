@@ -39,7 +39,17 @@ export const serfState = {
 
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
 
-const workedBuildingTypes = new Set<number>([2, 4, 9, 17]); // lumberjack, stonecutter, forester, sawmill
+// lumberjack, stonecutter, forester, sawmill, fisher, farm, mill, baker,
+// pig farm, butcher
+const workedBuildingTypes = new Set<number>([2, 4, 9, 17, 1, 12, 15, 16, 14, 13]);
+
+// Demand routing: which completed buildings consume a product directly.
+const productConsumers: Readonly<Record<number, readonly number[]>> = {
+  6: [17], // lumber -> sawmill
+  3: [15, 14], // wheat -> mill, pig farm
+  4: [16], // flour -> baker
+  1: [13], // pig -> butcher
+};
 
 const directionOrder: readonly Direction[] = ["Right", "DownRight", "Down", "Left", "UpLeft", "Up"];
 const reverseOf: Record<Direction, Direction> = {
@@ -229,6 +239,7 @@ export class SerfboundSerfEngine {
   // Game.UpdateSerfs equivalent.
   update(gameTick: number): void {
     this.#sweepWorkerRequests(gameTick);
+    this.#drainPendingOut();
     for (const serf of [...this.serfs.values()]) {
       switch (serf.state) {
         case serfState.walking:
@@ -586,6 +597,21 @@ export class SerfboundSerfEngine {
 
   readonly #staffedBuildings = new Set<number>();
 
+  // Inventory outbound queue: move pending resources onto the inventory flag
+  // as slots free up (reference MoveResourceOut scheduling, condensed).
+  #drainPendingOut(): void {
+    for (const inventory of this.world.inventories.values()) {
+      while (inventory.pendingOut.length > 0) {
+        const next = inventory.pendingOut[0]!;
+        if (!this.world.dropResource(inventory.flagIndex, next.resource, next.destinationFlagIndex)) {
+          break;
+        }
+
+        inventory.pendingOut.shift();
+      }
+    }
+  }
+
   // Completed production buildings request their profession worker from the
   // castle (condensed Inventory.CallOutSerf profession dispatch).
   #sweepWorkerRequests(gameTick: number): void {
@@ -638,17 +664,101 @@ export class SerfboundSerfEngine {
         }
         break;
       case buildingType.sawmill:
-        if (serf.workCounter >= 350) {
-          const stock = building.deliveredResources[resourceType.lumber] ?? 0;
-          if (stock > 0) {
-            serf.workCounter = 0;
-            building.deliveredResources[resourceType.lumber] = stock - 1;
-            this.#emitProduct(building, resourceType.plank);
+        this.#workConvert(serf, building, 350, resourceType.lumber, resourceType.plank);
+        break;
+      case buildingType.farm:
+        // Farmer: sow a field, then harvest it into wheat (field objects use
+        // the reference Seeds/Field values; growth stages are condensed).
+        if (serf.workCounter >= 450) {
+          serf.workCounter = 0;
+          if (serf.workPhase === 0) {
+            for (let offset = 1; offset < 151; offset += 1) {
+              const candidate = this.world.positionAddSpirally(building.position, offset);
+              if (
+                this.world.objectAt(candidate) === mapObject.none &&
+                this.world.pathsAt(candidate) === 0 &&
+                this.world.hasOwner(candidate) &&
+                this.world.canBuildSmall(candidate)
+              ) {
+                this.world.setObject(candidate, 105, null); // Seeds0
+                serf.workPhase = 1;
+                serf.workTargetPosition = candidate;
+                break;
+              }
+            }
+          } else {
+            const field = serf.workTargetPosition;
+            if (field >= 0 && this.world.objectAt(field) >= 105 && this.world.objectAt(field) <= 126) {
+              this.world.setObject(field, mapObject.none, null);
+              this.#emitProduct(building, resourceType.wheat);
+            }
+
+            serf.workPhase = 0;
+            serf.workTargetPosition = -1;
           }
         }
         break;
+      case buildingType.mill:
+        this.#workConvert(serf, building, 400, resourceType.wheat, resourceType.flour);
+        break;
+      case buildingType.baker:
+        this.#workConvert(serf, building, 400, resourceType.flour, resourceType.bread);
+        break;
+      case buildingType.fisher:
+        // Fisher: catches from adjacent water fish stocks.
+        if (serf.workCounter >= 500) {
+          serf.workCounter = 0;
+          for (let offset = 1; offset < 151; offset += 1) {
+            const candidate = this.world.positionAddSpirally(building.position, offset);
+            if (
+              this.world.minerals[candidate] === 0 &&
+              this.world.resourceAmounts[candidate]! > 0 &&
+              this.world.typesUp[candidate]! <= 3
+            ) {
+              this.world.resourceAmounts[candidate] = this.world.resourceAmounts[candidate]! - 1;
+              this.#emitProduct(building, resourceType.fish);
+              break;
+            }
+          }
+        }
+        break;
+      case buildingType.pigFarm:
+        // Pig farm: wheat feeds pigs (one pig per two wheat, condensed).
+        if (serf.workCounter >= 550) {
+          const stock = building.deliveredResources[resourceType.wheat] ?? 0;
+          if (stock >= 2) {
+            serf.workCounter = 0;
+            building.deliveredResources[resourceType.wheat] = stock - 2;
+            this.#emitProduct(building, resourceType.pig);
+          }
+        }
+        break;
+      case buildingType.butcher:
+        this.#workConvert(serf, building, 350, resourceType.pig, resourceType.meat);
+        break;
       default:
         break;
+    }
+  }
+
+  // Converter buildings: consume one delivered input per work cycle and emit
+  // the product (sawmill, mill, baker, butcher).
+  #workConvert(
+    serf: WorldSerf,
+    building: WorldBuilding,
+    cycleTicks: number,
+    input: number,
+    output: number,
+  ): void {
+    if (serf.workCounter < cycleTicks) {
+      return;
+    }
+
+    const stock = building.deliveredResources[input] ?? 0;
+    if (stock > 0) {
+      serf.workCounter = 0;
+      building.deliveredResources[input] = stock - 1;
+      this.#emitProduct(building, output);
     }
   }
 
@@ -704,12 +814,13 @@ export class SerfboundSerfEngine {
     }
 
     let destination = 0;
-    if (product === resourceType.lumber) {
+    const consumerTypes = productConsumers[product];
+    if (consumerTypes !== undefined) {
       for (const consumer of this.world.buildings.values()) {
         if (
           consumer.isDone &&
-          consumer.type === buildingType.sawmill &&
-          (consumer.deliveredResources[resourceType.lumber] ?? 0) < 4 &&
+          consumerTypes.includes(consumer.type) &&
+          (consumer.deliveredResources[product] ?? 0) < 4 &&
           this.#directionToward(building.flagIndex, consumer.flagIndex) !== null
         ) {
           destination = consumer.flagIndex;
@@ -794,13 +905,19 @@ export class SerfboundSerfEngine {
     const [planks, stones] = buildingConstructionCosts[building.type] ?? [0, 0];
     for (let count = 0; count < planks; count += 1) {
       if (inventoryTakeResource(inventory, resourceType.plank)) {
-        this.world.dropResource(castleFlag.index, resourceType.plank, buildingFlag.index);
+        inventory.pendingOut.push({
+          resource: resourceType.plank,
+          destinationFlagIndex: buildingFlag.index,
+        });
       }
     }
 
     for (let count = 0; count < stones; count += 1) {
       if (inventoryTakeResource(inventory, resourceType.stone)) {
-        this.world.dropResource(castleFlag.index, resourceType.stone, buildingFlag.index);
+        inventory.pendingOut.push({
+          resource: resourceType.stone,
+          destinationFlagIndex: buildingFlag.index,
+        });
       }
     }
 
@@ -838,12 +955,38 @@ export class SerfboundSerfEngine {
     return this.callOutSerf(builder, buildingFlag.index, gameTick);
   }
 
-  // Serf.ChangeDirection: move one tile; on collision, wait with the
-  // reference waiting animation (81 + direction) and negative direction.
+  // Serf.ChangeDirection: move one tile; on collision, either swap with a
+  // serf waiting to cross in the opposite direction (the reference
+  // SwitchWaiting) or wait with the reference waiting animation.
   #changeDirection(serf: WorldSerf, direction: Direction): boolean {
     const newPosition = this.world.move(serf.position, direction);
 
     if (this.hasSerfAt(newPosition)) {
+      const other = this.serfAt(newPosition);
+      const otherWaitsOpposite =
+        other !== null &&
+        other.walkingDirection < 0 &&
+        directionOrder[other.walkingDirection + 6] === reverseOf[direction];
+      if (other !== null && otherWaitsOpposite) {
+        // Swap positions, both with switch animations.
+        const ourHeight = this.world.heights[serf.position]!;
+        const theirHeight = this.world.heights[newPosition]!;
+        other.position = serf.position;
+        this.serfIndexes[other.position] = other.index;
+        other.animation = walkingAnimation(ourHeight - theirHeight, reverseOf[direction], true);
+        other.counter = counterFromAnimation(other.animation);
+        other.walkingDirection = directionOrder.indexOf(direction);
+        other.walkingWaitCounter = 0;
+
+        serf.animation = walkingAnimation(theirHeight - ourHeight, direction, true);
+        serf.walkingDirection = directionOrder.indexOf(reverseOf[direction]);
+        serf.walkingWaitCounter = 0;
+        serf.position = newPosition;
+        this.serfIndexes[newPosition] = serf.index;
+        serf.counter += counterFromAnimation(serf.animation);
+        return true;
+      }
+
       serf.animation = 81 + directionOrder.indexOf(direction);
       serf.counter = counterFromAnimation(serf.animation);
       serf.walkingDirection = directionOrder.indexOf(direction) - 6;
