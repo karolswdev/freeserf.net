@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 12
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-11-05
 - **Unblocks:** SB-12-02
 - **Owner:** unassigned
@@ -24,10 +24,10 @@ define the reference semantics.
 
 ## Acceptance criteria
 
-- [ ] Flag placement validity matches reference rules on fixture maps.
-- [ ] Splitting a road by placing a flag, and merging by removing one,
+- [x] Flag placement validity matches reference rules on fixture maps.
+- [x] Splitting a road by placing a flag, and merging by removing one,
   produce reference-equivalent graphs (fixture parity).
-- [ ] Graph state serializes into the local save snapshot.
+- [x] Graph state serializes into the local save snapshot.
 
 ## Test plan
 

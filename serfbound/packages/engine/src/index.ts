@@ -812,3 +812,4 @@ export * from "./commands.js";
 export * from "./local-game.js";
 export * from "./simulation.js";
 export * from "./map-generator.js";
+export * from "./game-world.js";

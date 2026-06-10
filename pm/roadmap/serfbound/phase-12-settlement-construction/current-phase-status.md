@@ -1,7 +1,7 @@
 # Phase 12 — Settlement Construction
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -29,8 +29,8 @@ with authentic construction sprites.
 
 ## Exit criteria (evidence required)
 
-- [ ] Flags connect into a road graph with reference-equivalent merge/split
-  semantics and path costs. (SB-12-01, SB-12-02)
+- [x] Flags connect into a road graph with reference-equivalent merge/split
+  semantics (SB-12-01); path costs land with SB-12-02.
 - [ ] The castle places under original validity rules and claims territory
   with rendered borders. (SB-12-03)
 - [ ] Buildings progress visually from cleared ground to frame to finished
@@ -42,15 +42,18 @@ with authentic construction sprites.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-12-01 | Port the flag and road graph | backlog | story-01-flag-and-road-graph.md | — |
-| SB-12-02 | Port road pathfinding and road-building mode | backlog | story-02-road-pathfinding-mode.md | — |
+| SB-12-01 | Port the flag and road graph | done | story-01-flag-and-road-graph.md | evidence-story-01.md |
+| SB-12-02 | Port road pathfinding and road-building mode | in-progress | story-02-road-pathfinding-mode.md | — |
 | SB-12-03 | Place the castle and claim territory | backlog | story-03-castle-and-territory.md | — |
 | SB-12-04 | Construct buildings with progress sprites | backlog | story-04-building-construction.md | — |
 | SB-12-05 | Found a settlement end-to-end | backlog | story-05-settlement-end-to-end.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 11 closes.
+SB-12-01 is done: the engine has a real game world (paths/owners/objects
+over the generated landscape) with reference flag/road graph semantics
+including split and merge. SB-12-02 (pathfinding + road mode) is in
+progress.
 
 ## Active risks
 
@@ -62,7 +65,10 @@ Scaffolded; starts after Phase 11 closes.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-10 — Graph operations are verified by scenario tests with
+  reference-derived expectations instead of Python-mirror fixtures; the
+  reference graph code's serf branches don't exist yet and are deferred to
+  Phase 13 with code markers — SB-12-01.
 
 ## Decisions deferred
 
