@@ -1447,12 +1447,14 @@ export class SerfboundSerfEngine {
         return;
       }
 
+      // Greedy descent with sidestep: take the unblocked neighbor closest
+      // to the target, never backtracking onto the previous tile, so the
+      // march flows around buildings instead of wedging on them.
       let bestDirection: Direction | null = null;
-      let bestDistance = this.#hexDistance(serf.position, serf.workTargetPosition);
+      let bestDistance = Number.POSITIVE_INFINITY;
       for (const direction of directionOrder) {
         const next = this.world.move(serf.position, direction);
-        // Buildings block the march; the greedy line walks around them.
-        if (this.world.hasBuilding(next)) {
+        if (this.world.hasBuilding(next) || next === serf.workPhase) {
           continue;
         }
 
@@ -1467,6 +1469,8 @@ export class SerfboundSerfEngine {
         serf.counter = 0;
         return;
       }
+
+      serf.workPhase = serf.position;
 
       if (!this.#changeDirection(serf, bestDirection)) {
         serf.counter = 0;
@@ -1487,7 +1491,26 @@ export class SerfboundSerfEngine {
     }
 
     if (building.knights <= 0) {
-      // No defenders left: the post is undefended (SB-15-04 captures it).
+      // No defenders left: the conquering knight takes the post
+      // (Game.OccupyEnemyBuilding). A fallen castle means defeat; a
+      // military building transfers and the victor garrisons it.
+      const wasCastle = building.type === buildingType.castle;
+      if (this.world.captureBuilding(building.index, serf.player)) {
+        if (wasCastle) {
+          serf.state = serfState.null;
+          serf.attackTargetIndex = 0;
+          serf.counter = 0;
+        } else {
+          building.knights = 1;
+          this.serfIndexes[serf.position] = 0;
+          serf.state = serfState.idleInStock;
+          serf.position = building.position;
+          serf.attackTargetIndex = 0;
+        }
+
+        return;
+      }
+
       serf.state = serfState.null;
       serf.counter = 0;
       return;

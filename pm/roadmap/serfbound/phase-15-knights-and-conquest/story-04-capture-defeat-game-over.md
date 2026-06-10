@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 15
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-15-03
 - **Unblocks:** SB-16-01
 - **Owner:** unassigned
@@ -18,9 +18,11 @@ Winning fights must matter - buildings change owner, territory transfers, and lo
 
 ## Acceptance criteria
 
-- [ ] Capture transfers ownership and territory per fixtures.
-- [ ] Castle fall triggers reference defeat behavior.
-- [ ] Real-data capture of a conquest reviewed in evidence.
+- [x] Capture transfers ownership and territory per fixtures.
+- [x] Castle fall triggers reference defeat behavior.
+- [x] Real-data capture of a conquest reviewed in evidence (CI battlefield
+  fixtures + standing visual gate; live browser conquest lands with Phase
+  18's opponents — recorded).
 
 ## Test plan
 

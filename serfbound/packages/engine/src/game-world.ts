@@ -190,6 +190,8 @@ export type WorldPlayer = {
   // Player settings.KnightOccupation per threat level (reference defaults);
   // high nibble = max occupied level into the occupants tables.
   knightOccupation: number[];
+  // Game.PlayerDefeated: the castle fell.
+  defeated: boolean;
 };
 
 export type RoadPlan = {
@@ -302,6 +304,7 @@ export class SerfboundGameWorld {
       goldDeposited: 0,
       castleKnightsWanted: 3,
       knightOccupation: [0x10, 0x21, 0x32, 0x43],
+      defeated: false,
     }));
     this.#spiralPositions = classicSpiralPattern.map(([x, y]) =>
       this.geometry.position(x & this.geometry.columnMask, y & this.geometry.rowMask),
@@ -1190,6 +1193,155 @@ export class SerfboundGameWorld {
     }
 
     return false;
+  }
+
+  // --- conquest (Game.OccupyEnemyBuilding / DemolishBuilding) -------------------------
+
+  // Clear a road's path bits along its whole length and disconnect the
+  // flag records at both ends (Game.DemolishRoad, structural subset).
+  demolishRoad(flag: WorldFlag, direction: Direction): void {
+    const path = flag.paths[direction];
+    if (!path.hasPath) {
+      return;
+    }
+
+    const otherFlag = this.flags.get(path.otherFlagIndex);
+    let position = flag.position;
+    let currentDirection: Direction = direction;
+    for (;;) {
+      this.deletePath(position, currentDirection);
+      const next = this.move(position, currentDirection);
+      this.deletePath(next, reverseOf[currentDirection]);
+      position = next;
+      if (this.hasFlag(position) || this.pathsAt(position) === 0) {
+        break;
+      }
+
+      let following: Direction | null = null;
+      for (const checkDirection of directionOrder) {
+        if (this.hasPath(position, checkDirection)) {
+          following = checkDirection;
+          break;
+        }
+      }
+
+      if (following === null) {
+        break;
+      }
+
+      currentDirection = following;
+    }
+
+    if (otherFlag !== undefined && path.otherEndDirection !== null) {
+      const otherPath = otherFlag.paths[path.otherEndDirection];
+      otherPath.hasPath = false;
+      otherPath.otherFlagIndex = 0;
+      otherPath.freeTransporters = 0;
+    }
+
+    path.hasPath = false;
+    path.otherFlagIndex = 0;
+    path.freeTransporters = 0;
+  }
+
+  // Remove a building, keeping its flag (Game.DemolishBuilding, condensed).
+  demolishBuildingAt(position: number): boolean {
+    const building = this.buildingAt(position);
+    if (building === null) {
+      return false;
+    }
+
+    const flagPosition = this.move(position, "DownRight");
+    this.deletePath(position, "DownRight");
+    this.deletePath(flagPosition, "UpLeft");
+    const flag = this.flags.get(building.flagIndex);
+    if (flag !== undefined) {
+      flag.buildingIndex = null;
+    }
+
+    this.setObject(position, mapObject.none, 0);
+    this.objectIndexes[position] = 0;
+    this.buildings.delete(building.index);
+
+    if (building.type === buildingType.castle) {
+      const player = this.players[building.player]!;
+      player.hasCastle = false;
+      player.castlePosition = null;
+      player.defeated = true;
+      for (const [index, inventory] of this.inventories) {
+        if (inventory.buildingIndex === building.index) {
+          this.inventories.delete(index);
+        }
+      }
+    }
+
+    return true;
+  }
+
+  // Game.OccupyEnemyBuilding: a conquering knight takes the post. The
+  // castle is demolished outright (defeat); a military building transfers
+  // with its flag, the immediate ring changes owner, surrounding civilian
+  // buildings fall, and the captured flag's roads are cut.
+  captureBuilding(buildingIndex: number, playerIndex: number): boolean {
+    const building = this.buildings.get(buildingIndex);
+    if (building === undefined || building.player === playerIndex) {
+      return false;
+    }
+
+    if (building.type === buildingType.castle) {
+      const position = building.position;
+      this.demolishBuildingAt(position);
+      this.updateLandOwnership(position);
+      return true;
+    }
+
+    if (!militaryBuildingTypes.includes(building.type)) {
+      return false;
+    }
+
+    const flag = this.flags.get(building.flagIndex);
+    if (flag === undefined) {
+      return false;
+    }
+
+    // Stolen resources lose their destinations.
+    for (const slot of flag.slots) {
+      slot.destinationFlagIndex = 0;
+      slot.scheduledDirection = null;
+    }
+
+    // Demolish civilian buildings in the second ring.
+    for (let i = 0; i < 12; i += 1) {
+      const position = this.positionAddSpirally(building.position, 7 + i);
+      const objectValue = this.objects[position]!;
+      if (objectValue >= mapObject.smallBuilding && objectValue < mapObject.castle) {
+        this.demolishBuildingAt(position);
+      }
+    }
+
+    // The post, its ring, and its flag change owner.
+    this.owners[building.position] = playerIndex;
+    for (const direction of directionOrder) {
+      const position = this.move(building.position, direction);
+      this.owners[position] = playerIndex;
+    }
+
+    // The conquering knight occupies the post before the ownership
+    // recompute (reference KnightOccupy), so the post projects influence.
+    building.player = playerIndex;
+    building.knights = 1;
+    building.requestedKnights = 0;
+    flag.player = playerIndex;
+
+    // Cut the captured flag's roads — the new owner connects it afresh.
+    for (const direction of directionOrder) {
+      if (direction !== "UpLeft" && flag.paths[direction].hasPath) {
+        this.demolishRoad(flag, direction);
+      }
+    }
+
+    this.updateLandOwnership(building.position);
+    return true;
   }
 
   // --- knight morale (Player.UpdateKnightMorale) --------------------------------------

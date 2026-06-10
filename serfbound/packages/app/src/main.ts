@@ -1405,6 +1405,18 @@ function syncWorldState(
 
   const hasCastle = world.players[0]?.hasCastle ?? false;
   root.dataset.serfboundWorldHasCastle = String(hasCastle);
+  // Conquest end state: the castle fell (Game.PlayerDefeated).
+  const defeated =
+    (world.players[0] as { defeated?: boolean } | undefined)?.defeated ?? false;
+  root.dataset.serfboundGameOver = String(defeated);
+  if (defeated) {
+    const state = root.querySelector<HTMLElement>("[data-testid='command-state']");
+    const detail = root.querySelector<HTMLElement>("[data-testid='command-detail']");
+    if (state !== null && detail !== null) {
+      state.textContent = "Game over";
+      detail.textContent = "Your castle has fallen.";
+    }
+  }
   const roadButton = root.querySelector<HTMLButtonElement>("[data-testid='build-road-button']");
   if (roadButton !== null) {
     roadButton.disabled = !hasCastle;

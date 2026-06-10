@@ -114,16 +114,14 @@ test("seeded combat outcomes match the reference fight math", () => {
   // Several seeds, both outcomes covered, each predicted independently.
   const outcomes = [];
   for (const seed of [0x1234, 0x2222, 0x7e57, 0xbeef, 0x0042]) {
-    const { engine, hut, prediction } = runAttack(seed);
-    const attackerAlive = [...engine.serfs.values()].some(
-      (serf) => serf.attackTargetIndex === hut.index && serf.state !== serfState.dead,
-    );
+    const { hut, prediction } = runAttack(seed);
     if (prediction.attackerWins) {
-      assert.equal(hut.knights, 0, `seed ${seed}: defender died as predicted`);
-      assert.equal(attackerAlive, true, `seed ${seed}: attacker survived as predicted`);
+      // The victor captures the undefended post (SB-15-04) and garrisons it.
+      assert.equal(hut.player, 0, `seed ${seed}: the post fell as predicted`);
+      assert.equal(hut.knights, 1, `seed ${seed}: the victor garrisons the post`);
     } else {
+      assert.equal(hut.player, 1, `seed ${seed}: the post held as predicted`);
       assert.equal(hut.knights, 1, `seed ${seed}: defender returned as predicted`);
-      assert.equal(attackerAlive, false, `seed ${seed}: attacker fell as predicted`);
     }
 
     outcomes.push(prediction.attackerWins);
@@ -177,11 +175,12 @@ test("defenders replace the fallen until the garrison is empty", () => {
   ).length;
 
   // Conservation: every fight kills exactly one side. Either the garrison
-  // emptied (defenders all fell) or every attacker fell trying.
-  if (hut.knights === 0) {
-    assert.equal(survivingAttackers > 0, true, "attackers overran the garrison");
+  // emptied and the post fell to the attackers, or every attacker fell.
+  if (hut.player === 0) {
+    assert.equal(hut.knights, 1, "the conqueror garrisons the captured post");
   } else {
     assert.equal(survivingAttackers, 0, "the garrison outlasted every attacker");
+    assert.equal(hut.knights >= 1, true, "the surviving garrison holds the post");
   }
 
   // No serf is stuck mid-fight.
@@ -225,8 +224,10 @@ test("losses update occupancy and the building stays active only while garrisone
   })();
 
   if (prediction.attackerWins) {
-    assert.equal(hut.knights, 0, "occupancy dropped with the defender's death");
+    assert.equal(hut.player, 0, "the defender's death cost the post");
+    assert.equal(hut.knights, 1, "the victor's occupancy replaced it");
   } else {
+    assert.equal(hut.player, 1, "the post held");
     assert.equal(hut.knights, 1, "the surviving defender re-garrisoned");
   }
 });

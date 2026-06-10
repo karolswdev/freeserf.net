@@ -1,7 +1,7 @@
 # Phase 15 — Knights and Conquest
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -35,7 +35,7 @@ outcomes parity-checked against the reference simulation.
   fixtures. (SB-15-02)
 - [x] Combat sequences match reference outcome fixtures; fights animate with
   authentic sprites. (SB-15-03)
-- [ ] An attack can capture an enemy building and a castle can fall, ending
+- [x] An attack can capture an enemy building and a castle can fall, ending
   the game, with real-data capture evidence. (SB-15-04)
 
 ## Story status
@@ -45,15 +45,14 @@ outcomes parity-checked against the reference simulation.
 | SB-15-01 | Arm and recruit knights | done | story-01-arm-and-recruit-knights.md | evidence-story-01.md |
 | SB-15-02 | Military occupation and border growth | done | story-02-occupation-border-growth.md | evidence-story-02.md |
 | SB-15-03 | Port combat resolution with parity fixtures | done | story-03-combat-resolution-parity.md | evidence-story-03.md |
-| SB-15-04 | Capture, defeat, and game over | backlog | story-04-capture-defeat-game-over.md | — |
+| SB-15-04 | Capture, defeat, and game over | done | story-04-capture-defeat-game-over.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-15-03 is done: the reference fight is ported exactly — SetFightOutcome
-math and RandomInt order, the flat attack-move/animation tables, the
-defender-replacement loop, and seeded outcomes proven against an
-independent reimplementation across five seeds. SB-15-04 (capture, defeat,
-and game over) closes the phase.
+The phase is closed. The military game works end to end: weapons forge,
+knights recruit on gold morale, garrisons occupy and grow borders, seeded
+fights resolve with reference parity, and conquest transfers buildings and
+territory until a castle falls and the game ends. See final-summary.md.
 
 ## Active risks
 

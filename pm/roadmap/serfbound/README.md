@@ -1,12 +1,12 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/current-phase-status.md)
-**Status:** Phases 0–14 complete. The economy works: every classic chain
-(wood, stone, food, meat, mining, metallurgy, tools) runs concurrently in
-one settlement with demand-driven dispatch over the road network, live
-stock stats in the browser, and performance measured at ~2.5M ticks/s.
-Phase 15 (knights and conquest) is next.
+**Current phase:** [phase-16-original-interface](./phase-16-original-interface/current-phase-status.md)
+**Status:** Phases 0–15 complete. The military game works: weapons forge,
+knights recruit on gold morale, garrisons grow borders through the
+reference influence tables, seeded fights resolve with exact reference
+parity, and conquest captures posts and fells castles into a game-over
+state. Phase 16 (the original interface) is next.
 
 ## Vision
 
@@ -101,8 +101,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 12 | Found settlements: castle, flags, roads, construction | complete | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
 | 13 | Bring serfs to life: state machine and authentic animation | complete | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
 | 14 | Run every classic production chain | complete | [phase-14-working-economy](./phase-14-working-economy/) |
-| 15 | Knights, territory, and combat | ready | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
-| 16 | Rebuild the original interface browser-native | planned | [phase-16-original-interface](./phase-16-original-interface/) |
+| 15 | Knights, territory, and combat | complete | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
+| 16 | Rebuild the original interface browser-native | ready | [phase-16-original-interface](./phase-16-original-interface/) |
 | 17 | Sound effects and music through WebAudio | planned | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
 | 18 | Missions, classic AI, and original savegames | planned | [phase-18-complete-game](./phase-18-complete-game/) |
 | 19 | First-class browser experience: performance, mobile, PWA | planned | [phase-19-browser-experience](./phase-19-browser-experience/) |
@@ -241,6 +241,11 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current conquest proof:** the combat port resolves seeded fights with
+  the exact reference math and tables (independent-reimplementation parity
+  across seeds), garrisons occupy and project territory, and capture
+  transfers buildings, flags, and ground until a castle falls
+  (`data-serfbound-game-over`).
 - **Current working-economy proof:** every classic chain runs concurrently
   in one settlement (the SB-14-05 gate: twelve buildings on five road
   chains complete through serf labor, then wood, food, meat, mining,
