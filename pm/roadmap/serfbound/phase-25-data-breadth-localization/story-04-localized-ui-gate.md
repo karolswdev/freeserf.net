@@ -4,7 +4,7 @@
 - **Phase:** 25
 - **Status:** backlog
 - **Depends on:** SB-25-03
-- **Unblocks:** —
+- **Unblocks:** SB-26-01
 - **Owner:** unassigned
 
 ## Problem

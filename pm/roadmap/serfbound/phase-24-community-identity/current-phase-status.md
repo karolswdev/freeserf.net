@@ -5,21 +5,24 @@
 
 ## Goal
 
-Let players be someone and find each other: local-first profiles, an
-optional account service with a hard privacy boundary, lobby listing and
-matchmaking on top of the Phase 23 relay, and a ladder — all while the
-game itself stays fully playable with zero accounts and zero servers.
+Let players be someone and challenge each other: local-first profiles,
+an optional account service with a hard privacy boundary, challenges
+plus the correspondence turn mailbox (store-and-forward moves, pickup
+deadlines, "your turn" surfacing) serving the Phase 23 async matches,
+and a ladder — all while the game itself stays fully playable with zero
+accounts and zero servers.
 
 ## Scope
 
 - **In:** Local profiles (name, colors, match history) with no server,
   the identity decision record (what an account is for, what is stored,
-  what is never stored), an optional minimal account service, lobby
-  listing/matchmaking over the signaling relay, opponent-verified match
-  results feeding a ladder, abuse/operations posture for the hosted
-  pieces.
+  what is never stored), an optional minimal account service,
+  challenge issue/accept with match terms and the turn mailbox with
+  server-side pickup deadlines and forfeit semantics, opponent-verified
+  match results feeding a ladder, abuse/operations posture for the
+  hosted pieces.
 - **Out:** Monetization (none — GPL project, standing rule), social
-  graphs/chat platforms, federation.
+  graphs/chat platforms, federation, realtime play (Phase 26).
 
 ## Non-negotiable constraints
 
@@ -36,8 +39,9 @@ game itself stays fully playable with zero accounts and zero servers.
   no hosted dependency. (SB-24-01)
 - [ ] The identity decision record ships and the optional account
   service implements exactly it. (SB-24-02)
-- [ ] Players can list/join open games and be matched through the relay.
-  (SB-24-03)
+- [ ] Challenges create matches with agreed terms; turn moves flow
+  through the mailbox (re-verified client-side, always) and missed
+  pickups forfeit per the recorded semantics. (SB-24-03)
 - [ ] Verified match results produce a ladder with an honest
   abuse/operations posture; phase gate reruns green. (SB-24-04)
 
@@ -47,7 +51,7 @@ game itself stays fully playable with zero accounts and zero servers.
 |---|---|---|---|---|
 | SB-24-01 | Local-first profiles | backlog | story-01-local-first-profiles.md | — |
 | SB-24-02 | Identity decision and account service | backlog | story-02-identity-account-service.md | — |
-| SB-24-03 | Lobby and matchmaking | backlog | story-03-lobby-matchmaking.md | — |
+| SB-24-03 | Challenges and the turn mailbox | backlog | story-03-challenges-turn-mailbox.md | — |
 | SB-24-04 | Ladder and operations gate | backlog | story-04-ladder-operations-gate.md | — |
 
 ## Where we are
@@ -61,7 +65,7 @@ zero-telemetry project and ships only as written.
 | Risk | Likelihood | Mitigation | Stop signal |
 |---|---|---|---|
 | Hosted identity erodes the privacy posture | medium | Decision record first; data-minimization contract tests | Any field stored beyond the record |
-| Matchmaking centralizes a P2P game | medium | Relay-level listing only; gameplay stays P2P | Gameplay traffic on hosted pieces |
+| The mailbox grows into a game server | medium | Store-and-forward only; clients re-verify every move | Any rules logic at the service |
 | Ladder gaming/abuse | high | Opponent-verified results; modest stakes (no rewards) | Result forgery without detection |
 
 ## Decisions made (this phase)

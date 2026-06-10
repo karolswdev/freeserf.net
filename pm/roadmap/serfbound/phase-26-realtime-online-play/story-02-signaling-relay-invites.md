@@ -1,10 +1,10 @@
-# SB-23-02 — Signaling Relay and Invite Links
+# SB-26-02 — Signaling Relay and Invite Links
 
 - **Project:** serfbound
-- **Phase:** 23
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-23-01
-- **Unblocks:** SB-23-03
+- **Depends on:** SB-26-01
+- **Unblocks:** SB-26-03
 - **Owner:** unassigned
 
 ## Problem

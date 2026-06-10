@@ -1,10 +1,10 @@
-# SB-23-04 — Online Play Gate
+# SB-26-04 — Online Play Gate
 
 - **Project:** serfbound
-- **Phase:** 23
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-23-03
-- **Unblocks:** SB-24-01
+- **Depends on:** SB-26-03
+- **Unblocks:** —
 - **Owner:** unassigned
 
 ## Problem

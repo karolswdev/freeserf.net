@@ -1,4 +1,4 @@
-# Phase 23 — Online Play
+# Phase 26 — Realtime Online Play
 
 **Last updated:** 2026-06-10.
 **Status:** not started.
@@ -34,26 +34,26 @@ two-browser e2e gate.
 ## Exit criteria (evidence required)
 
 - [ ] Two browsers complete a game over WebRTC with manual signaling and
-  matching checksums. (SB-23-01)
+  matching checksums. (SB-26-01)
 - [ ] Invite links through the minimal relay establish sessions; the
-  relay never carries gameplay traffic. (SB-23-02)
+  relay never carries gameplay traffic. (SB-26-02)
 - [ ] A dropped peer reconnects and resyncs from the action log; desync
-  surfaces recoverably. (SB-23-03)
+  surfaces recoverably. (SB-26-03)
 - [ ] The online-play e2e gate passes and NAT outcome measurement is in
-  place with the TURN stop signal recorded. (SB-23-04)
+  place with the TURN stop signal recorded. (SB-26-04)
 
 ## Story status
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-23-01 | WebRTC transport with manual signaling | backlog | story-01-webrtc-transport.md | — |
-| SB-23-02 | Signaling relay and invite links | backlog | story-02-signaling-relay-invites.md | — |
-| SB-23-03 | Reconnect, resync, and desync recovery | backlog | story-03-resilience-reconnect.md | — |
-| SB-23-04 | Online play gate | backlog | story-04-online-play-gate.md | — |
+| SB-26-01 | WebRTC transport with manual signaling | backlog | story-01-webrtc-transport.md | — |
+| SB-26-02 | Signaling relay and invite links | backlog | story-02-signaling-relay-invites.md | — |
+| SB-26-03 | Reconnect, resync, and desync recovery | backlog | story-03-resilience-reconnect.md | — |
+| SB-26-04 | Online play gate | backlog | story-04-online-play-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 22 closes.
+Scaffolded; the SB-20-04 realtime track, re-ordered behind correspondence play (Phase 23 decision): starts after Phase 25 closes.
 
 ## Active risks
 

@@ -1,7 +1,7 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [23 — Online Play](./phase-23-online-play/)
+**Current phase:** [23 — Correspondence Foundations](./phase-23-correspondence-foundations/)
 **Status:** Phases 0–22 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)),
 and Phase 21 closed the launch-review punch list: authentic frame
@@ -11,8 +11,10 @@ chrome, font-shadow readability, native-resolution rendering with
 Phase 22 closed with two browser tabs playing one lockstep game over a
 BroadcastChannel — zero servers, agreeing state checksums (see
 [phase-22-multiplayer-foundations/final-summary.md](./phase-22-multiplayer-foundations/final-summary.md)).
-The remaining post-launch track: online play (WebRTC), community/
-identity, and data breadth/localization.
+The multiplayer track is re-ordered correspondence-first (decision in
+the Phase 23 status doc): async "offline chess" play over the lockstep
+core (23), then identity/challenges/the turn mailbox (24), data breadth
+and localization (25), with realtime WebRTC play as Phase 26.
 
 ## Vision
 
@@ -115,9 +117,10 @@ and either prove the new behavior intentionally or defer the decision.
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
-| 23 | Online play: WebRTC transport, signaling, resilience | scaffolded | [phase-23-online-play](./phase-23-online-play/) |
-| 24 | Community and identity: profiles, accounts, matchmaking, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
+| 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | scaffolded | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
+| 24 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
 | 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |
+| 26 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-26-realtime-online-play](./phase-26-realtime-online-play/) |
 
 ## Delivery Gates
 
@@ -153,11 +156,13 @@ when the previous phase has evidence:
 - Phase 21 proves it looks right: authentic chrome, readable text, sharp
   high-DPI rendering, real touch gestures.
 - Phase 22 proves lockstep multiplayer works with zero servers (loopback).
-- Phase 23 proves online play works peer-to-peer over WebRTC.
-- Phase 24 proves identity and matchmaking can exist without gating play or
-  eroding the privacy posture.
+- Phase 23 proves correspondence play: trustless turn windows, recaps, and
+  hot-seat/async matches with zero servers.
+- Phase 24 proves identity, challenges, and the turn mailbox can exist
+  without gating play or eroding the privacy posture.
 - Phase 25 proves data breadth (Amiga, evidence-gated) and localization
   within the original fonts.
+- Phase 26 proves realtime online play works peer-to-peer over WebRTC.
 
 Phases 11 onward inherit the Phase 10 standing rule: a phase gates on something
 a player can see or play, captured from real local data via the visual gate —
