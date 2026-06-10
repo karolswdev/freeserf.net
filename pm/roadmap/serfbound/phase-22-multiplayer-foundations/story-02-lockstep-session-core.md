@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 22
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-22-01
 - **Unblocks:** SB-22-03
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,11 +24,11 @@ transport-agnostic layer over the engine.
 
 ## Acceptance criteria
 
-- [ ] Two simulated peers complete a scripted game with identical
+- [x] Two simulated peers complete a scripted game with identical
   checksum streams.
-- [ ] Latency/jitter schedules within the input delay produce no stalls;
+- [x] Latency/jitter schedules within the input delay produce no stalls;
   beyond it, stalls hold determinism instead of breaking it.
-- [ ] Same-tick actions from different peers order identically on both
+- [x] Same-tick actions from different peers order identically on both
   sides.
 
 ## Test plan
