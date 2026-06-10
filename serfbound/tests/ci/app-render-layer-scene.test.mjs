@@ -80,6 +80,30 @@ test("first render-layer scene records typed DOS catalog renderer asset status",
   assert.equal(scene.assetSummary.mapShadowsStatus, "partial:1/194");
 });
 
+test("first render-layer scene renders built flag structures above terrain", () => {
+  const scene = createFirstRenderLayerScene({
+    builtStructures: [
+      {
+        id: 1,
+        kind: "flag",
+        placedAtTick: 0,
+        tile: { column: 26, row: 16, position: 1050 },
+      },
+    ],
+  });
+  const flagPrimitives = scene.primitives.filter(
+    (primitive) => primitive.assetRole === "game.builtFlag",
+  );
+
+  assert.equal(flagPrimitives.length, 3);
+  assert.equal(flagPrimitives.filter((primitive) => primitive.layer === "objects").length, 2);
+  assert.equal(flagPrimitives.filter((primitive) => primitive.layer === "markers").length, 1);
+  assert.equal(
+    scene.layers.find((layer) => layer.key === "markers").primitiveCount > 0,
+    true,
+  );
+});
+
 test("first render-layer pointer mapping resolves screen points through scene projection", () => {
   assert.deepEqual(
     resolveFirstRenderLayerPointer({ x: 480, y: 270 }, { width: 960, height: 540 }),

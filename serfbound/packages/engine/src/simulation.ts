@@ -40,6 +40,20 @@ export type SerfboundGameSnapshot = {
     readonly knightMoraleCounter: number;
     readonly inventoryScheduleCounter: number;
   };
+  readonly builtStructures: readonly SerfboundBuiltStructure[];
+};
+
+export type SerfboundBuiltStructureKind = "flag";
+
+export type SerfboundBuiltStructure = {
+  readonly id: number;
+  readonly kind: SerfboundBuiltStructureKind;
+  readonly tile: {
+    readonly column: number;
+    readonly row: number;
+    readonly position: number;
+  };
+  readonly placedAtTick: number;
 };
 
 export type SerfboundGameStateOptions = {
@@ -53,6 +67,7 @@ export type SerfboundGameStateOptions = {
   readonly knightMoraleCounter?: number;
   readonly inventoryScheduleCounter?: number;
   readonly tickDifference?: number;
+  readonly builtStructures?: readonly SerfboundBuiltStructure[];
 };
 
 export class SerfboundGameState {
@@ -67,6 +82,7 @@ export class SerfboundGameState {
   #tickDifference = 0;
   #knightMoraleCounter: number;
   #inventoryScheduleCounter: number;
+  #builtStructures: SerfboundBuiltStructure[];
 
   constructor(options: SerfboundGameStateOptions = {}) {
     this.mapGeometry = new MapGeometry(options.mapSize ?? 3);
@@ -79,6 +95,12 @@ export class SerfboundGameState {
     this.#tickDifference = Math.trunc(options.tickDifference ?? 0);
     this.#knightMoraleCounter = Math.trunc(options.knightMoraleCounter ?? 0);
     this.#inventoryScheduleCounter = Math.trunc(options.inventoryScheduleCounter ?? 0);
+    this.#builtStructures = (options.builtStructures ?? []).map((structure) => ({
+      id: Math.trunc(structure.id),
+      kind: structure.kind,
+      tile: { ...structure.tile },
+      placedAtTick: uint32(structure.placedAtTick),
+    }));
   }
 
   static fromSnapshot(snapshot: SerfboundGameSnapshot): SerfboundGameState {
@@ -97,6 +119,7 @@ export class SerfboundGameState {
       tickDifference: snapshot.clock.tickDifference,
       knightMoraleCounter: snapshot.counters.knightMoraleCounter,
       inventoryScheduleCounter: snapshot.counters.inventoryScheduleCounter,
+      builtStructures: snapshot.builtStructures,
     });
   }
 
@@ -168,6 +191,35 @@ export class SerfboundGameState {
     return events;
   }
 
+  get builtStructures(): readonly SerfboundBuiltStructure[] {
+    return this.#builtStructures.map((structure) => ({
+      ...structure,
+      tile: { ...structure.tile },
+    }));
+  }
+
+  buildFlag(tile: SerfboundBuiltStructure["tile"]): SerfboundBuiltStructure {
+    const existing = this.#builtStructures.find(
+      (structure) => structure.tile.position === tile.position,
+    );
+    if (existing !== undefined) {
+      throw new Error("A structure already exists at this tile.");
+    }
+
+    const structure: SerfboundBuiltStructure = {
+      id: this.#builtStructures.length + 1,
+      kind: "flag",
+      tile: { ...tile },
+      placedAtTick: this.#constTick,
+    };
+    this.#builtStructures.push(structure);
+
+    return {
+      ...structure,
+      tile: { ...structure.tile },
+    };
+  }
+
   snapshot(): SerfboundGameSnapshot {
     return {
       schemaVersion: 1,
@@ -195,6 +247,7 @@ export class SerfboundGameState {
         knightMoraleCounter: this.#knightMoraleCounter,
         inventoryScheduleCounter: this.#inventoryScheduleCounter,
       },
+      builtStructures: this.builtStructures,
     };
   }
 }

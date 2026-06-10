@@ -12,6 +12,7 @@ import {
   SerfboundCommandRouter,
   startSerfboundLocalGame,
   uint16,
+  type SerfboundBuiltStructure,
   type SerfboundCommandResult,
   type SerfboundLocalGameDataSource,
   type SerfboundLocalGameStartResult,
@@ -88,6 +89,10 @@ type SceneRenderCatalog = (
   catalog: DosPaCatalog,
   archiveName: string,
 ) => void;
+type PointerMapInteractionHandlers = {
+  readonly commandRouter: () => SerfboundCommandRouter;
+  readonly onSelection: (interaction: PointerMapInteraction) => void;
+};
 
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
@@ -164,6 +169,12 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           accept=".PA,.pa"
         />
         <button
+          class="secondary-action"
+          data-testid="build-flag-button"
+          type="button"
+          disabled
+        >Build flag</button>
+        <button
           class="primary-action"
           data-testid="start-game-button"
           type="button"
@@ -189,13 +200,27 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
+  let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
+  let selectedInteraction: PointerMapInteraction | undefined;
   const renderCurrentScene = () => {
-    renderScene(root, currentTypedAssetCatalog);
+    renderScene(root, currentTypedAssetCatalog, currentBuiltStructures);
   };
   const renderGeneratedScene = () => {
     currentTypedAssetCatalog = undefined;
     currentImportedDataSource = undefined;
+    currentBuiltStructures = [];
+    selectedInteraction = undefined;
     commandRouter = new SerfboundCommandRouter();
+    root.dataset.serfboundCommandState = "idle";
+    root.dataset.serfboundCommandLogLength = "0";
+    root.dataset.serfboundBuiltStructureCount = "0";
+    delete root.dataset.serfboundCommandId;
+    delete root.dataset.serfboundCommandReason;
+    delete root.dataset.serfboundCommandType;
+    delete root.dataset.serfboundLastBuiltStructure;
+    getCommandStateElement(root).textContent = "No action selected";
+    getCommandDetailElement(root).textContent = "Select a tile to inspect available actions.";
+    getBuildFlagButton(root).disabled = true;
     renderCurrentScene();
   };
   const renderCatalogScene = (
@@ -210,7 +235,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   renderGeneratedScene();
   observeSceneResize(canvas, renderCurrentScene);
-  attachPointerMapInteraction(root, canvas, () => commandRouter);
+  attachPointerMapInteraction(root, canvas, {
+    commandRouter: () => commandRouter,
+    onSelection(interaction) {
+      selectedInteraction = interaction;
+      syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+    },
+  });
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -254,8 +285,33 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     );
     if (result.status === "started") {
       commandRouter = new SerfboundCommandRouter(result.game.state);
+      currentBuiltStructures = [];
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
+    syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+  });
+
+  const buildFlagButton = root.querySelector<HTMLButtonElement>("[data-testid='build-flag-button']");
+  if (buildFlagButton === null) {
+    throw new Error("Serfbound shell build flag button did not mount.");
+  }
+
+  buildFlagButton.addEventListener("click", () => {
+    const interaction = selectedInteraction;
+    if (interaction === undefined) {
+      return;
+    }
+
+    const result = commandRouter.dispatch({
+      type: "game.build",
+      source: "pointer",
+      building: "flag",
+      tile: interaction.tile,
+    });
+    currentBuiltStructures = result.snapshot.builtStructures;
+    applyCommandResultState(root, result);
+    renderCurrentScene();
+    syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
   });
 
   void restorePersistedArchive(
@@ -474,7 +530,11 @@ function applyStorageErrorState(root: HTMLElement, message: string): void {
   syncGameReadiness(root);
 }
 
-function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | undefined): void {
+function renderScene(
+  root: HTMLElement,
+  typedAssetCatalog: TypedAssetCatalog | undefined,
+  builtStructures: readonly SerfboundBuiltStructure[] = [],
+): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
     throw new Error("Serfbound shell canvas did not mount.");
@@ -483,14 +543,15 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
   const size = resizeCanvasToDisplayedSize(canvas);
   const scene =
     typedAssetCatalog === undefined
-      ? createFirstRenderLayerScene({ size })
-      : createFirstRenderLayerScene({ size, typedAssetCatalog });
+      ? createFirstRenderLayerScene({ size, builtStructures })
+      : createFirstRenderLayerScene({ size, typedAssetCatalog, builtStructures });
 
   renderFirstRenderLayerScene(canvas, scene);
   root.dataset.serfboundRenderer = scene.renderer;
   root.dataset.serfboundSceneSource = scene.assetSummary.source;
   root.dataset.serfboundLayerCount = String(scene.layers.length);
   root.dataset.serfboundPrimitiveCount = String(scene.primitives.length);
+  root.dataset.serfboundBuiltStructureCount = String(builtStructures.length);
   root.dataset.serfboundCanvasWidth = String(canvas.width);
   root.dataset.serfboundCanvasHeight = String(canvas.height);
 
@@ -511,7 +572,7 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
 function attachPointerMapInteraction(
   root: HTMLElement,
   canvas: HTMLCanvasElement,
-  getCommandRouter: () => SerfboundCommandRouter,
+  handlers: PointerMapInteractionHandlers,
 ): void {
   canvas.addEventListener("pointermove", (event) => {
     const interaction = resolveCanvasPointer(canvas, event);
@@ -524,13 +585,14 @@ function attachPointerMapInteraction(
     applyPointerSelectionState(root, interaction);
     applyCommandResultState(
       root,
-      getCommandRouter().dispatch({
+      handlers.commandRouter().dispatch({
         type: "debug.inspect-map-tile",
         source: "pointer",
         map: interaction.map,
         tile: interaction.tile,
       }),
     );
+    handlers.onSelection(interaction);
   });
 
   canvas.addEventListener("pointerleave", () => {
@@ -583,10 +645,20 @@ function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResu
   root.dataset.serfboundCommandState = result.status;
   root.dataset.serfboundCommandId = String(result.commandId);
   root.dataset.serfboundCommandLogLength = String(result.snapshot.commandLogLength);
+  root.dataset.serfboundBuiltStructureCount = String(result.snapshot.builtStructures.length);
 
   if (result.status === "accepted") {
     root.dataset.serfboundCommandType = result.command.type;
     delete root.dataset.serfboundCommandReason;
+    if (result.effect === "flag-built" && result.builtStructure !== undefined) {
+      const tile = result.builtStructure.tile;
+      root.dataset.serfboundLastBuiltStructure = `flag:${tile.column},${tile.row}`;
+      getCommandStateElement(root).textContent = "Flag built";
+      getCommandDetailElement(root).textContent =
+        `Flag placed at tile ${tile.column},${tile.row}.`;
+      return;
+    }
+
     getCommandStateElement(root).textContent = "Inspect land";
     getCommandDetailElement(root).textContent =
       `Tile ${result.command.tile.column},${result.command.tile.row} is selected.`;
@@ -601,7 +673,42 @@ function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResu
 
   root.dataset.serfboundCommandReason = result.reason;
   getCommandStateElement(root).textContent = "Action unavailable";
-  getCommandDetailElement(root).textContent = "Try another action or select a different tile.";
+  getCommandDetailElement(root).textContent =
+    result.reason === "tile-occupied"
+      ? "That tile already has a flag. Select another tile."
+      : result.message;
+}
+
+function syncBuildFlagEnabled(
+  root: HTMLElement,
+  selectedInteraction: PointerMapInteraction | undefined,
+  builtStructures: readonly SerfboundBuiltStructure[],
+): void {
+  const buildFlagButton = getBuildFlagButton(root);
+  const selectedTile = selectedInteraction?.tile;
+  const isRunning = root.dataset.serfboundGameState === "running";
+  const tileOccupied =
+    selectedTile !== undefined &&
+    builtStructures.some((structure) => structure.tile.position === selectedTile.position);
+  const canBuild = isRunning && selectedTile !== undefined && !tileOccupied;
+  buildFlagButton.disabled = !canBuild;
+
+  if (selectedTile === undefined || root.dataset.serfboundCommandState !== "accepted") {
+    return;
+  }
+
+  if (canBuild) {
+    getCommandStateElement(root).textContent = "Build flag available";
+    getCommandDetailElement(root).textContent =
+      `Place a flag at tile ${selectedTile.column},${selectedTile.row}.`;
+    return;
+  }
+
+  if (tileOccupied && root.dataset.serfboundCommandType !== "game.build") {
+    getCommandStateElement(root).textContent = "Flag built";
+    getCommandDetailElement(root).textContent =
+      `Flag already stands at tile ${selectedTile.column},${selectedTile.row}.`;
+  }
 }
 
 function applyLocalGameStartResult(
@@ -766,6 +873,15 @@ function getStartGameButton(root: HTMLElement): HTMLButtonElement {
   const button = root.querySelector<HTMLButtonElement>("[data-testid='start-game-button']");
   if (button === null) {
     throw new Error("Serfbound shell start button did not mount.");
+  }
+
+  return button;
+}
+
+function getBuildFlagButton(root: HTMLElement): HTMLButtonElement {
+  const button = root.querySelector<HTMLButtonElement>("[data-testid='build-flag-button']");
+  if (button === null) {
+    throw new Error("Serfbound shell build flag button did not mount.");
   }
 
   return button;

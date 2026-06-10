@@ -1,5 +1,5 @@
 import type { MapPoint, MapTile } from "./index.js";
-import { SerfboundGameState } from "./simulation.js";
+import { SerfboundGameState, type SerfboundBuiltStructure } from "./simulation.js";
 
 export type SerfboundCommandSource = "pointer" | "keyboard" | "system";
 
@@ -30,6 +30,7 @@ export type SerfboundCommandRejectReason =
   | "invalid-tile"
   | "invalid-map-coordinate"
   | "invalid-build-target"
+  | "tile-occupied"
   | "build-command-deferred";
 
 export type SerfboundCommandRouteSnapshot = {
@@ -50,13 +51,15 @@ export type SerfboundCommandRouteSnapshot = {
   readonly debug: {
     readonly lastInspectedTile?: MapTile;
   };
+  readonly builtStructures: readonly SerfboundBuiltStructure[];
 };
 
 export type SerfboundAcceptedCommandResult = {
   readonly status: "accepted";
   readonly commandId: number;
   readonly command: SerfboundCommand;
-  readonly effect: "debug-inspection-recorded";
+  readonly effect: "debug-inspection-recorded" | "flag-built";
+  readonly builtStructure?: SerfboundBuiltStructure;
   readonly snapshot: SerfboundCommandRouteSnapshot;
 };
 
@@ -140,14 +143,44 @@ export class SerfboundCommandRouter {
       return result;
     }
 
-    if (parsed.command.type === "game.build") {
+    if (parsed.command.type === "game.build" && parsed.command.building !== "flag") {
       const result: SerfboundRejectedCommandResult = {
         status: "rejected",
         commandId,
         reason: "build-command-deferred",
-        message: "Build command route is reserved for Phase 7 build-action semantics.",
+        message: "Only flag building is implemented in this playable slice.",
         commandType: parsed.command.type,
         command: parsed.command,
+        snapshot: this.snapshot(this.#log.length + 1),
+      };
+      this.#log.push(logEntryFromResult(result));
+      return result;
+    }
+
+    if (parsed.command.type === "game.build") {
+      let builtStructure: SerfboundBuiltStructure;
+      try {
+        builtStructure = this.state.buildFlag(parsed.command.tile);
+      } catch {
+        const result: SerfboundRejectedCommandResult = {
+          status: "rejected",
+          commandId,
+          reason: "tile-occupied",
+          message: "This tile already has a structure.",
+          commandType: parsed.command.type,
+          command: parsed.command,
+          snapshot: this.snapshot(this.#log.length + 1),
+        };
+        this.#log.push(logEntryFromResult(result));
+        return result;
+      }
+
+      const result: SerfboundAcceptedCommandResult = {
+        status: "accepted",
+        commandId,
+        command: parsed.command,
+        effect: "flag-built",
+        builtStructure,
         snapshot: this.snapshot(this.#log.length + 1),
       };
       this.#log.push(logEntryFromResult(result));
@@ -311,6 +344,7 @@ export class SerfboundCommandRouter {
           ? {}
           : { lastInspectedTile: this.#lastInspectedTile }),
       },
+      builtStructures: game.builtStructures,
     };
   }
 }

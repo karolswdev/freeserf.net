@@ -2,6 +2,7 @@ import type { TypedAssetCatalog, TypedAssetResource } from "@serfbound/assets";
 import {
   MapGeometry,
   MapProjectionTransform,
+  type SerfboundBuiltStructure,
   type MapHeightProvider,
   type MapPoint,
   type MapTile,
@@ -43,6 +44,7 @@ export type RenderSceneAssetSummary = {
 export type FirstRenderLayerSceneOptions = {
   readonly size?: RenderSize;
   readonly typedAssetCatalog?: TypedAssetCatalog;
+  readonly builtStructures?: readonly SerfboundBuiltStructure[];
 };
 
 export type PointerMapInteraction = {
@@ -117,6 +119,15 @@ export function createFirstRenderLayerScene(
         primitives.push(...objectTriangles(top, column, row));
       }
     }
+  }
+
+  for (const structure of options.builtStructures ?? []) {
+    const top = transform.tileToScreen(structure.tile.position, heightProvider);
+    if (top.x < -64 || top.x > virtualSize.width + 64 || top.y < -64 || top.y > virtualSize.height + 64) {
+      continue;
+    }
+
+    primitives.push(...builtFlagTriangles(top, structure.id));
   }
 
   const sortedPrimitives = primitives.sort(comparePrimitive);
@@ -288,6 +299,53 @@ function pathTriangles(top: MapPoint, column: number, row: number): RenderSceneP
       assetRole: "renderer.pathGround",
       sortY: y + 12,
       sortX: top.x,
+    },
+  ];
+}
+
+function builtFlagTriangles(top: MapPoint, id: number): RenderScenePrimitive[] {
+  const poleColor = [0.93, 0.9, 0.73, 1] as const;
+  const flagColor = [0.96, 0.27, 0.18, 1] as const;
+  const baseY = top.y + 7;
+  const poleX = top.x + 1;
+  const sortY = top.y + 28;
+
+  return [
+    {
+      layer: "objects",
+      points: [
+        { x: poleX - 1, y: baseY - 18 },
+        { x: poleX + 1, y: baseY - 18 },
+        { x: poleX + 1, y: baseY + 4 },
+      ],
+      color: poleColor,
+      assetRole: "game.builtFlag",
+      sortY,
+      sortX: top.x + id / 1000,
+    },
+    {
+      layer: "objects",
+      points: [
+        { x: poleX - 1, y: baseY - 18 },
+        { x: poleX + 1, y: baseY + 4 },
+        { x: poleX - 1, y: baseY + 4 },
+      ],
+      color: poleColor,
+      assetRole: "game.builtFlag",
+      sortY,
+      sortX: top.x + id / 1000,
+    },
+    {
+      layer: "markers",
+      points: [
+        { x: poleX + 1, y: baseY - 18 },
+        { x: poleX + 17, y: baseY - 12 },
+        { x: poleX + 1, y: baseY - 6 },
+      ],
+      color: flagColor,
+      assetRole: "game.builtFlag",
+      sortY: sortY + 1,
+      sortX: top.x + id / 1000,
     },
   ];
 }

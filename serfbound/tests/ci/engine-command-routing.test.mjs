@@ -46,6 +46,7 @@ test("SerfboundCommandRouter accepts deterministic debug tile inspection command
       debug: {
         lastInspectedTile: tile,
       },
+      builtStructures: [],
     },
   });
   assert.deepEqual(router.log, [
@@ -113,29 +114,33 @@ test("SerfboundCommandRouter rejects invalid commands with structured errors", (
   ]);
 });
 
-test("SerfboundCommandRouter exposes a deferred Phase 7 build route", () => {
+test("SerfboundCommandRouter builds one visible flag through the command route", () => {
   const state = new SerfboundGameState({ mapSize: 3 });
   const router = new SerfboundCommandRouter(state);
   const tile = state.mapGeometry.tileAt(3, 4);
 
   const result = router.dispatch({
     type: "game.build",
-    source: "keyboard",
+    source: "pointer",
     building: "flag",
     tile,
   });
 
   assert.deepEqual(result, {
-    status: "rejected",
+    status: "accepted",
     commandId: 1,
-    reason: "build-command-deferred",
-    message: "Build command route is reserved for Phase 7 build-action semantics.",
-    commandType: "game.build",
     command: {
       type: "game.build",
-      source: "keyboard",
+      source: "pointer",
       building: "flag",
       tile,
+    },
+    effect: "flag-built",
+    builtStructure: {
+      id: 1,
+      kind: "flag",
+      tile,
+      placedAtTick: 0,
     },
     snapshot: {
       schemaVersion: 1,
@@ -153,16 +158,67 @@ test("SerfboundCommandRouter exposes a deferred Phase 7 build route", () => {
         tileCount: 4096,
       },
       debug: {},
+      builtStructures: [
+        {
+          id: 1,
+          kind: "flag",
+          tile,
+          placedAtTick: 0,
+        },
+      ],
     },
   });
   assert.deepEqual(router.log, [
     {
       commandId: 1,
-      status: "rejected",
+      status: "accepted",
       commandType: "game.build",
-      reason: "build-command-deferred",
-      source: "keyboard",
+      source: "pointer",
       tile,
     },
   ]);
+  assert.deepEqual(state.snapshot().builtStructures, [
+    {
+      id: 1,
+      kind: "flag",
+      tile,
+      placedAtTick: 0,
+    },
+  ]);
+});
+
+test("SerfboundCommandRouter rejects occupied tiles and deferred build types", () => {
+  const state = new SerfboundGameState({ mapSize: 3 });
+  const router = new SerfboundCommandRouter(state);
+  const tile = state.mapGeometry.tileAt(3, 4);
+
+  assert.equal(router.dispatch({
+    type: "game.build",
+    source: "pointer",
+    building: "flag",
+    tile,
+  }).status, "accepted");
+
+  const duplicate = router.dispatch({
+    type: "game.build",
+    source: "pointer",
+    building: "flag",
+    tile,
+  });
+  const deferred = router.dispatch({
+    type: "game.build",
+    source: "keyboard",
+    building: "hut",
+    tile: state.mapGeometry.tileAt(5, 6),
+  });
+
+  assert.equal(duplicate.status, "rejected");
+  assert.equal(duplicate.reason, "tile-occupied");
+  assert.equal(duplicate.commandId, 2);
+  assert.equal(duplicate.snapshot.builtStructures.length, 1);
+
+  assert.equal(deferred.status, "rejected");
+  assert.equal(deferred.reason, "build-command-deferred");
+  assert.equal(deferred.commandType, "game.build");
+  assert.equal(deferred.commandId, 3);
 });

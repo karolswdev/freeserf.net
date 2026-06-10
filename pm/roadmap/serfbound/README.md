@@ -1,8 +1,8 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-09.
-**Current phase:** [phase-6-ui-input-shell](./phase-6-ui-input-shell/current-phase-status.md)
-**Status:** Phase 0 through Phase 5 complete; Phase 6 in progress.
+**Current phase:** [phase-7-playable-slice](./phase-7-playable-slice/current-phase-status.md)
+**Status:** Phase 0 through Phase 6 complete; Phase 7 in progress.
 
 ## Vision
 
@@ -88,8 +88,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
 | 5 | Build the map renderer, projection model, and visual asset path | complete | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
-| 6 | Build browser input, UI shell, and game interaction loops | in-progress | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
-| 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
+| 6 | Build browser input, UI shell, and game interaction loops | complete | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
+| 7 | Ship the first local playable vertical slice | in-progress | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | planning | [phase-9-release-operations](./phase-9-release-operations/) |
 
@@ -204,7 +204,7 @@ For Serfbound specifically, every implementation story must identify:
 - **Current command routing proof:** `@serfbound/engine` exposes a DOM-free
   `SerfboundCommandRouter`; `@serfbound/app` routes canvas tile selection
   through `debug.inspect-map-tile`, records deterministic command results, and
-  reserves `game.build` as a structured deferred Phase 7 route.
+  routes `game.build` flag placement through running local game state.
 - **Current first playable UI shell:** `@serfbound/app` exposes player-facing
   Data, Game, Map, Hover, Selected Tile, and Action panels, a visible
   `Start game` path, recoverable unsupported-data states, and desktop/mobile
@@ -219,6 +219,11 @@ For Serfbound specifically, every implementation story must identify:
   metadata; `@serfbound/app` requires imported data before starting, swaps the
   command router onto the initialized game state, and displays the settlement
   map with screenshot evidence under `phase-7-playable-slice/artifacts/`.
+- **Current first playable action proof:** `@serfbound/engine` mutates
+  `builtStructures` through `game.build` flag commands, rejects occupied tiles
+  and deferred build targets recoverably, and `@serfbound/app` renders the built
+  flag back onto the browser WebGL2 map with screenshot evidence under
+  `phase-7-playable-slice/artifacts/`.
 
 ## Glossary
 

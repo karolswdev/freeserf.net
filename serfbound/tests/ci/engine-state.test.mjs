@@ -42,6 +42,7 @@ test("SerfboundGameState exposes a stable initial snapshot", () => {
       knightMoraleCounter: 0,
       inventoryScheduleCounter: 0,
     },
+    builtStructures: [],
   });
 });
 
@@ -82,6 +83,7 @@ test("SerfboundGameState advances source-derived tick and schedule counters dete
       knightMoraleCounter: 206,
       inventoryScheduleCounter: 14,
     },
+    builtStructures: [],
   });
 });
 

@@ -31,7 +31,7 @@ saves/loads state.
 
 - [x] A user can open the browser client, import local data, start a game, and
   see the settlement map.
-- [ ] One visible build/road/flag interaction mutates engine state and rendered
+- [x] One visible build/road/flag interaction mutates engine state and rendered
   output.
 - [ ] The playable path runs in the browser with no desktop companion process.
 - [ ] Save/load works in browser persistence and passes at least one round-trip
@@ -43,16 +43,17 @@ saves/loads state.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-7-01 | Start local game from imported data | done | story-01-start-local-game.md | evidence-story-01.md |
-| SB-7-02 | Implement first visible build action | ready | story-02-first-visible-build-action.md | — |
-| SB-7-03 | Add browser save/load loop | backlog | story-03-browser-save-load-loop.md | — |
+| SB-7-02 | Implement first visible build action | done | story-02-first-visible-build-action.md | evidence-story-02.md |
+| SB-7-03 | Add browser save/load loop | ready | story-03-browser-save-load-loop.md | — |
 | SB-7-04 | Verify playable loop manually | backlog | story-04-playable-loop-verification.md | — |
 
 ## Where we are
 
-Phase 7 is in progress. SB-7-01 added deterministic local game initialization
-from imported `SPAU.PA` catalog metadata, wires the browser start path to that
-engine state, and captures a started-game screenshot. The next responsible move
-is SB-7-02: implement the first visible build action through the command route.
+Phase 7 is in progress. SB-7-02 added the first visible browser-playable action:
+select a tile in a running local game, build a flag through `game.build`, mutate
+engine state, render the flag back onto the WebGL2 map, and reject duplicate or
+deferred build requests recoverably. The next responsible move is SB-7-03:
+persist and restore the local game snapshot in the browser.
 
 ## Active risks
 
@@ -70,8 +71,12 @@ is SB-7-02: implement the first visible build action through the command route.
 - 2026-06-09 — Derive the first local game seed deterministically from imported
   DOS PA catalog metadata until Phase 7 introduces explicit setup options —
   SB-7-01.
+- 2026-06-09 — Use flag placement as the first visible build action. Roads,
+  huts, terrain/buildability rules, ownership, logistics, and economy effects
+  are deferred until later simulation stories; SB-7-02 proves the browser
+  UI-engine-render loop only.
 
 ## Decisions deferred
 
-- Exact first build interaction — revisit after Phases 3/5/6 — default to the
-  smallest action that mutates visible map state.
+- Original placement rules, roads, huts, worker logistics, and economy effects.
+- Browser save/load for running game snapshots — SB-7-03.

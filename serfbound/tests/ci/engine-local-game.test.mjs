@@ -58,6 +58,7 @@ test("startSerfboundLocalGame initializes deterministic state from imported data
         knightMoraleCounter: 0,
         inventoryScheduleCounter: 0,
       },
+      builtStructures: [],
     },
     renderer: {
       sceneSource: "dos-pa-catalog",
