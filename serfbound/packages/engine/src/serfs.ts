@@ -40,8 +40,10 @@ export const serfState = {
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
 
 // lumberjack, stonecutter, forester, sawmill, fisher, farm, mill, baker,
-// pig farm, butcher
-const workedBuildingTypes = new Set<number>([2, 4, 9, 17, 1, 12, 15, 16, 14, 13]);
+// pig farm, butcher, the four mines, both smelters, and the toolmaker
+const workedBuildingTypes = new Set<number>([
+  2, 4, 9, 17, 1, 12, 15, 16, 14, 13, 5, 6, 7, 8, 18, 23, 19,
+]);
 
 // Demand routing: which completed buildings consume a product directly.
 const productConsumers: Readonly<Record<number, readonly number[]>> = {
@@ -49,7 +51,27 @@ const productConsumers: Readonly<Record<number, readonly number[]>> = {
   3: [15, 14], // wheat -> mill, pig farm
   4: [16], // flour -> baker
   1: [13], // pig -> butcher
+  0: [5, 6, 7, 8], // fish -> mines
+  5: [5, 6, 7, 8], // bread -> mines
+  2: [5, 6, 7, 8], // meat -> mines
+  12: [18, 23], // coal -> steel/gold smelters
+  10: [18], // iron ore -> steel smelter
+  13: [23], // gold ore -> gold smelter
+  11: [19, 20], // steel -> toolmaker, weaponsmith
 };
+
+// Mine building type -> [deposit mineral value, ore resource value].
+const mineDeposits: Readonly<Record<number, readonly [number, number]>> = {
+  5: [4, 9], // stone mine -> stone deposit -> stone
+  6: [3, 12], // coal mine -> coal -> coal
+  7: [2, 10], // iron mine -> iron -> iron ore
+  8: [1, 13], // gold mine -> gold -> gold ore
+};
+
+const minerFoods: readonly number[] = [resourceType.fish, resourceType.bread, resourceType.meat];
+
+// The reference tool order for the toolmaker's round-robin output.
+const toolOutputs: readonly number[] = [15, 16, 17, 18, 19, 20, 21, 22, 23];
 
 const directionOrder: readonly Direction[] = ["Right", "DownRight", "Down", "Left", "UpLeft", "Up"];
 const reverseOf: Record<Direction, Direction> = {
@@ -736,8 +758,102 @@ export class SerfboundSerfEngine {
       case buildingType.butcher:
         this.#workConvert(serf, building, 350, resourceType.pig, resourceType.meat);
         break;
+      case buildingType.stoneMine:
+      case buildingType.coalMine:
+      case buildingType.ironMine:
+      case buildingType.goldMine:
+        this.#workMine(serf, building);
+        break;
+      case buildingType.steelSmelter:
+        this.#workConvertMulti(
+          serf, building, 450,
+          [resourceType.coal, resourceType.ironOre],
+          resourceType.steel,
+        );
+        break;
+      case buildingType.goldSmelter:
+        this.#workConvertMulti(
+          serf, building, 450,
+          [resourceType.coal, resourceType.goldOre],
+          resourceType.goldBar,
+        );
+        break;
+      case buildingType.toolMaker:
+        if (serf.workCounter >= 500) {
+          const planks = building.deliveredResources[resourceType.plank] ?? 0;
+          const steel = building.deliveredResources[resourceType.steel] ?? 0;
+          if (planks > 0 && steel > 0) {
+            serf.workCounter = 0;
+            building.deliveredResources[resourceType.plank] = planks - 1;
+            building.deliveredResources[resourceType.steel] = steel - 1;
+            const tool = toolOutputs[serf.workPhase % toolOutputs.length]!;
+            serf.workPhase += 1;
+            this.#emitProduct(building, tool);
+          }
+        }
+        break;
       default:
         break;
+    }
+  }
+
+  // Mines extract from the generator's deposits, gated on delivered food
+  // (one food per extraction, per the reference miner behavior).
+  #workMine(serf: WorldSerf, building: WorldBuilding): void {
+    if (serf.workCounter < 500) {
+      return;
+    }
+
+    const deposit = mineDeposits[building.type];
+    if (deposit === undefined) {
+      return;
+    }
+
+    const foodIndex = minerFoods.find(
+      (food) => (building.deliveredResources[food] ?? 0) > 0,
+    );
+    if (foodIndex === undefined) {
+      return; // hungry miners stop working
+    }
+
+    const [mineralValue, oreResource] = deposit;
+    for (let offset = 0; offset < 50; offset += 1) {
+      const candidate = this.world.positionAddSpirally(building.position, offset);
+      if (
+        this.world.minerals[candidate] === mineralValue &&
+        this.world.resourceAmounts[candidate]! > 0
+      ) {
+        serf.workCounter = 0;
+        building.deliveredResources[foodIndex] =
+          (building.deliveredResources[foodIndex] ?? 0) - 1;
+        this.world.resourceAmounts[candidate] = this.world.resourceAmounts[candidate]! - 1;
+        this.#emitProduct(building, oreResource);
+        return;
+      }
+    }
+
+    serf.workCounter = 0; // deposit exhausted
+  }
+
+  // Converters needing several inputs at once (smelters).
+  #workConvertMulti(
+    serf: WorldSerf,
+    building: WorldBuilding,
+    cycleTicks: number,
+    inputs: readonly number[],
+    output: number,
+  ): void {
+    if (serf.workCounter < cycleTicks) {
+      return;
+    }
+
+    if (inputs.every((input) => (building.deliveredResources[input] ?? 0) > 0)) {
+      serf.workCounter = 0;
+      for (const input of inputs) {
+        building.deliveredResources[input] = building.deliveredResources[input]! - 1;
+      }
+
+      this.#emitProduct(building, output);
     }
   }
 

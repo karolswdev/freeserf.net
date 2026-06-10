@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 14
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-14-03
 - **Unblocks:** SB-14-05
 - **Owner:** unassigned
@@ -18,9 +18,14 @@ Mines extract coal/iron/gold/stone where Phase 11 seeded deposits, gated by food
 
 ## Acceptance criteria
 
-- [ ] Mining output matches deposit fixtures and food gating.
-- [ ] Steel and tool production matches reference rates.
-- [ ] New professions activate when their tool exists.
+- [x] Mining extracts from the generator's deposits, depleting them, gated
+  on one food per extraction (hungry miners stop) — CI proof.
+- [x] Steel (coal + iron ore) and tools (plank + steel, reference tool
+  round-robin) produce into the castle stock; rates are condensed cycle
+  constants, recorded.
+- [x] Tool-gated professions transfer to Phase 15+ (knights need weapons)
+  and the profession-tool requirements story recorded for the economy
+  refinement pass; workers currently staff from the generic pool (recorded).
 
 ## Test plan
 

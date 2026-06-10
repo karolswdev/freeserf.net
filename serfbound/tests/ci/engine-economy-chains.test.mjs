@@ -211,3 +211,77 @@ test("the bread chain runs: fields grow wheat, the mill grinds, the baker bakes"
   assert.equal(sowed, true, "the farmer sowed a field");
   assert.equal(breadBaked, true, "bread reached the castle stock");
 });
+
+test("mines extract food-gated ore and the smelter + toolmaker refine it", () => {
+  const { started, world, router, tileFor, castlePosition } = foundedGame();
+  const engine = started.game.serfEngine();
+  const castleFlagPosition = world.move(castlePosition, "DownRight");
+
+  // Tundra patch + coal deposit for the mine.
+  const mineSite = world.geometry.positionAdd(castlePosition, 6, -1);
+  for (const [dx, dy] of [[0, 0], [-1, 0], [0, -1], [-1, -1], [1, 0], [0, 1]]) {
+    const at = world.geometry.positionAdd(mineSite, dx, dy);
+    world.typesUp[at] = 11;
+    world.typesDown[at] = 11;
+  }
+  world.minerals[mineSite] = 3; // coal deposit
+  world.resourceAmounts[mineSite] = 12;
+
+  const mine = buildConnected(
+    world, router, tileFor, castleFlagPosition, mineSite, "coalMine",
+  );
+  const smelter = buildConnected(
+    world, router, tileFor, castleFlagPosition,
+    world.geometry.positionAdd(castlePosition, -4, 2), "steelSmelter",
+  );
+  const toolmaker = buildConnected(
+    world, router, tileFor, castleFlagPosition,
+    world.geometry.positionAdd(castlePosition, 2, 5), "toolMaker",
+  );
+  for (const building of [mine, smelter, toolmaker]) {
+    engine.dispatchConstructionLogistics(building, 0);
+  }
+
+  const inventory = world.inventoryForPlayer(0);
+  let mined = false;
+  let toolMade = false;
+  const toolsBefore = toolOutputsTotal(inventory);
+
+  for (let tick = 0; tick < 2000000 && !toolMade; tick += 16) {
+    engine.update(tick);
+    if (mine.isDone && !mined) {
+      // Feed the miners and supply the refining chain inputs directly (the
+      // food/ore routing itself is covered by the demand table; the full
+      // integrated economy runs at the SB-14-05 gate).
+      mine.deliveredResources[5] = 10; // bread
+      mined = true;
+    }
+
+    if (smelter.isDone && (smelter.deliveredResources[10] ?? 0) === 0) {
+      smelter.deliveredResources[10] = 5; // iron ore
+    }
+
+    if (toolmaker.isDone && (toolmaker.deliveredResources[7] ?? 0) === 0) {
+      toolmaker.deliveredResources[7] = 5; // planks
+    }
+
+    toolMade = toolOutputsTotal(inventory) > toolsBefore;
+  }
+
+  assert.equal(mine.isDone && smelter.isDone && toolmaker.isDone, true, "all built");
+  assert.equal(
+    world.resourceAmounts[mineSite] < 12,
+    true,
+    "the deposit depleted under mining",
+  );
+  assert.equal(toolMade, true, "a finished tool reached the castle stock");
+});
+
+function toolOutputsTotal(inventory) {
+  let total = 0;
+  for (let tool = 15; tool <= 23; tool += 1) {
+    total += inventory.resources[tool];
+  }
+
+  return total;
+}
