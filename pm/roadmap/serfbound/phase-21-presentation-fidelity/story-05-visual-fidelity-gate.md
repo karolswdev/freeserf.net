@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 21
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-21-04
 - **Unblocks:** SB-22-01
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,10 +24,10 @@ closes the phase on chrome, text, scale, and gesture evidence.
 
 ## Acceptance criteria
 
-- [ ] Real-data captures under phase artifacts show the corrected chrome,
+- [x] Real-data captures under phase artifacts show the corrected chrome,
   readable text, and sharp scales.
-- [ ] All standing gates pass at the closing commit.
-- [ ] The phase final summary records deviations honestly.
+- [x] All standing gates pass at the closing commit.
+- [x] The phase final summary records deviations honestly.
 
 ## Test plan
 

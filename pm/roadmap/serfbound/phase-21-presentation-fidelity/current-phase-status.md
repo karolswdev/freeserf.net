@@ -1,7 +1,7 @@
 # Phase 21 — Presentation Fidelity
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-21-01..04 done.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -45,7 +45,7 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
   select view scale; high-DPI screenshots are pixel-sharp. (SB-21-03)
 - [x] Pinch-zoom and two-finger pan work on a touch viewport in e2e.
   (SB-21-04)
-- [ ] The visual fidelity gate passes: real-data captures of the fixed
+- [x] The visual fidelity gate passes: real-data captures of the fixed
   chrome/text/scales recorded under artifacts. (SB-21-05)
 
 ## Story status
@@ -56,17 +56,16 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
 | SB-21-02 | Font shadows and text colors | done | story-02-font-shadows-text-colors.md | evidence-story-02.md |
 | SB-21-03 | High-resolution rendering and view scales | done | story-03-high-resolution-rendering.md | evidence-story-03.md |
 | SB-21-04 | Touch gestures | done | story-04-touch-gestures.md | evidence-story-04.md |
-| SB-21-05 | Visual fidelity gate | backlog | story-05-visual-fidelity-gate.md | — |
+| SB-21-05 | Visual fidelity gate | done | story-05-visual-fidelity-gate.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-21-01..04 shipped: four-piece Box.cs chrome with inset interiors;
-black font-shadow text readable over terrain; native-resolution
-rendering with 1x/2x/3x view scales; and real touch gestures —
-pinch-zoom onto the view scales (midpoint-stationary), two-finger pan,
-long-press inspect, with touch taps deferred to pointerup so a
-gesture's first finger can no longer fire build actions. Next:
-SB-21-05 closes the phase on the visual fidelity gate.
+The phase is closed: every launch-review punch-list item fixed with
+evidence, all standing gates green at the closing commit (181/181 unit,
+10/10 browser, boundaries, static hosting, docs, real-data sweep, scale
+guard), and refreshed real-data captures at DPR 1 and DPR 2 under
+artifacts. See final-summary.md. Next: Phase 22 multiplayer
+foundations.
 
 ## Active risks
 
