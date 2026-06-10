@@ -1,7 +1,7 @@
 # Phase 16 — The Original Interface
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -40,7 +40,7 @@ original.
   layouts. (SB-16-03)
 - [x] Minimap renders the world, supports click-to-navigate, and
   notifications surface events. (SB-16-04)
-- [ ] The start screen handles game setup authentically. (SB-16-05)
+- [x] The start screen handles game setup authentically. (SB-16-05)
 
 ## Story status
 
@@ -50,14 +50,17 @@ original.
 | SB-16-02 | Build the authentic panel bar | done | story-02-authentic-panel-bar.md | evidence-story-02.md |
 | SB-16-03 | Build the popup system | done | story-03-popup-system.md | evidence-story-03.md |
 | SB-16-04 | Minimap and notifications | done | story-04-minimap-notifications.md | evidence-story-04.md |
-| SB-16-05 | Authentic game start screen | backlog | story-05-game-start-screen.md | — |
+| SB-16-05 | Authentic game start screen | done | story-05-game-start-screen.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-16-04 is done: the minimap renders the world in the reference palette
-with click-to-navigate and a viewport marker, and notifications surface
-completed buildings and defeat in the game font. SB-16-05 (the start
-screen and temp-panel retirement) closes the phase.
+The phase is closed. The game looks and drives like the original: decoded
+fonts/icons/frames everywhere, the panel bar and popup family run the
+game, the minimap navigates, notifications surface events, and the
+authentic start screen (with the decoded Blue Byte logo) fronts seeded
+custom games. Decoded play needs no temporary controls; the HTML panel
+remains only for the catalog-only fallback (recorded). See
+final-summary.md.
 
 ## Active risks
 
@@ -72,6 +75,10 @@ screen and temp-panel retirement) closes the phase.
 - UI chrome renders at 2x integer scale via a `scale` field on sprite
   primitives through the NEAREST-filtered WebGL path; non-integer scaling
   rejected (SB-16-01).
+- The temporary HTML panel survives ONLY for the catalog-only fallback
+  mode (no decoded art → no authentic chrome) and browser-shell duties
+  (save/load/import); decoded play drives entirely through the authentic
+  UI, proven end-to-end in the founding e2e (SB-16-05).
 
 ## Decisions deferred
 

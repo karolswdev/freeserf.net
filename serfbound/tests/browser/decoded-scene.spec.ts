@@ -44,9 +44,26 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "dos-pa-decoded",
   );
 
-  // Starting a game switches to the generated-landscape scene and asks for
-  // the founding castle.
-  await page.getByTestId("start-game-button").click();
+  // The authentic start screen fronts the game: the seed randomizes, the
+  // supplies cycle, and START begins the seeded custom game.
+  const canvas = page.getByTestId("terrain-preview");
+  const setupBox = await canvas.boundingBox();
+  if (setupBox === null) {
+    throw new Error("canvas has no bounding box");
+  }
+
+  const initX = Math.max(0, Math.floor((setupBox.width - 288) / 2));
+  const initY = Math.max(0, Math.floor((setupBox.height - 256) / 3));
+  const seedBefore = await page.locator("#app").getAttribute("data-serfbound-init-seed");
+  expect(seedBefore).toMatch(/^[1-8]{16}$/);
+  await canvas.click({ position: { x: initX + 144, y: initY + 24 * 2 + 10 }, force: true });
+  await expect(page.locator("#app")).not.toHaveAttribute(
+    "data-serfbound-init-seed",
+    seedBefore as string,
+  );
+  await canvas.click({ position: { x: initX + 144, y: initY + 56 * 2 + 8 }, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-supplies", "35");
+  await canvas.click({ position: { x: initX + 144, y: initY + 100 * 2 + 10 }, force: true });
   await expect(page.getByTestId("game-state")).toHaveText("Running");
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-scene-mode",
@@ -60,7 +77,6 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   await expect(page.getByTestId("command-state")).toHaveText("Place your castle");
 
   // Click around until a valid castle site accepts (terrain-dependent).
-  const canvas = page.getByTestId("terrain-preview");
   let castleClick = { x: 0, y: 0 };
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const x = 120 + (attempt % 6) * 140;
@@ -83,14 +99,31 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "1",
   );
 
-  // Build a flag inside the claimed territory, near the castle.
+  // The whole settlement founds through the authentic UI from here: the
+  // build popup places flags and buildings, the panel road slot routes.
+  const canvasBox = await canvas.boundingBox();
+  if (canvasBox === null) {
+    throw new Error("canvas has no bounding box");
+  }
+
+  const panelX = Math.max(0, Math.floor((canvasBox.width - 640) / 2));
+  const panelY = Math.max(0, canvasBox.height - 80);
+  const buildSlotPos = { x: panelX + 64 * 2 + 32, y: panelY + 4 * 2 + 32 };
+  const roadSlotPos = { x: panelX + (64 + 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
+  const popupX = Math.max(0, Math.floor((canvasBox.width - 288) / 2));
+  const popupY = Math.max(0, Math.floor((canvasBox.height - 320) / 3));
+  const flagItemPos = { x: popupX + 72 * 2 + 16, y: popupY + 117 * 2 + 16 };
+  const lumberjackItemPos = { x: popupX + 8 * 2 + 24, y: popupY + 67 * 2 + 24 };
+
+  // Build a flag inside the claimed territory through the build popup.
   let flagBuilt = false;
   let flagClick = { x: 0, y: 0 };
   for (let attempt = 0; attempt < 40 && !flagBuilt; attempt += 1) {
     const x = castleClick.x - 60 + (attempt % 8) * 24;
     const y = castleClick.y + 40 + Math.floor(attempt / 8) * 22;
-    await canvas.click({ position: { x, y } });
-    await page.getByTestId("build-flag-button").click();
+    await canvas.click({ position: { x, y }, force: true });
+    await canvas.click({ position: buildSlotPos, force: true });
+    await canvas.click({ position: flagItemPos, force: true });
     const flagCount = await page
       .locator("#app")
       .getAttribute("data-serfbound-world-flag-count");
@@ -101,30 +134,31 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   }
   expect(flagBuilt).toBe(true);
 
-  // Connect the castle flag to the new flag in road mode (the castle's flag
-  // stands down-right of the castle; jitter to land on the exact tiles).
-  await expect(page.getByTestId("build-road-button")).toBeEnabled();
+  // Connect the castle flag to the new flag with the panel's road slot.
   let roadBuilt = false;
   for (let fromAttempt = 0; fromAttempt < 9 && !roadBuilt; fromAttempt += 1) {
     const fromX = castleClick.x + 16 + ((fromAttempt % 3) - 1) * 12;
     const fromY = castleClick.y + 10 + (Math.floor(fromAttempt / 3) - 1) * 10;
-    await page.getByTestId("build-road-button").click();
-    await canvas.click({ position: { x: fromX, y: fromY } });
-    await canvas.click({ position: { x: flagClick.x, y: flagClick.y } });
+    await canvas.click({ position: roadSlotPos, force: true });
+    await canvas.click({ position: { x: fromX, y: fromY }, force: true });
+    await canvas.click({ position: { x: flagClick.x, y: flagClick.y }, force: true });
     const effect = await page.locator("#app").getAttribute("data-serfbound-last-effect");
     roadBuilt = effect === "road-built";
+    if (!roadBuilt && (await page.locator("#app").getAttribute("data-serfbound-road-mode")) !== "idle") {
+      await canvas.click({ position: roadSlotPos, force: true });
+    }
   }
   expect(roadBuilt).toBe(true);
 
-  // Build a lumberjack inside territory.
-  await expect(page.getByTestId("build-lumberjack-button")).toBeEnabled();
+  // Build a lumberjack through the build popup.
   let lumberjackBuilt = false;
   let lumberjackClick = { x: 0, y: 0 };
   for (let attempt = 0; attempt < 60 && !lumberjackBuilt; attempt += 1) {
     const x = castleClick.x - 90 + (attempt % 10) * 22;
     const y = castleClick.y + 80 + Math.floor(attempt / 10) * 24;
-    await canvas.click({ position: { x, y } });
-    await page.getByTestId("build-lumberjack-button").click();
+    await canvas.click({ position: { x, y }, force: true });
+    await canvas.click({ position: buildSlotPos, force: true });
+    await canvas.click({ position: lumberjackItemPos, force: true });
     const effect = await page.locator("#app").getAttribute("data-serfbound-last-effect");
     if (effect === "building-built") {
       lumberjackBuilt = true;
@@ -158,17 +192,7 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     .locator("#app")
     .getAttribute("data-serfbound-panel-buttons");
   expect(panelButtons).toMatch(/^\d+,8,10,12,14$/);
-  const canvasBox = await canvas.boundingBox();
-  if (canvasBox === null) {
-    throw new Error("canvas has no bounding box");
-  }
-
-  const panelX = Math.max(0, Math.floor((canvasBox.width - 640) / 2));
-  const panelY = Math.max(0, canvasBox.height - 80);
-  const roadSlot = {
-    x: panelX + (64 + 48) * 2 + 32,
-    y: panelY + 4 * 2 + 32,
-  };
+  const roadSlot = roadSlotPos;
   await canvas.click({ position: roadSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-road-mode",
@@ -199,8 +223,6 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   const mapSlot = { x: panelX + (64 + 2 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
   await canvas.click({ position: mapSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "map");
-  const popupX = Math.max(0, Math.floor((canvasBox.width - 288) / 2));
-  const popupY = Math.max(0, Math.floor((canvasBox.height - 320) / 3));
   await canvas.click({
     position: { x: popupX + 16 + 200, y: popupY + 32 + 200 },
     force: true,

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 16
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-16-04
 - **Unblocks:** SB-17-01
 - **Owner:** unassigned
@@ -18,9 +18,10 @@ GameInitBox is the original front door - choose game type, seed, players - and S
 
 ## Acceptance criteria
 
-- [ ] Start screen renders authentically and starts seeded custom games.
-- [ ] Player slots configure color/supplies per reference options.
-- [ ] Import-then-play first-run flow captured with real data.
+- [x] Start screen renders authentically and starts seeded custom games.
+- [x] Player slots configure color/supplies per reference options (supplies
+  + seed for the single local slot; colors/multi-slot recorded for Phase 18).
+- [x] Import-then-play first-run flow captured with real data.
 
 ## Test plan
 

@@ -50,6 +50,7 @@ export {
   decodeUiFontGlyph,
   decodeUiFrame,
   decodeUiIcon,
+  decodeUiLogo,
   decodeUiPanelButton,
   layoutUiText,
   mapCharacterToGlyphIndex,

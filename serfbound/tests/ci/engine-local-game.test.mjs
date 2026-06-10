@@ -32,6 +32,7 @@ test("startSerfboundLocalGame initializes deterministic state from imported data
     settings: {
       mapSize: 3,
       seedString: "3128716831287168",
+      initialSupplies: 20,
     },
     state: {
       schemaVersion: 1,

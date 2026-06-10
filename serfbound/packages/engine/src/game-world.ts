@@ -275,6 +275,8 @@ export class SerfboundGameWorld {
   readonly resourceAmounts: Uint8Array;
   readonly paths: Uint8Array;
   readonly owners: Int8Array;
+  // GameInitBox player supplies setting consumed by buildCastle.
+  initialSupplies = 20;
   readonly objectIndexes: Uint32Array;
   readonly flags = new Map<number, WorldFlag>();
   readonly buildings = new Map<number, WorldBuilding>();
@@ -1107,14 +1109,13 @@ export class SerfboundGameWorld {
     this.players[player]!.castlePosition = position;
 
     // The castle is the player's first inventory (Game.BuildCastle allocates
-    // it with the initial-supplies preset; supplies level 20 matches the
-    // default custom-game setting until game setup options arrive).
+    // it with the initial-supplies preset from the game-setup setting).
     const inventory = createInventory(
       this.inventories.size + 1,
       player,
       castle.index,
       flag.index,
-      20,
+      this.initialSupplies,
     );
     this.inventories.set(inventory.index, inventory);
 

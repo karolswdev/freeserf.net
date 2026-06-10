@@ -149,3 +149,14 @@ export function decodeUiCursor(archive: DosPaArchive): DecodedDosSprite | null {
 
   return decodeDosTransparentSprite(data, palette);
 }
+
+// The game logo (resource 41) decodes against palette 3998.
+export function decodeUiLogo(archive: DosPaArchive): DecodedDosSprite | null {
+  const palette = archive.getPalette(3998);
+  const data = archive.getEntryBytes(41);
+  if (palette === null || data === null) {
+    return null;
+  }
+
+  return decodeDosSolidSprite(data, palette);
+}

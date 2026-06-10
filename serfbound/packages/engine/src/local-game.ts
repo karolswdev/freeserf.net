@@ -17,12 +17,15 @@ export type SerfboundLocalGameDataSource = {
 export type SerfboundLocalGameSettings = {
   readonly mapSize: number;
   readonly seedString: string;
+  // GameInitBox player supplies (0..40, reference custom-game slider).
+  readonly initialSupplies: number;
 };
 
 export type SerfboundLocalGameStartOptions = {
   readonly data?: SerfboundLocalGameDataSource;
   readonly mapSize?: number;
   readonly seedString?: string;
+  readonly initialSupplies?: number;
 };
 
 export type SerfboundLocalGameSnapshot = {
@@ -103,6 +106,7 @@ export class SerfboundLocalGame {
   world(): SerfboundGameWorld {
     if (this.#world === undefined) {
       this.#world = new SerfboundGameWorld(this.landscape());
+      this.#world.initialSupplies = this.settings.initialSupplies ?? 20;
       replayWorldActions(
         this.#world,
         this.state.worldActions.filter(isSerfboundWorldAction),
@@ -185,11 +189,13 @@ export function startSerfboundLocalGame(
     mapSize,
     random,
   });
+  const initialSupplies = Math.max(0, Math.min(40, Math.trunc(options.initialSupplies ?? 20)));
   const game = new SerfboundLocalGame(
     options.data,
     {
       mapSize,
       seedString,
+      initialSupplies,
     },
     state,
   );
@@ -343,7 +349,8 @@ function isLocalGameSettings(input: unknown): input is SerfboundLocalGameSetting
   const settings = input as Partial<SerfboundLocalGameSettings>;
   return (
     Number.isInteger(settings.mapSize) &&
-    typeof settings.seedString === "string"
+    typeof settings.seedString === "string" &&
+    (settings.initialSupplies === undefined || Number.isInteger(settings.initialSupplies))
   );
 }
 

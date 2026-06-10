@@ -8,7 +8,9 @@ import {
   decodeUiFontGlyph,
   decodeUiFrame,
   decodeUiIcon,
+  decodeUiLogo,
   decodeUiPanelButton,
+  layoutUiText,
   parseSerfAnimationTable,
   uiFontGlyphCount,
   type ComposedSerfTorso,
@@ -80,6 +82,7 @@ export type DecodedRenderAssets = {
   readonly rawPopupFrames: readonly (DecodedDosSprite | null)[];
   readonly rawBottomFrames: readonly (DecodedDosSprite | null)[];
   readonly rawCursor: DecodedDosSprite | null;
+  readonly rawLogo: DecodedDosSprite | null;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -113,6 +116,13 @@ export type FirstRenderLayerSceneOptions = {
   readonly typedAssetCatalog?: TypedAssetCatalog;
   readonly decodedAssets?: DecodedRenderAssets;
   readonly builtStructures?: readonly SerfboundBuiltStructure[];
+  // The authentic game start screen drawn over the import preview
+  // (SB-16-05): seed, supplies, map size, start.
+  readonly initScreen?: {
+    readonly seedString: string;
+    readonly initialSupplies: number;
+    readonly mapSize: number;
+  };
 };
 
 export type PointerMapInteraction = {
@@ -159,6 +169,7 @@ export function createFirstRenderLayerScene(
       virtualSize,
       options.decodedAssets,
       options.builtStructures ?? [],
+      options.initScreen,
     );
   }
 
@@ -705,6 +716,35 @@ export function buildDecodedRenderAssets(
   }
 
   const rawCursor = decodeUiSafely(() => decodeUiCursor(archive));
+  const rawLogo = decodeUiSafely(() => decodeUiLogo(archive));
+
+  // UI chrome for the pre-game scenes (the init screen draws over the
+  // import preview, which uses this atlas directly).
+  const zeroAnchored = (sprite: DecodedDosSprite): DecodedDosSprite => ({
+    ...sprite,
+    deltaX: 0,
+    deltaY: 0,
+    offsetX: 0,
+    offsetY: 0,
+  });
+  rawFontGlyphs.forEach((glyph, index) => {
+    if (glyph !== null) {
+      sprites[`uif:${index}`] = zeroAnchored(glyph);
+    }
+  });
+  const backgroundPattern = rawIcons.get(310);
+  if (backgroundPattern !== undefined) {
+    sprites["uii:310"] = zeroAnchored(backgroundPattern);
+  }
+
+  rawPopupFrames.slice(0, 2).forEach((frame, index) => {
+    if (frame !== null) {
+      sprites[`uifr:${index}`] = zeroAnchored(frame);
+    }
+  });
+  if (rawLogo !== null) {
+    sprites["uilogo"] = zeroAnchored(rawLogo);
+  }
 
   return {
     source: "dos-pa-decoded",
@@ -729,6 +769,7 @@ export function buildDecodedRenderAssets(
     rawPopupFrames,
     rawBottomFrames,
     rawCursor,
+    rawLogo,
   };
 }
 
@@ -756,6 +797,11 @@ function createDecodedRenderScene(
   virtualSize: RenderSize,
   decodedAssets: DecodedRenderAssets,
   builtStructures: readonly SerfboundBuiltStructure[],
+  initScreen?: {
+    readonly seedString: string;
+    readonly initialSupplies: number;
+    readonly mapSize: number;
+  },
 ): FirstRenderLayerScene {
   const { atlas } = decodedAssets;
   const sprites: RenderSpritePrimitive[] = [];
@@ -816,6 +862,55 @@ function createDecodedRenderScene(
     const anchorY = top.y + 16;
     pushSprite("shadows", "objshadow:flag", anchorX, anchorY, anchorY);
     pushSprite("markers", "obj:flag", anchorX, anchorY, anchorY + structure.id / 1000);
+  }
+
+  // The game start screen (SB-16-05): the GameInitBox condensed to the
+  // options the engine supports, drawn from decoded art at 2x.
+  if (initScreen !== undefined && atlas.regions["uif:0"] !== undefined) {
+    const scale = 2;
+    const boxWidth = 144 * scale;
+    const boxHeight = 128 * scale;
+    const boxX = Math.max(0, Math.floor((virtualSize.width - boxWidth) / 2));
+    const boxY = Math.max(0, Math.floor((virtualSize.height - boxHeight) / 3));
+    const pushUi = (key: string, x: number, y: number): void => {
+      if (atlas.regions[key] !== undefined) {
+        sprites.push({ layer: "ui", key, x, y, sortY: y, sortX: x, scale });
+      }
+    };
+    const pushText = (text: string, x: number, y: number): void => {
+      for (const placement of layoutUiText(text)) {
+        pushUi(`uif:${placement.glyphIndex}`, boxX + (x + placement.x) * scale, boxY + y * scale);
+      }
+    };
+
+    for (let tileY = 0; tileY < 128; tileY += 16) {
+      for (let tileX = 0; tileX < 144; tileX += 16) {
+        pushUi("uii:310", boxX + tileX * scale, boxY + tileY * scale);
+      }
+    }
+
+    pushUi("uifr:0", boxX, boxY);
+    pushUi("uifr:1", boxX + (144 - 16) * scale, boxY);
+
+    const logoRegion = atlas.regions["uilogo"];
+    if (logoRegion !== undefined) {
+      sprites.push({
+        layer: "ui",
+        key: "uilogo",
+        x: Math.max(0, Math.floor((virtualSize.width - logoRegion.width * scale) / 2)),
+        y: Math.max(0, boxY - (logoRegion.height + 8) * scale),
+        sortY: 0,
+        sortX: 0,
+        scale,
+      });
+    }
+
+    pushText("SERFBOUND", 36, 8);
+    pushText("SEED", 8, 24);
+    pushText(initScreen.seedString, 8, 36);
+    pushText(`SUPPLIES ${initScreen.initialSupplies}`, 8, 56);
+    pushText(`MAP SIZE ${initScreen.mapSize}`, 8, 76);
+    pushText("START", 52, 104);
   }
 
   const sortedSprites = sprites.sort(compareSpritePrimitive);

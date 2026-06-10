@@ -73,8 +73,17 @@ import {
   type PopupKind,
 } from "./popup.js";
 
+import {
+  initScreenRect,
+  initScreenRowAt,
+  nextSupplies,
+  randomSeedString,
+  type InitScreenSettings,
+} from "./init-screen.js";
+
 export * from "./panel-bar.js";
 export * from "./popup.js";
+export * from "./init-screen.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -347,6 +356,25 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       root.dataset.serfboundPopup = popup;
     }
   };
+  // The start screen's custom-game choices (GameInitBox settings).
+  let startGameNowRef:
+    | ((options: { seedString?: string; initialSupplies?: number }) => void)
+    | undefined;
+  let initSeedString = randomSeedString(Math.random);
+  let initSupplies = 20;
+  const initScreenSettings = (): InitScreenSettings | undefined => {
+    if (
+      currentDecodedAssets === undefined ||
+      currentImportedDataSource === undefined ||
+      root.dataset.serfboundGameState === "running"
+    ) {
+      return undefined;
+    }
+
+    root.dataset.serfboundInitSeed = initSeedString;
+    root.dataset.serfboundInitSupplies = String(initSupplies);
+    return { seedString: initSeedString, initialSupplies: initSupplies, mapSize: 3 };
+  };
   // Notifications surface game events in the game font until replaced.
   let currentNotice: string | undefined;
   let lastDoneBuildingCount = 0;
@@ -414,6 +442,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       panelButtons,
       currentPopup,
       currentNotice,
+      initScreenSettings(),
     );
   };
   const applyScroll = (columnDelta: number, rowDelta: number) => {
@@ -566,6 +595,28 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       root.dataset.serfboundGameState === "running" &&
       currentWorld.players[0]?.hasCastle === false,
     panelClick(interaction) {
+      // The start screen owns setup-state canvas clicks: seed randomizes,
+      // supplies cycle, START begins the seeded custom game.
+      if (currentWorld === undefined && initScreenSettings() !== undefined) {
+        const rect = initScreenRect({ width: canvas.width, height: canvas.height }, 2);
+        const row = initScreenRowAt(rect, 2, interaction.screen.x, interaction.screen.y);
+        if (row === "seed") {
+          initSeedString = randomSeedString(Math.random);
+        } else if (row === "supplies") {
+          initSupplies = nextSupplies(initSupplies);
+        } else if (row === "start") {
+          startGameNowRef?.({ seedString: initSeedString, initialSupplies: initSupplies });
+          return true;
+        }
+
+        if (row !== null) {
+          renderCurrentScene();
+          return true;
+        }
+
+        return false;
+      }
+
       if (currentWorld === undefined || currentLandscapeAssets === undefined) {
         return false;
       }
@@ -849,9 +900,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     throw new Error("Serfbound shell start button did not mount.");
   }
 
-  startButton.addEventListener("click", () => {
+  const startGameNow = (options: { seedString?: string; initialSupplies?: number }) => {
     const result = startSerfboundLocalGame(
-      currentImportedDataSource === undefined ? {} : { data: currentImportedDataSource },
+      currentImportedDataSource === undefined
+        ? {}
+        : { data: currentImportedDataSource, ...options },
     );
     if (result.status === "started") {
       currentBuiltStructures = [];
@@ -870,6 +923,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     syncWorldState(root, currentWorld);
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
+  };
+  startGameNowRef = startGameNow;
+  startButton.addEventListener("click", () => {
+    // With the init screen up (decoded mode), the shell button is the
+    // accessible path to the same custom game; the catalog-only fallback
+    // keeps its deterministic derived seed.
+    if (initScreenSettings() !== undefined) {
+      startGameNow({ seedString: initSeedString, initialSupplies: initSupplies });
+    } else {
+      startGameNow({});
+    }
   });
 
   let roadModeFrom: PointerMapInteraction | undefined;
@@ -1453,6 +1517,7 @@ function renderScene(
   panelButtons?: readonly number[],
   popup?: PopupKind,
   notice?: string,
+  initScreen?: InitScreenSettings,
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
@@ -1482,6 +1547,7 @@ function renderScene(
           builtStructures,
           ...(typedAssetCatalog === undefined ? {} : { typedAssetCatalog }),
           ...(decodedAssets === undefined ? {} : { decodedAssets }),
+          ...(initScreen === undefined ? {} : { initScreen }),
         });
   root.dataset.serfboundScroll = `${scroll.column},${scroll.row}`;
   root.dataset.serfboundSceneMode = landscapeAssets !== undefined ? "landscape" : "preview";

@@ -100,8 +100,11 @@ function fixtureAnimationTable(): Uint8Array {
 export function createDecodableGeneratedPaArchive(): Uint8Array {
   const entries: FixtureEntry[] = [];
 
-  // Palette 3 feeds every sprite decode.
+  // Palette 3 feeds every sprite decode; 3998 feeds the logo.
   entries.push({ index: 3, bytes: fixturePalette() });
+  entries.push({ index: 3998, bytes: fixturePalette() });
+  // The game logo (resource 41), 64x32 solid.
+  entries.push({ index: 41, bytes: solidSprite(64, 32, 200) });
 
   // 33 ground tiles (archive 260..292), each a distinct solid color.
   for (let ground = 0; ground < 33; ground += 1) {
