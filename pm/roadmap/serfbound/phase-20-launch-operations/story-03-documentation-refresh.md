@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 20
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-20-02
 - **Unblocks:** SB-20-04
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ The Phase 9 docs describe a one-flag slice. Launch docs must cover the real game
 
 ## Acceptance criteria
 
-- [ ] Wiki/community infrastructure.:Player guide covers the complete loop accurately (doc checks extended).
-- [ ] Developer guide maps the final architecture and test strategy.
-- [ ] Licensing and asset-boundary documentation reviewed.
+- [x] Wiki/community infrastructure.:Player guide covers the complete loop accurately (doc checks extended).
+- [x] Developer guide maps the final architecture and test strategy.
+- [x] Licensing and asset-boundary documentation reviewed.
 
 ## Test plan
 

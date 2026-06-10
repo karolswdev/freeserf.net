@@ -154,3 +154,44 @@ select, build one flag, save, reload, resume, reset, and release packaging. Full
 original gameplay, audio, AI, multiplayer, original save compatibility, and
 physical-device certification remain outside this slice until future stories
 add evidence.
+
+## The complete-game module map (v0.1.0)
+
+`@serfbound/engine` (deterministic, DOM-free):
+- `map-generator` — the classic generator (fixture parity) and map data
+  tables; `game-world` — flags/roads/buildings/territory/conquest;
+  `pathfinder` — A* road routing; `serfs` — the serf state machine,
+  transport, professions, construction, combat; `inventory` — castle
+  stock and the supplies presets; `missions` — the 31-mission campaign;
+  `ai` — the classic AI (replayable world actions, decision logs);
+  `dos-savegame` — the original .SAV reader; `local-game`/`simulation` —
+  game state, snapshots, world-action replay; `commands` — the pointer
+  command router.
+
+`@serfbound/assets` (decode-only, no bundled data):
+- `dos-sprites` — the .PA archive and sprite payload decoders;
+  `terrain-tiles` — triangle composition; `serf-sprites` — animation
+  table and player-color torsos; `sprite-atlas` — runtime packing;
+  `ui-art` — fonts/icons/frames/cursor/logo; `audio-sfx` — DOS clips;
+  `audio-xmi` — XMI music parsing.
+
+`@serfbound/app` (browser shell):
+- `render-layer-scene` — decoded assets and the WebGL2 renderer;
+  `landscape-scene` — the live world scene with the authentic chrome;
+  `panel-bar`/`popup`/`init-screen` — the original interface logic;
+  `audio` — the gesture-gated WebAudio service; the IndexedDB stores;
+  `main` — the shell, input, AI drivers, autosave, error intake, and
+  the service-worker registration.
+
+## Running everything
+
+- `npm run test:unit` — the CI engine/app suites (170+ tests, data-free).
+- `npm run test:browser` — Playwright: founding e2e through the
+  authentic UI, mobile touch play, PWA offline, shell recovery.
+- `npm run measure:performance` / `npm run measure:scale` — the recorded
+  performance baselines.
+- `SERFBOUND_RUN_LOCAL_ASSET_TESTS=1 SERFBOUND_SPAU_PA=... npm run
+  test:local:assets` — opt-in real-data decode checks.
+- `npm run ci:release` — the full data-free release gate set.
+
+Releases: tag `serfbound-v*` (see `docs/static-hosting-release.md`).
