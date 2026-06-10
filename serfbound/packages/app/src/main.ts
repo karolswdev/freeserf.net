@@ -8,6 +8,7 @@ import {
   type DosPaCatalog,
   type TypedAssetCatalog,
 } from "@serfbound/assets";
+import { PointerGestureTracker } from "./gestures.js";
 import {
   SerfboundAiPlayer,
   buildingType,
@@ -97,6 +98,7 @@ export * from "./panel-bar.js";
 export * from "./popup.js";
 export * from "./init-screen.js";
 export * from "./audio.js";
+export * from "./gestures.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -1147,6 +1149,39 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   });
 
   let dragState: { x: number; y: number } | undefined;
+  // CSS pixels per tile step at the current scales (drag and two-finger
+  // pan share it).
+  const tileStepCss = () => ({
+    x: (32 * effectiveWorldScale()) / canvasPixelRatio,
+    y: (20 * effectiveWorldScale()) / canvasPixelRatio,
+  });
+  // Pinch zoom keeps the map point under the gesture midpoint
+  // stationary: compare the tile under the midpoint before and after
+  // the scale step (scroll-independent, so scroll {0,0} suffices).
+  const stepViewScaleAt = (direction: 1 | -1, clientX: number, clientY: number): void => {
+    if (currentLandscapeAssets === undefined) {
+      return;
+    }
+
+    const landscape = currentLandscapeAssets.landscape;
+    const rect = canvas.getBoundingClientRect();
+    const screen = {
+      x: (clientX - rect.left) * (rect.width === 0 ? 1 : canvas.width / rect.width),
+      y: (clientY - rect.top) * (rect.height === 0 ? 1 : canvas.height / rect.height),
+    };
+    const origin = { column: 0, row: 0 };
+    const before = screenToMapTile(landscape, screen, origin, effectiveWorldScale());
+    const after = screenToMapTile(landscape, screen, origin, stepWorldViewScale(direction));
+    const wrapDelta = (delta: number, size: number) => {
+      const wrapped = ((delta % size) + size) % size;
+      return wrapped > size / 2 ? wrapped - size : wrapped;
+    };
+    applyScroll(
+      wrapDelta(before.column - after.column, landscape.columns),
+      wrapDelta(before.row - after.row, landscape.rows),
+    );
+  };
+  let panRemainder = { x: 0, y: 0 };
   canvas.addEventListener("pointerdown", (event) => {
     audioService.unlock();
     if (audioService.musicState === "ready") {
@@ -1154,13 +1189,55 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     }
 
     syncAudioState();
+    gestureTracker.down(event.pointerId, event.clientX, event.clientY);
     if (currentLandscapeAssets !== undefined) {
-      dragState = { x: event.clientX, y: event.clientY };
-      canvas.setPointerCapture(event.pointerId);
+      if (gestureTracker.pointerCount === 1) {
+        dragState = { x: event.clientX, y: event.clientY };
+        try {
+          canvas.setPointerCapture(event.pointerId);
+        } catch {
+          // synthetic pointers (tests) have no capturable device
+        }
+      } else {
+        // A second finger turns the interaction into a gesture.
+        dragState = undefined;
+        panRemainder = { x: 0, y: 0 };
+      }
     }
   });
   canvas.addEventListener("pointermove", (event) => {
-    if (dragState === undefined || currentLandscapeAssets === undefined) {
+    if (currentLandscapeAssets === undefined) {
+      gestureTracker.move(event.pointerId, event.clientX, event.clientY);
+      return;
+    }
+
+    // Two-finger gestures: pan by the midpoint, pinch to step the view
+    // scale.
+    if (gestureTracker.pointerCount >= 2) {
+      const step = tileStepCss();
+      for (const action of gestureTracker.move(event.pointerId, event.clientX, event.clientY)) {
+        if (action.kind === "pan") {
+          panRemainder = { x: panRemainder.x + action.deltaX, y: panRemainder.y + action.deltaY };
+          const columnSteps = Math.trunc(panRemainder.x / step.x);
+          const rowSteps = Math.trunc(panRemainder.y / step.y);
+          if (columnSteps !== 0 || rowSteps !== 0) {
+            panRemainder = {
+              x: panRemainder.x - columnSteps * step.x,
+              y: panRemainder.y - rowSteps * step.y,
+            };
+            applyScroll(-columnSteps, -rowSteps);
+          }
+        } else {
+          stepViewScaleAt(action.direction, action.centerX, action.centerY);
+          renderCurrentScene();
+        }
+      }
+
+      return;
+    }
+
+    gestureTracker.move(event.pointerId, event.clientX, event.clientY);
+    if (dragState === undefined) {
       return;
     }
 
@@ -1168,19 +1245,19 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     const deltaY = event.clientY - dragState.y;
     // Drag deltas arrive in CSS pixels; one tile spans
     // tileSize * worldScale device pixels = that / pixelRatio CSS pixels.
-    const stepX = (32 * effectiveWorldScale()) / canvasPixelRatio;
-    const stepY = (20 * effectiveWorldScale()) / canvasPixelRatio;
-    const columnSteps = Math.trunc(deltaX / stepX);
-    const rowSteps = Math.trunc(deltaY / stepY);
+    const step = tileStepCss();
+    const columnSteps = Math.trunc(deltaX / step.x);
+    const rowSteps = Math.trunc(deltaY / step.y);
     if (columnSteps !== 0 || rowSteps !== 0) {
       dragState = {
-        x: dragState.x + columnSteps * stepX,
-        y: dragState.y + rowSteps * stepY,
+        x: dragState.x + columnSteps * step.x,
+        y: dragState.y + rowSteps * step.y,
       };
       applyScroll(-columnSteps, -rowSteps);
     }
   });
   const endDrag = (event: PointerEvent) => {
+    gestureTracker.up(event.pointerId);
     dragState = undefined;
     if (canvas.hasPointerCapture(event.pointerId)) {
       canvas.releasePointerCapture(event.pointerId);
@@ -1975,12 +2052,22 @@ function attachPointerMapInteraction(
   canvas: HTMLCanvasElement,
   handlers: PointerMapInteractionHandlers,
 ): void {
-  canvas.addEventListener("pointermove", (event) => {
-    const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
-    applyPointerHoverState(root, interaction, event.pointerType);
-  });
+  // Touch defers actions to pointerup (SB-21-04): a quick tap acts, a
+  // moved finger is a drag, a second finger is a gesture, and a 500ms
+  // hold inspects the tile. Mouse keeps acting on pointerdown.
+  let touchTap:
+    | { readonly pointerId: number; readonly x: number; readonly y: number; consumed: boolean }
+    | undefined;
+  let longPressTimer: ReturnType<typeof setTimeout> | undefined;
+  const cancelLongPress = (): void => {
+    if (longPressTimer !== undefined) {
+      clearTimeout(longPressTimer);
+      longPressTimer = undefined;
+    }
+  };
+  const touchSlopCssPixels = 12;
 
-  canvas.addEventListener("pointerdown", (event) => {
+  const performInteraction = (event: Pick<PointerEvent, "clientX" | "clientY" | "pointerType">): void => {
     const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
 
     // The panel bar sits above the map: its clicks never reach the world.
@@ -2023,6 +2110,90 @@ function attachPointerMapInteraction(
       }),
     );
     handlers.onSelection(interaction);
+  };
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (touchTap !== undefined && event.pointerId === touchTap.pointerId) {
+      if (
+        Math.hypot(event.clientX - touchTap.x, event.clientY - touchTap.y) > touchSlopCssPixels
+      ) {
+        touchTap = undefined;
+        cancelLongPress();
+      }
+    }
+
+    const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
+    applyPointerHoverState(root, interaction, event.pointerType);
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") {
+      performInteraction(event);
+      return;
+    }
+
+    if (gestureTracker.isSecondaryTouch(event.pointerId)) {
+      // A second finger: this interaction is a gesture, not a tap.
+      touchTap = undefined;
+      cancelLongPress();
+      return;
+    }
+
+    const tap = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, consumed: false };
+    touchTap = tap;
+    cancelLongPress();
+    const downPoint = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pointerType: event.pointerType,
+    };
+    longPressTimer = setTimeout(() => {
+      longPressTimer = undefined;
+      if (touchTap !== tap) {
+        return;
+      }
+
+      // Long-press: the tile inspect path, never a build action.
+      tap.consumed = true;
+      const interaction = resolveCanvasPointer(canvas, downPoint, handlers.landscapeContext());
+      applyPointerHoverState(root, interaction, "touch");
+      applyPointerSelectionState(root, interaction);
+      applyCommandResultState(
+        root,
+        handlers.commandRouter().dispatch({
+          type: "debug.inspect-map-tile",
+          source: "pointer",
+          map: interaction.map,
+          tile: interaction.tile,
+        }),
+      );
+      handlers.onSelection(interaction);
+      root.dataset.serfboundLongPress = `${interaction.tile.column},${interaction.tile.row}`;
+    }, 500);
+  });
+
+  canvas.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "touch") {
+      return;
+    }
+
+    cancelLongPress();
+    const tap = touchTap;
+    touchTap = undefined;
+    if (gestureTracker.consumeClickSuppression()) {
+      return;
+    }
+
+    if (
+      tap === undefined ||
+      tap.consumed ||
+      tap.pointerId !== event.pointerId ||
+      Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > touchSlopCssPixels
+    ) {
+      return;
+    }
+
+    performInteraction(event);
   });
 
   canvas.addEventListener("pointerleave", () => {
@@ -2635,6 +2806,18 @@ export function cycleWorldViewScale(): number {
   worldViewScaleChoice = next;
   return next;
 }
+
+// Pinch-zoom steps the view scale one notch at a time (SB-21-04).
+export function stepWorldViewScale(direction: 1 | -1): number {
+  const next = Math.max(1, Math.min(3, effectiveWorldScale() + direction));
+  worldViewScaleChoice = next;
+  return next;
+}
+
+// Shared multi-touch tracker (SB-21-04): the scroll/gesture handlers and
+// the map interaction handlers coordinate through it (one canvas per
+// shell).
+const gestureTracker = new PointerGestureTracker();
 
 function resizeCanvasToDisplayedSize(canvas: HTMLCanvasElement) {
   const rect = canvas.getBoundingClientRect();

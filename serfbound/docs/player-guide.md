@@ -108,6 +108,10 @@ world view scale (1x/2x/3x zoom — the modern SVGA) cycles with the V
 key or the shell's "View scale" button; it follows your screen's pixel
 density by default.
 
+Touch play: tap to act, drag to scroll, pinch to zoom the world view,
+pan with two fingers, and press-and-hold a tile to inspect it without
+building anything.
+
 ## Sound and music
 
 Sound effects and music decode from your own data and start after your

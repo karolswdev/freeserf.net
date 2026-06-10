@@ -5,11 +5,11 @@
 **Status:** Phases 0–20 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)).
 The post-launch track runs as phases 21–25: presentation fidelity from
-the launch-review punch list (frame chrome, font shadows, and
-native-resolution rendering with view scales shipped), then multiplayer
-foundations, online play, community/identity, and data
-breadth/localization — turning the SB-20-04 post-launch decision record
-into accountable phases.
+the launch-review punch list (frame chrome, font shadows,
+native-resolution rendering with view scales, and touch gestures
+shipped), then multiplayer foundations, online play, community/identity,
+and data breadth/localization — turning the SB-20-04 post-launch
+decision record into accountable phases.
 
 ## Vision
 

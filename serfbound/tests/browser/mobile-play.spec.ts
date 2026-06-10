@@ -98,4 +98,64 @@ test("a phone founds a settlement through the authentic UI by touch", async ({ p
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "stats");
   await canvas.tap({ position: { x: 10, y: 60 }, force: true });
   await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
+
+  // SB-21-04: real hand gestures. Synthetic touch PointerEvents drive
+  // the same listeners the device fires.
+  const touch = (type: string, pointerId: number, x: number, y: number) =>
+    page.evaluate(
+      ({ type, pointerId, x, y }) => {
+        const target = document.querySelector("[data-testid='terrain-preview']");
+        if (target === null) {
+          throw new Error("canvas missing");
+        }
+
+        const rect = target.getBoundingClientRect();
+        target.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId,
+            pointerType: "touch",
+            isPrimary: pointerId === 1,
+            clientX: rect.left + x,
+            clientY: rect.top + y,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      },
+      { type, pointerId, x, y },
+    );
+
+  // Pinch out (fingers converge): the world view scale steps down from
+  // the screen-density default (3 on this device profile).
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-view-scale", "3");
+  await touch("pointerdown", 11, 100, 260);
+  await touch("pointerdown", 12, 260, 260);
+  await touch("pointermove", 12, 160, 260);
+  await touch("pointerup", 12, 160, 260);
+  await touch("pointerup", 11, 100, 260);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-view-scale", "2");
+
+  // Two-finger pan scrolls the map (alternating small moves keep the
+  // pinch thresholds quiet).
+  const scrollBefore = await page.locator("#app").getAttribute("data-serfbound-scroll");
+  await touch("pointerdown", 21, 100, 300);
+  await touch("pointerdown", 22, 200, 300);
+  for (let step = 1; step <= 6; step += 1) {
+    await touch("pointermove", 21, 100 + step * 15, 300);
+    await touch("pointermove", 22, 200 + step * 15, 300);
+  }
+  await touch("pointerup", 21, 190, 300);
+  await touch("pointerup", 22, 290, 300);
+  const scrollAfter = await page.locator("#app").getAttribute("data-serfbound-scroll");
+  expect(scrollAfter).not.toBe(scrollBefore);
+
+  // Long-press inspects the tile without building anything.
+  await touch("pointerdown", 31, 150, 350);
+  await page.waitForTimeout(700);
+  await touch("pointerup", 31, 150, 350);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-long-press", /\d+,\d+/);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-state", "selected");
+
+  // Single-finger play still works after gestures.
+  await expect(page.getByTestId("game-state")).toHaveText("Running");
 });

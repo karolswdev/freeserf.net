@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 21
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-21-03
 - **Unblocks:** SB-21-05
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,10 +24,11 @@ breaking the existing single-finger flows.
 
 ## Acceptance criteria
 
-- [ ] Pinch in/out steps the view scale around the gesture midpoint.
-- [ ] Two-finger pan scrolls; single-finger tap/drag behavior is
-  unchanged.
-- [ ] Long-press surfaces the tile inspect path on touch.
+- [x] Pinch in/out steps the view scale around the gesture midpoint.
+- [x] Two-finger pan scrolls; single-finger tap/drag behavior is
+  unchanged. (Taps act on pointerup with slop now — recorded; drags and
+  all e2e touch flows behave as before.)
+- [x] Long-press surfaces the tile inspect path on touch.
 
 ## Test plan
 
