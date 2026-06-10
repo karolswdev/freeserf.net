@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 18
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-18-02
 - **Unblocks:** SB-18-04
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ The substance of AIStates/ - building placement and linking, food/tool/military 
 
 ## Acceptance criteria
 
-- [ ] Each ported state matches reference decision fixtures on seeded runs.
-- [ ] An AI opponent founds, grows, and attacks in a seeded test game.
-- [ ] Mission character parameters (aggressiveness etc.) take effect.
+- [x] Each ported state matches reference decision fixtures on seeded runs.
+- [x] An AI opponent founds, grows, and attacks in a seeded test game.
+- [x] Mission character parameters (aggressiveness etc.) take effect.
 
 ## Test plan
 

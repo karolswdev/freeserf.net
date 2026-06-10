@@ -29,7 +29,7 @@ speed/long-session robustness.
 
 - [x] Campaign missions select and start with correct maps, players, and
   supplies. (SB-18-01)
-- [ ] AI opponents found settlements, build economies, and act militarily,
+- [x] AI opponents found settlements, build economies, and act militarily,
   matching decision fixtures on seeded runs. (SB-18-02, SB-18-03)
 - [ ] Original DOS savegames load and continue. (SB-18-04)
 - [ ] Game speeds, autosave, and multi-hour sessions hold up, with a played
@@ -41,17 +41,17 @@ speed/long-session robustness.
 |---|---|---|---|---|
 | SB-18-01 | Missions and game setup variants | done | story-01-missions-and-setup.md | evidence-story-01.md |
 | SB-18-02 | Classic AI foundation | done | story-02-classic-ai-foundation.md | evidence-story-02.md |
-| SB-18-03 | Classic AI economy and military behaviors | backlog | story-03-classic-ai-behaviors.md | — |
+| SB-18-03 | Classic AI economy and military behaviors | done | story-03-classic-ai-behaviors.md | evidence-story-03.md |
 | SB-18-04 | Load original DOS savegames | backlog | story-04-original-savegames.md | — |
 | SB-18-05 | Speed, autosave, and the played-mission gate | backlog | story-05-speed-autosave-gate.md | — |
 
 ## Where we are
 
-SB-18-02 is done: AI opponents found castles deterministically, establish
-the reference opening build order over their own pathfinder roads, and
-their buildings complete through serf labor — every decision recorded as
-a replayable world action and fixtured on seeded runs. SB-18-03 (economy
-and military behaviors) is next.
+SB-18-03 is done: the AI grows the deeper economy (meat, steel, weapons,
+opportunistic mines), scales frontier garrisons with computed threat
+levels, and attacks the nearest enemy post when knight-rich — all through
+the same engine flows the human uses, fixtured on seeded runs. SB-18-04
+(original DOS savegames) is next.
 
 ## Active risks
 

@@ -1,5 +1,10 @@
 import { findShortestRoad } from "./pathfinder.js";
-import { buildingType, type BuildingTypeValue, type SerfboundGameWorld } from "./game-world.js";
+import {
+  buildingType,
+  isMilitaryBuildingType,
+  type BuildingTypeValue,
+  type SerfboundGameWorld,
+} from "./game-world.js";
 import type { SerfboundSerfEngine } from "./serfs.js";
 import { applyWorldAction, type SerfboundWorldAction } from "./world-commands.js";
 
@@ -17,6 +22,20 @@ const establishmentPlan: readonly BuildingTypeValue[] = [
   buildingType.farm,
   buildingType.mill,
   buildingType.baker,
+];
+
+// The deeper economy the AI grows into once established (mines try
+// opportunistically — they need mountain sites).
+const expansionPlan: readonly BuildingTypeValue[] = [
+  buildingType.pigFarm,
+  buildingType.butcher,
+  buildingType.steelSmelter,
+  buildingType.weaponSmith,
+  buildingType.toolMaker,
+  buildingType.coalMine,
+  buildingType.ironMine,
+  buildingType.goldMine,
+  buildingType.goldSmelter,
 ];
 
 export class SerfboundAiPlayer {
@@ -60,7 +79,80 @@ export class SerfboundAiPlayer {
     }
 
     this.#establishEconomy(gameTick);
+    this.#updateThreatLevels();
+    this.#considerAttack(gameTick);
     this.#nextActionTick = gameTick + 1024;
+  }
+
+  // Building.ThreatLevel by enemy proximity, condensed to distance bands.
+  #updateThreatLevels(): void {
+    const enemyPositions = [...this.world.buildings.values()]
+      .filter((building) => building.player !== this.playerIndex)
+      .map((building) => building.position);
+    if (enemyPositions.length === 0) {
+      return;
+    }
+
+    for (const building of this.world.buildings.values()) {
+      if (building.player !== this.playerIndex || !isMilitaryBuildingType(building.type)) {
+        continue;
+      }
+
+      let nearest = Number.POSITIVE_INFINITY;
+      for (const enemy of enemyPositions) {
+        const dx = Math.abs(this.world.geometry.distanceX(building.position, enemy));
+        const dy = Math.abs(this.world.geometry.distanceY(building.position, enemy));
+        nearest = Math.min(nearest, Math.max(dx, dy));
+      }
+
+      building.threatLevel = nearest < 10 ? 3 : nearest < 18 ? 2 : nearest < 26 ? 1 : 0;
+    }
+  }
+
+  // Military: with a knight surplus in stock, march on the closest enemy
+  // post (the reference attack flow, condensed to the engine's
+  // launchAttack; attack pacing keeps assaults occasional).
+  #attackCooldownUntil = 0;
+
+  #considerAttack(gameTick: number): void {
+    if (gameTick < this.#attackCooldownUntil) {
+      return;
+    }
+
+    const inventory = this.world.inventoryForPlayer(this.playerIndex);
+    if (inventory === null || inventory.knights < 4) {
+      return;
+    }
+
+    const castlePosition = this.world.players[this.playerIndex]!.castlePosition!;
+    let target: { index: number; distance: number } | null = null;
+    for (const building of this.world.buildings.values()) {
+      if (
+        building.player === this.playerIndex ||
+        !building.isDone ||
+        (!isMilitaryBuildingType(building.type) && building.type !== buildingType.castle)
+      ) {
+        continue;
+      }
+
+      const dx = Math.abs(this.world.geometry.distanceX(castlePosition, building.position));
+      const dy = Math.abs(this.world.geometry.distanceY(castlePosition, building.position));
+      const distance = Math.max(dx, dy);
+      if (target === null || distance < target.distance) {
+        target = { index: building.index, distance };
+      }
+    }
+
+    if (target === null) {
+      return;
+    }
+
+    const knights = Math.max(2, inventory.knights - 2);
+    const sent = this.engine.launchAttack(this.playerIndex, target.index, knights, gameTick);
+    if (sent > 0) {
+      this.decisions.push(`attack:${target.index}:${sent}:${gameTick}`);
+      this.#attackCooldownUntil = gameTick + 32768;
+    }
   }
 
   #apply(action: SerfboundWorldAction): boolean {
@@ -109,11 +201,32 @@ export class SerfboundAiPlayer {
         .map((building) => building.type),
     );
 
-    const nextType = establishmentPlan.find((type) => !built.has(type));
-    if (nextType === undefined) {
-      return;
+    // Candidates in plan order; a siteless type (mines without mountains)
+    // never blocks the rest of the plan.
+    const candidates: BuildingTypeValue[] = [
+      ...establishmentPlan.filter((type) => !built.has(type)),
+      ...expansionPlan.filter((type) => !built.has(type)),
+    ];
+    const myBuildings = [...this.world.buildings.values()].filter(
+      (building) => building.player === this.playerIndex,
+    );
+    const huts = myBuildings.filter((building) => building.type === buildingType.hut).length;
+    if (huts < 1 + Math.floor(myBuildings.length / 8)) {
+      candidates.push(buildingType.hut);
     }
 
+    for (const nextType of candidates) {
+      if (this.#tryBuild(nextType, castlePosition, gameTick)) {
+        return;
+      }
+    }
+  }
+
+  #tryBuild(
+    nextType: BuildingTypeValue,
+    castlePosition: number,
+    gameTick: number,
+  ): boolean {
     for (let offset = 1; offset < 151; offset += 1) {
       const site = this.world.positionAddSpirally(castlePosition, offset);
       if (!this.world.canBuildBuilding(site, nextType, this.playerIndex)) {
@@ -154,7 +267,9 @@ export class SerfboundAiPlayer {
       }
 
       this.decisions.push(`build:${nextType}:${site}:${gameTick}`);
-      return;
+      return true;
     }
+
+    return false;
   }
 }
