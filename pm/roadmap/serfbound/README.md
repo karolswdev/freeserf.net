@@ -1,10 +1,10 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/current-phase-status.md)
-**Status:** Phases 0–10 complete. Phase 10 closed the recorded gap from the
-infrastructure slice: imported local `SPAU.PA` now renders authentic decoded
-Settlers terrain, objects, and flags in the browser.
+**Current phase:** [phase-11-original-map-world](./phase-11-original-map-world/current-phase-status.md)
+**Status:** Phases 0–10 complete; phases 11–20 (the full game port through
+public launch) are scaffolded with stories and gates. Phase 11 (original map
+generator + scrollable world) is next.
 
 ## Vision
 
@@ -95,6 +95,16 @@ and either prove the new behavior intentionally or defer the decision.
 | 8 | Harden persistence, performance, workers, and browser constraints | complete | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | complete | [phase-9-release-operations](./phase-9-release-operations/) |
 | 10 | Decode real DOS sprites and render authentic game art in the browser | complete | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
+| 11 | Generate the original world and make it scrollable | ready | [phase-11-original-map-world](./phase-11-original-map-world/) |
+| 12 | Found settlements: castle, flags, roads, construction | planned | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
+| 13 | Bring serfs to life: state machine and authentic animation | planned | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
+| 14 | Run every classic production chain | planned | [phase-14-working-economy](./phase-14-working-economy/) |
+| 15 | Knights, territory, and combat | planned | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
+| 16 | Rebuild the original interface browser-native | planned | [phase-16-original-interface](./phase-16-original-interface/) |
+| 17 | Sound effects and music through WebAudio | planned | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
+| 18 | Missions, classic AI, and original savegames | planned | [phase-18-complete-game](./phase-18-complete-game/) |
+| 19 | First-class browser experience: performance, mobile, PWA | planned | [phase-19-browser-experience](./phase-19-browser-experience/) |
+| 20 | Public launch and live operations | planned | [phase-20-launch-operations](./phase-20-launch-operations/) |
 
 ## Delivery Gates
 
@@ -116,6 +126,21 @@ when the previous phase has evidence:
 - Phase 10 proves imported original data becomes visible, authentic game art —
   the gate phases 4/5 deferred by stopping at catalog metadata and synthetic
   rendering.
+- Phase 11 proves the world itself is authentic: generator parity against
+  reference fixtures, scrollable in the browser.
+- Phase 12 proves players can found settlements with original rules.
+- Phase 13 proves serfs live: the state machine and animation are real.
+- Phase 14 proves the economy sustains itself through every classic chain.
+- Phase 15 proves conquest works and games can be won or lost.
+- Phase 16 proves the original interface drives the game browser-natively.
+- Phase 17 proves it sounds like Settlers from the player's own data.
+- Phase 18 proves it is the complete game: missions, AI, original saves.
+- Phase 19 proves it is a first-class browser product on any device.
+- Phase 20 proves it can launch publicly and be operated honestly.
+
+Phases 11–20 inherit the Phase 10 standing rule: a phase gates on something a
+player can see or play, captured from real local data via the visual gate —
+never on infrastructure alone.
 
 ## Operating cadence
 
