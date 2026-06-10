@@ -40,14 +40,17 @@ saves/loads state.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-7-01 | Start local game from imported data | backlog | story-01-start-local-game.md | — |
+| SB-7-01 | Start local game from imported data | ready | story-01-start-local-game.md | — |
 | SB-7-02 | Implement first visible build action | backlog | story-02-first-visible-build-action.md | — |
 | SB-7-03 | Add browser save/load loop | backlog | story-03-browser-save-load-loop.md | — |
 | SB-7-04 | Verify playable loop manually | backlog | story-04-playable-loop-verification.md | — |
 
 ## Where we are
 
-Phase 7 is not started. It depends on Phases 3 through 6.
+Phase 7 is ready to start. Phase 6 completed the browser input shell,
+recoverable first-playable panels, command routing, and interaction ergonomics
+audit. The next responsible move is SB-7-01: start a local game from imported
+data.
 
 ## Active risks
 

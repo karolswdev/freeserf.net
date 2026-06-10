@@ -209,6 +209,11 @@ For Serfbound specifically, every implementation story must identify:
   Data, Game, Map, Hover, Selected Tile, and Action panels, a visible
   `Start game` path, recoverable unsupported-data states, and desktop/mobile
   screenshot evidence under `phase-6-ui-input-shell/artifacts/`.
+- **Current interaction ergonomics baseline:** Phase 6 ships a manual
+  interaction script, shortcut conflict review, and ergonomics audit covering
+  mouse-style pointer input, trackpad-equivalent pointer paths, touch-style
+  PointerEvent handling, import recovery, start-game state, selected tile
+  feedback, and desktop/mobile panel layout.
 
 ## Glossary
 

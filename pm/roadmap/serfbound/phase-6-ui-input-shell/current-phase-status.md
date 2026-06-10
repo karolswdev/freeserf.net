@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** in progress.
+**Status:** complete; Phase 7 ready.
 
 ## Goal
 
@@ -31,7 +31,7 @@ shell that is ergonomic enough for the first playable slice.
 - [x] Keyboard shortcuts are chosen or deferred with explicit browser conflicts.
 - [x] Basic game command routing exists from UI to engine state.
 - [x] Missing/invalid data and import flows are user-recoverable.
-- [ ] Manual browser checks cover mouse, trackpad, and touch viability at a
+- [x] Manual browser checks cover mouse, trackpad, and touch viability at a
   minimum exploratory level.
 
 ## Story status
@@ -41,15 +41,16 @@ shell that is ergonomic enough for the first playable slice.
 | SB-6-01 | Implement pointer-to-map interaction | done | story-01-pointer-map-interaction.md | evidence-story-01.md |
 | SB-6-02 | Add command routing shell | done | story-02-command-routing-shell.md | evidence-story-02.md |
 | SB-6-03 | Build basic panels and states | done | story-03-basic-panels-states.md | evidence-story-03.md |
-| SB-6-04 | Verify interaction ergonomics | ready | story-04-interaction-ergonomics.md | — |
+| SB-6-04 | Verify interaction ergonomics | done | story-04-interaction-ergonomics.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 6 is in progress. SB-6-03 added player-facing Data, Game, Map, Hover,
-Selected Tile, and Action panels, a visible `Start game` path, recoverable
-file-error states, and desktop/mobile panel screenshots. The next responsible
-move is SB-6-04: run the manual interaction ergonomics script and close or stop
-on any blocking input issues.
+Phase 6 is complete. SB-6-04 added the manual interaction script, browser
+shortcut conflict review, and interaction ergonomics audit. Browser checks pass
+for mouse-style pointer input, trackpad-equivalent pointer paths,
+touch-style PointerEvent handling, import recovery, start-game state, selected
+tile feedback, and desktop/mobile panel layout. No Phase 7 blocking ergonomics
+issue was found; broader cross-device hardening remains Phase 8 work.
 
 ## Active risks
 
@@ -78,8 +79,16 @@ on any blocking input issues.
   Map, Hover, Selected Tile, and Action are the first playable shell; technical
   proof stays in `data-serfbound-*` attributes and tests, not visible copy —
   SB-6-03.
+- 2026-06-09 — Do not add global keyboard shortcuts in Phase 6; Phase 7 may add
+  scoped bindings only after visible action/focus behavior exists. Preserve
+  browser reload, navigation, find, tab traversal, text editing, and escape
+  conventions — SB-6-04.
+- 2026-06-09 — Treat Playwright mouse movement/click as the mouse and
+  trackpad-equivalent pointer path for this environment; touch is covered at
+  the browser Pointer Events boundary, while physical touch/device breadth is
+  deferred to Phase 8 hardening — SB-6-04.
 
 ## Decisions deferred
 
-- Physical-device ergonomics for mouse, trackpad, and touch — resolve in
-  SB-6-04 after command routing and panels exist.
+- Broader physical-device and cross-browser input coverage — Phase 8 browser
+  hardening.

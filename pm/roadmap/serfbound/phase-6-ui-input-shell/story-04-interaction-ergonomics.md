@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 6
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-6-01, SB-6-02, SB-6-03
 - **Unblocks:** SB-7-04, SB-8-04
 - **Owner:** unassigned
@@ -38,6 +38,12 @@ not fighting browser defaults.
 - **Design handoff:** Screenshot/video evidence if UI changed.
 
 ## Notes / open questions
+
+Shipped `manual-interaction-script.md`, `shortcut-conflict-review.md`, and
+`interaction-ergonomics-audit.md`. Chromium browser checks passed for
+mouse-style pointer, trackpad-equivalent pointer path, touch-style PointerEvent
+boundary, import recovery, start-game state, selected tile feedback, and
+desktop/mobile layout. No Phase 7 blocking ergonomics issue was found.
 
 This is the first place to be honest about whether the browser version is
 actually playable, not just technically wired.
