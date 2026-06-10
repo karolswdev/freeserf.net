@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 13
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-13-01
 - **Unblocks:** SB-13-03
 - **Owner:** unassigned
@@ -24,11 +24,11 @@ of `Serf.cs`.
 
 ## Acceptance criteria
 
-- [ ] Serf tick sequences match reference fixtures for walk scenarios
+- [x] Serf tick sequences match reference fixtures for walk scenarios
   (state, position, animation id per tick).
-- [ ] Serfs render at correct positions/frames while walking on the decoded
+- [x] Serfs render at correct positions/frames while walking on the decoded
   scene.
-- [ ] Serf state serializes into save snapshots.
+- [x] Serf state serializes into save snapshots.
 
 ## Test plan
 

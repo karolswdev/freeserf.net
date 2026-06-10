@@ -815,3 +815,4 @@ export * from "./map-generator.js";
 export * from "./game-world.js";
 export * from "./pathfinder.js";
 export * from "./world-commands.js";
+export * from "./serfs.js";
