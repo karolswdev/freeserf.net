@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 8
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-7-04
 - **Unblocks:** SB-8-02, SB-9-04
 - **Owner:** unassigned
@@ -22,12 +22,12 @@ visible.
 
 ## Acceptance criteria
 
-- [ ] Performance budget document exists.
-- [ ] Baseline measurements cover simulation tick and render frame time.
-- [ ] Import and save/load timing are measured for local `SPAU.PA` flow where
+- [x] Performance budget document exists.
+- [x] Baseline measurements cover simulation tick and render frame time.
+- [x] Import and save/load timing are measured for local `SPAU.PA` flow where
   possible.
-- [ ] Results include browser/device/viewport metadata.
-- [ ] At least one stop signal is defined for unacceptable performance.
+- [x] Results include browser/device/viewport metadata.
+- [x] At least one stop signal is defined for unacceptable performance.
 
 ## Test plan
 
@@ -40,3 +40,9 @@ visible.
 
 Budgets can start rough. They must be explicit enough to catch obvious
 regressions.
+
+Budget artifacts:
+
+- `performance-budgets.md`
+- `artifacts/story-01-performance-baseline-local.json`
+- `serfbound/scripts/measure-performance.mjs`

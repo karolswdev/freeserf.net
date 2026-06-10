@@ -13,6 +13,7 @@
     "build:web": "npm run build && vite build",
     "clean": "tsc -b --clean packages/engine packages/assets packages/test-support packages/app",
     "check:boundaries": "node scripts/check-boundaries.mjs",
+    "measure:performance": "node scripts/measure-performance.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "npm run test:ci",
     "test:browser": "npm run build:web && playwright test",

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "serfbound.performance-baseline",
+  "measuredAtIso": "2026-06-10T01:15:23.062Z",
+  "source": {
+    "command": "npm run measure:performance",
+    "workspaceRoot": "/Users/karol/dev/code/settlers-clone/freeserf.net/serfbound/",
+    "baseURL": "http://127.0.0.1:4184/"
+  },
+  "environment": {
+    "node": "v22.21.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "Darwin Karols-MacBook-Pro.local 25.2.0 Darwin Kernel Version 25.2.0: Tue Nov 18 21:07:05 PST 2025; root:xnu-12377.61.12~1/RELEASE_ARM64_T6020 arm64",
+    "browser": {
+      "engine": "chromium",
+      "version": "148.0.7778.96"
+    }
+  },
+  "budgets": {
+    "simulationTickAverageMs": 0.05,
+    "browserFrameP95Ms": 20,
+    "importLocalSpauMs": 1000,
+    "saveMs": 100,
+    "reloadAndLoadMs": 1000
+  },
+  "measurements": {
+    "simulation": {
+      "iterations": 50000,
+      "elapsedMs": 3.364292000000006,
+      "averageMs": 0.00006728584000000012,
+      "finalTick": 34664,
+      "finalGameTime": 2004,
+      "finalConstTick": 50100
+    },
+    "browser": {
+      "metadata": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+        "asset": {
+          "source": "local-spau-pa",
+          "path": "/Users/karol/dev/code/settlers-clone/freeserf.net/serfbound-local-data/sources/TheSettlersDemo/Serf-City-Life-is-Feudal_DOS_EN/SPAU.PA",
+          "byteLength": 1282805,
+          "sha256": "4a652471c4185d324b16fadd736f2464210df5d8938136aaa0ccc4a43c790ca2"
+        }
+      },
+      "timings": {
+        "importMs": 203.85483299999999,
+        "startGameMs": 34.29445799999996,
+        "buildFlagMs": 25.01324999999997,
+        "saveMs": 87.65062499999999,
+        "reloadAndLoadMs": 225.29025000000001
+      },
+      "frameCadence": {
+        "samples": 120,
+        "averageMs": 8.333333333333332,
+        "p95Ms": 9.699999999999818,
+        "maxMs": 10.299999999999955
+      },
+      "nonBlankPixels": 144941,
+      "appState": {
+        "runtime": "browser",
+        "renderer": "webgl2",
+        "sceneSource": "dos-pa-catalog",
+        "gameState": "running",
+        "localSaveState": "loaded",
+        "builtStructureCount": "1",
+        "primitiveCount": "1046"
+      }
+    }
+  },
+  "stopSignals": [
+    "Simulation tick average exceeds 0.05 ms on the first playable slice.",
+    "Browser requestAnimationFrame p95 exceeds 20 ms on desktop Chromium.",
+    "Local SPAU.PA import exceeds 1000 ms on the representative local machine.",
+    "Browser save exceeds 100 ms or reload-plus-load exceeds 1000 ms.",
+    "Any measured playable-loop step fails or reports zero WebGL nonblank pixels."
+  ]
+}

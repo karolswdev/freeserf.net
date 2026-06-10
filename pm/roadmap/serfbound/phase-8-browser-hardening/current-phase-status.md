@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** ready.
+**Status:** in progress.
 
 ## Goal
 
@@ -28,7 +28,7 @@ recovery.
 
 ## Exit criteria (evidence required)
 
-- [ ] Tick/render frame budgets are measured on representative browsers.
+- [x] Tick/render frame budgets are measured on representative browsers.
 - [ ] Main-thread and worker strategy is documented and implemented or
   explicitly deferred.
 - [ ] Persistence survives reloads and has recovery/reset behavior.
@@ -41,16 +41,18 @@ recovery.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-8-01 | Establish performance budgets | ready | story-01-performance-budgets.md | — |
-| SB-8-02 | Decide worker and threading model | backlog | story-02-worker-threading-model.md | — |
+| SB-8-01 | Establish performance budgets | done | story-01-performance-budgets.md | evidence-story-01.md |
+| SB-8-02 | Decide worker and threading model | ready | story-02-worker-threading-model.md | — |
 | SB-8-03 | Harden persistence recovery | backlog | story-03-persistence-recovery.md | — |
 | SB-8-04 | Verify browser compatibility | backlog | story-04-browser-compatibility.md | — |
 
 ## Where we are
 
-Phase 8 is ready. Phase 7 has produced the first browser-playable loop with
-manual evidence, so the next responsible move is SB-8-01: measure tick/render
-budgets on the playable slice before adding hardening work.
+Phase 8 is in progress. SB-8-01 added a repeatable performance measurement
+script, explicit first-slice budgets, and a local Chromium baseline for
+simulation tick, browser frame cadence, import, save, and reload/load timings.
+The next responsible move is SB-8-02: use the measured baseline to decide
+whether workers are justified yet.
 
 ## Active risks
 
@@ -62,7 +64,11 @@ budgets on the playable slice before adding hardening work.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Initial Phase 8 budgets target the current first playable slice:
+  average simulation tick <= 0.05 ms, desktop Chromium frame p95 <= 20 ms,
+  local `SPAU.PA` import <= 1000 ms, save <= 100 ms, and reload/load <= 1000
+  ms. These are regression tripwires, not release-grade performance promises —
+  SB-8-01.
 
 ## Decisions deferred
 

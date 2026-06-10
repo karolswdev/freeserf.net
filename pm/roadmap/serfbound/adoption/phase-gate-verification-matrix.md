@@ -37,7 +37,7 @@ artifacts, or manual verification notes.
 | 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Complete |
 | 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Complete |
 | 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Complete |
-| 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | Not started |
+| 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | In progress; performance baseline measured |
 | 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | Not started |
 
 ## Evidence Rules By Type
@@ -74,6 +74,7 @@ Before marking the whole Serfbound goal complete:
 ## Current Gap Summary
 
 As of 2026-06-09, Phases 0 through 7 are complete and documented with paired
-story evidence plus phase final summaries. The product is not complete. The
-next gap is Phase 8 browser hardening: performance budgets, worker strategy,
-persistence recovery, browser compatibility, and accessibility basics.
+story evidence plus phase final summaries. Phase 8 is in progress with the
+first performance baseline measured. The product is not complete. The next gap
+is SB-8-02: decide the worker/threading model from measured pressure rather
+than architecture preference.
