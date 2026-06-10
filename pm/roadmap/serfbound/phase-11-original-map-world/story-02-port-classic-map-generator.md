@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 11
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-11-01
 - **Unblocks:** SB-11-03
 - **Owner:** unassigned
@@ -23,11 +23,11 @@ water bodies, and terrain typing from `Freeserf.Core/MapGenerator.cs`
 
 ## Acceptance criteria
 
-- [ ] Generated heights and terrain types match the SB-11-01 fixture exactly
+- [x] Generated heights and terrain types match the SB-11-01 fixture exactly
   for the committed seed(s).
-- [ ] Generation is deterministic across runs and platforms (typed arrays,
+- [x] Generation is deterministic across runs and platforms (typed arrays,
   integer math only).
-- [ ] Engine exposes a map snapshot the renderer can consume without DOM or
+- [x] Engine exposes a map snapshot the renderer can consume without DOM or
   archive dependencies.
 
 ## Test plan

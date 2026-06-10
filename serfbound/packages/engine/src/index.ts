@@ -811,3 +811,4 @@ export class FreeserfRandom {
 export * from "./commands.js";
 export * from "./local-game.js";
 export * from "./simulation.js";
+export * from "./map-generator.js";

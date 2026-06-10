@@ -32,8 +32,8 @@ borders.
 ## Exit criteria (evidence required)
 
 - [x] A committed CI-safe oracle fixture records heights, terrain types, and
-  map objects for at least one small seed (SB-11-01); the TypeScript generator
-  matches it exactly. (SB-11-02 pending)
+  map objects for at least one small seed; the TypeScript generator matches it
+  exactly. (SB-11-01, SB-11-02)
 - [ ] Generated maps place trees, stones, deserts, water bodies, and mineral
   deposits per the reference rules. (SB-11-03)
 - [ ] The browser viewport scrolls and wraps over the full generated map with
@@ -46,16 +46,18 @@ borders.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-11-01 | Capture map generator oracle fixtures | done | story-01-map-generator-oracle.md | evidence-story-01.md |
-| SB-11-02 | Port the classic map generator | in-progress | story-02-port-classic-map-generator.md | — |
-| SB-11-03 | Place map objects and minerals | backlog | story-03-map-objects-and-minerals.md | — |
+| SB-11-02 | Port the classic map generator | done | story-02-port-classic-map-generator.md | evidence-story-02.md |
+| SB-11-03 | Place map objects and minerals | in-progress | story-03-map-objects-and-minerals.md | — |
 | SB-11-04 | Scroll the generated world in the viewport | backlog | story-04-scrolling-wrapping-viewport.md | — |
 | SB-11-05 | Render waves and map borders | backlog | story-05-waves-and-map-borders.md | — |
 
 ## Where we are
 
-SB-11-01 is done: a Python reference mirror of the classic generator emits
-reproducible two-seed fixtures (full landscape arrays + digests), validated by
-the fixture contract in CI. SB-11-02 (TypeScript port) is in progress.
+SB-11-02 is done: the TypeScript classic generator matches the oracle
+fixture tile-for-tile on both seeds across all six landscape arrays
+(including objects and minerals, which shipped here because the RNG stream is
+consumed across all stages). SB-11-03 (landscape into engine state) is in
+progress.
 
 ## Active risks
 
@@ -71,6 +73,9 @@ the fixture contract in CI. SB-11-02 (TypeScript port) is in progress.
   Phase 1 pattern: a Python mirror of the C# source produces the fixture, and
   the TypeScript port is derived independently from the C# source so that
   fixture agreement means two independent derivations agree — SB-11-01.
+- 2026-06-10 — The generator ports as one unit (heights through minerals)
+  because its RNG stream spans all stages; SB-11-03 re-scopes to exposing the
+  landscape through engine game state — SB-11-02.
 
 ## Decisions deferred
 
