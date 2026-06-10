@@ -361,6 +361,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let selectedInteraction: PointerMapInteraction | undefined;
   let currentPopup: PopupKind | undefined;
   let currentAiPlayers: SerfboundAiPlayer[] = [];
+  // Game speed: ticks per frame scale by the reference-style multiplier
+  // (0 pauses). Keys: 1/2/4 set speeds, 0 pauses.
+  let gameSpeedMultiplier = 1;
+  const setGameSpeed = (multiplier: number) => {
+    gameSpeedMultiplier = multiplier;
+    root.dataset.serfboundGameSpeed = String(multiplier);
+  };
+  // Autosave: every 512 sim ticks the running game saves silently.
+  let autosaveCount = 0;
+  let lastAutosaveTick = 0;
   // AI drivers for every non-human slot of the running game.
   const attachAiPlayers = (game: SerfboundLocalGame) => {
     currentAiPlayers = [];
@@ -551,8 +561,12 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     // same driver advances the simulation clock and interim construction.
     waveTimer ??= setInterval(() => {
       currentTick = (currentTick + 8) % 1024;
-      if (currentWorld !== undefined && root.dataset.serfboundGameState === "running") {
-        for (let step = 0; step < 8; step += 1) {
+      if (
+        currentWorld !== undefined &&
+        root.dataset.serfboundGameState === "running" &&
+        gameSpeedMultiplier > 0
+      ) {
+        for (let step = 0; step < 8 * gameSpeedMultiplier; step += 1) {
           commandRouter.state.advanceTick();
         }
 
@@ -600,6 +614,26 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
               setNotice("GAME OVER");
             }
+          }
+        }
+
+        // Autosave the running session every 512 ticks.
+        if (commandRouter.state.tick - lastAutosaveTick >= 512) {
+          lastAutosaveTick = commandRouter.state.tick;
+          const snapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
+          if (snapshot !== undefined) {
+            currentLocalGameSnapshot = snapshot;
+            autosaveCount += 1;
+            root.dataset.serfboundAutosaveCount = String(autosaveCount);
+            void saveCurrentLocalGame(root, localGameSaveStore, snapshot, (record) => {
+              currentSavedLocalGame = record;
+              syncLocalGameSaveControls(
+                root,
+                currentLocalGameSnapshot,
+                currentSavedLocalGame,
+                currentImportedDataSource,
+              );
+            });
           }
         }
 
@@ -866,6 +900,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         // Road mode toggle, same semantics as the shell road button.
         if (root.dataset.serfboundRoadMode !== "idle") {
           setRoadMode("idle");
+  setGameSpeed(1);
           getCommandStateElement(root).textContent = "Road mode ended";
           getCommandDetailElement(root).textContent =
             "Select a tile to inspect available actions.";
@@ -895,6 +930,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
       const from = roadModeFrom;
       setRoadMode("idle");
+  setGameSpeed(1);
       if (from === undefined) {
         return true;
       }
@@ -940,6 +976,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       return;
+    }
+
+    if (event.key === "0" || event.key === "1" || event.key === "2" || event.key === "4") {
+      if (root.dataset.serfboundGameState === "running") {
+        setGameSpeed(Number(event.key));
+        return;
+      }
     }
 
     const scrollKeys: Record<string, readonly [number, number]> = {
@@ -1098,6 +1141,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     }
   };
   setRoadMode("idle");
+  setGameSpeed(1);
 
   const buildRoadButton = root.querySelector<HTMLButtonElement>("[data-testid='build-road-button']");
   if (buildRoadButton === null) {
@@ -1107,6 +1151,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   buildRoadButton.addEventListener("click", () => {
     if (root.dataset.serfboundRoadMode !== "idle") {
       setRoadMode("idle");
+  setGameSpeed(1);
       getCommandStateElement(root).textContent = "Road mode ended";
       getCommandDetailElement(root).textContent = "Select a tile to inspect available actions.";
       return;

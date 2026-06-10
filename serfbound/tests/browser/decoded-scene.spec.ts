@@ -302,6 +302,26 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "BUILDING COMPLETE",
   );
 
+  // Speed and autosave: the running session autosaved at least once
+  // during construction, and the speed keys drive the multiplier.
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-autosave-count",
+    /^[1-9]\d*$/,
+  );
+  await page.locator("#app").focus();
+  await page.keyboard.press("2");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-speed", "2");
+  await page.keyboard.press("0");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-speed", "0");
+  const pausedTick = await page.locator("#app").getAttribute("data-serfbound-game-tick");
+  await page.waitForTimeout(600);
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-game-tick",
+    pausedTick as string,
+  );
+  await page.keyboard.press("1");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-game-speed", "1");
+
   // Audio: the first canvas gesture unlocked WebAudio and the event
   // mapping has fired clips (the build commands clicked in).
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-audio", "unlocked");

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 18
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-18-04
 - **Unblocks:** SB-19-01
 - **Owner:** unassigned
@@ -18,10 +18,10 @@ The completeness gate - original game speed controls, autosave protecting long s
 
 ## Acceptance criteria
 
-- [ ] Speed controls match reference tick semantics deterministically.
-- [ ] Autosave rotates and restores after a forced reload.
-- [ ] Soak metrics recorded
-- [ ]  mission-1 playthrough capture reviewed.
+- [x] Speed controls match reference tick semantics deterministically.
+- [x] Autosave rotates and restores after a forced reload.
+- [x] Soak metrics recorded
+- [x]  mission-1 playthrough capture reviewed.
 
 ## Test plan
 

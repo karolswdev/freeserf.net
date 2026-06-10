@@ -1,12 +1,12 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-18-complete-game](./phase-18-complete-game/current-phase-status.md)
-**Status:** Phases 0–17 complete. The game sounds like Settlers: all 39
-original clips decode and fire on the reference events, the XMI tracks
-parse exactly and play through WebAudio after the first gesture, and
-audio settings persist with tab-visibility handling. Phase 18 (the
-complete game) is next.
+**Current phase:** [phase-19-browser-experience](./phase-19-browser-experience/current-phase-status.md)
+**Status:** Phases 0–18 complete. It is a complete game: the 31-mission
+campaign starts exactly, classic AI opponents found, build, garrison, and
+attack through replayable world actions, original DOS saves parse with
+the reference layout, and speeds/autosave/long sessions hold up. Phase 19
+(the browser experience) is next.
 
 ## Vision
 
@@ -104,8 +104,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 15 | Knights, territory, and combat | complete | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
 | 16 | Rebuild the original interface browser-native | complete | [phase-16-original-interface](./phase-16-original-interface/) |
 | 17 | Sound effects and music through WebAudio | complete | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
-| 18 | Missions, classic AI, and original savegames | ready | [phase-18-complete-game](./phase-18-complete-game/) |
-| 19 | First-class browser experience: performance, mobile, PWA | planned | [phase-19-browser-experience](./phase-19-browser-experience/) |
+| 18 | Missions, classic AI, and original savegames | complete | [phase-18-complete-game](./phase-18-complete-game/) |
+| 19 | First-class browser experience: performance, mobile, PWA | ready | [phase-19-browser-experience](./phase-19-browser-experience/) |
 | 20 | Public launch and live operations | planned | [phase-20-launch-operations](./phase-20-launch-operations/) |
 
 ## Delivery Gates
@@ -241,6 +241,12 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current complete-game proof:** the 31-mission campaign table is
+  ported exactly with start-screen selection; AI opponents play through
+  recorded world actions (fixture-deterministic founding, the reference
+  build order, threat-leveled garrisons, attacks); the original .SAV
+  binary layout parses and continues; speeds, autosave, and a leak-free
+  2M-tick soak close the played-mission gate.
 - **Current sound proof:** the 39 reference DOS clips decode with exact
   ConvertToWav parity and fire on commands, popups, construction, defeat,
   and production work loops; XMI tracks parse with the exact chunk walk

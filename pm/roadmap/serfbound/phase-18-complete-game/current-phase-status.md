@@ -1,7 +1,7 @@
 # Phase 18 — The Complete Game
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -34,7 +34,7 @@ speed/long-session robustness.
 - [x] Original DOS savegames load and continue. (SB-18-04; proven on a
   byte-exact synthetic fixture — no real .SAV exists in the local corpus,
   recorded)
-- [ ] Game speeds, autosave, and multi-hour sessions hold up, with a played
+- [x] Game speeds, autosave, and multi-hour sessions hold up, with a played
   mission as capture evidence. (SB-18-05)
 
 ## Story status
@@ -45,15 +45,16 @@ speed/long-session robustness.
 | SB-18-02 | Classic AI foundation | done | story-02-classic-ai-foundation.md | evidence-story-02.md |
 | SB-18-03 | Classic AI economy and military behaviors | done | story-03-classic-ai-behaviors.md | evidence-story-03.md |
 | SB-18-04 | Load original DOS savegames | done | story-04-original-savegames.md | evidence-story-04.md |
-| SB-18-05 | Speed, autosave, and the played-mission gate | backlog | story-05-speed-autosave-gate.md | — |
+| SB-18-05 | Speed, autosave, and the played-mission gate | done | story-05-speed-autosave-gate.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-18-04 is done: the original .SAV binary layout parses with the
-reference offsets (header, player blocks, the 8-byte tile encoding, the
-bitmap object arrays) and continues as a playable world — proven on a
-byte-exact synthetic fixture, with the real-save corpus gap recorded.
-SB-18-05 (speed, autosave, and the played-mission gate) closes the phase.
+The phase is closed. It is a complete game: the 31-mission campaign
+selects and starts exactly, AI opponents found, build, garrison, and
+attack through the same engine flows as the human, original DOS saves
+parse with the reference layout, and the played-mission gate passed with
+game speeds, autosave, and a leak-free 2M-tick soak. See
+final-summary.md.
 
 ## Active risks
 
