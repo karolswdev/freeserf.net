@@ -34,7 +34,7 @@ borders.
 - [x] A committed CI-safe oracle fixture records heights, terrain types, and
   map objects for at least one small seed; the TypeScript generator matches it
   exactly. (SB-11-01, SB-11-02)
-- [ ] Generated maps place trees, stones, deserts, water bodies, and mineral
+- [x] Generated maps place trees, stones, deserts, water bodies, and mineral
   deposits per the reference rules. (SB-11-03)
 - [ ] The browser viewport scrolls and wraps over the full generated map with
   decoded art, replacing the fixed synthetic field. (SB-11-04)
@@ -47,16 +47,15 @@ borders.
 |---|---|---|---|---|
 | SB-11-01 | Capture map generator oracle fixtures | done | story-01-map-generator-oracle.md | evidence-story-01.md |
 | SB-11-02 | Port the classic map generator | done | story-02-port-classic-map-generator.md | evidence-story-02.md |
-| SB-11-03 | Place map objects and minerals | in-progress | story-03-map-objects-and-minerals.md | — |
-| SB-11-04 | Scroll the generated world in the viewport | backlog | story-04-scrolling-wrapping-viewport.md | — |
+| SB-11-03 | Place map objects and minerals | done | story-03-map-objects-and-minerals.md | evidence-story-03.md |
+| SB-11-04 | Scroll the generated world in the viewport | in-progress | story-04-scrolling-wrapping-viewport.md | — |
 | SB-11-05 | Render waves and map borders | backlog | story-05-waves-and-map-borders.md | — |
 
 ## Where we are
 
-SB-11-02 is done: the TypeScript classic generator matches the oracle
-fixture tile-for-tile on both seeds across all six landscape arrays
-(including objects and minerals, which shipped here because the RNG stream is
-consumed across all stages). SB-11-03 (landscape into engine state) is in
+SB-11-03 is done: local games expose their generated landscape
+deterministically from the saved seed (fish/tree/mineral placement facts
+proven in CI). SB-11-04 (scrolling viewport over the generated world) is in
 progress.
 
 ## Active risks

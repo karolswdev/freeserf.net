@@ -1,4 +1,5 @@
 import { FreeserfRandom, uint16 } from "./index.js";
+import { generateClassicMap, type ClassicMapLandscape } from "./map-generator.js";
 import { SerfboundGameState, type SerfboundGameSnapshot } from "./simulation.js";
 
 export type SerfboundLocalGameDataSource = {
@@ -73,6 +74,7 @@ export class SerfboundLocalGame {
   readonly data: SerfboundLocalGameDataSource;
   readonly settings: SerfboundLocalGameSettings;
   readonly state: SerfboundGameState;
+  #landscape: ClassicMapLandscape | undefined;
 
   constructor(
     data: SerfboundLocalGameDataSource,
@@ -82,6 +84,13 @@ export class SerfboundLocalGame {
     this.data = data;
     this.settings = settings;
     this.state = state;
+  }
+
+  // The landscape regenerates deterministically from the settings, so saves
+  // stay small and restored games rebuild the identical world.
+  landscape(): ClassicMapLandscape {
+    this.#landscape ??= landscapeForLocalGameSettings(this.settings);
+    return this.#landscape;
   }
 
   snapshot(): SerfboundLocalGameSnapshot {
@@ -208,6 +217,13 @@ export function restoreSerfboundLocalGame(
     game,
     snapshot: game.snapshot(),
   };
+}
+
+export function landscapeForLocalGameSettings(
+  settings: SerfboundLocalGameSettings,
+): ClassicMapLandscape {
+  const [seed0, seed1, seed2] = FreeserfRandom.fromStringSeed(settings.seedString).state;
+  return generateClassicMap(settings.mapSize, [seed0, seed1, seed2]);
 }
 
 export function deriveLocalGameSeedString(

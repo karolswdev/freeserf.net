@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 11
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-11-02
 - **Unblocks:** SB-11-04
 - **Owner:** unassigned
@@ -23,11 +23,11 @@ gold, and stone deposits. These placement rules live in the generator and
 
 ## Acceptance criteria
 
-- [ ] Object and mineral placement matches the SB-11-01 fixture for committed
+- [x] Object and mineral placement matches the SB-11-01 fixture for committed
   seeds.
-- [ ] Objects carry the map-object sprite indices the Phase 10 renderer
+- [x] Objects carry the map-object sprite indices the Phase 10 renderer
   already understands (reference `objectType - 8` mapping).
-- [ ] Engine map snapshot exposes objects/minerals queryably per position.
+- [x] Engine map snapshot exposes objects/minerals queryably per position.
 
 ## Test plan
 
