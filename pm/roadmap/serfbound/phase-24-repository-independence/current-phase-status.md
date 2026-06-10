@@ -1,7 +1,7 @@
 # Phase 24 — Repository Independence
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress — SB-24-01 done.
 
 ## Goal
 
@@ -41,7 +41,7 @@ The old repository becomes the archive it always was.
 
 ## Exit criteria (evidence required)
 
-- [ ] The extraction and licensing decision record ships: inventory of
+- [x] The extraction and licensing decision record ships: inventory of
   what moves/stays, GPL-3.0 + derivation notice, fresh-history
   rationale. (SB-24-01)
 - [ ] The standalone repository exists and holds the complete
@@ -56,14 +56,16 @@ The old repository becomes the archive it always was.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-24-01 | Extraction and licensing decision record | backlog | story-01-extraction-licensing.md | — |
+| SB-24-01 | Extraction and licensing decision record | done | story-01-extraction-licensing.md | evidence-story-01.md |
 | SB-24-02 | Create and populate the standalone repository | backlog | story-02-standalone-repository.md | — |
 | SB-24-03 | CI and Pages in the new repository | backlog | story-03-ci-pages-new-repo.md | — |
 | SB-24-04 | Independence gate and handoff | backlog | story-04-independence-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 23 closed.
+SB-24-01 shipped: the extraction inventory, GPL-3.0 + derivation
+posture, fresh-history strategy, and citation rules are on record
+(extraction-decision.md). Next: SB-24-02 executes the move.
 
 ## Active risks
 

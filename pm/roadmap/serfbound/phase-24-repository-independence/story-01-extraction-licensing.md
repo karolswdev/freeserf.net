@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 24
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-23-04
 - **Unblocks:** SB-24-02
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -25,11 +25,11 @@ derivation, not inspiration), and what history strategy applies.
 
 ## Acceptance criteria
 
-- [ ] The decision record enumerates every top-level path as move/stay
+- [x] The decision record enumerates every top-level path as move/stay
   with reasons.
-- [ ] The license posture is recorded: GPL-3.0, the derivation notice
+- [x] The license posture is recorded: GPL-3.0, the derivation notice
   text, and why "inspiration-only" is insufficient.
-- [ ] History, naming, and visibility decisions are recorded.
+- [x] History, naming, and visibility decisions are recorded.
 
 ## Test plan
 
