@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 22
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-22-03
 - **Unblocks:** SB-23-01
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,11 +24,11 @@ the browser before any networking lands.
 
 ## Acceptance criteria
 
-- [ ] Two browser contexts on one origin start and play one game; both
+- [x] Two browser contexts on one origin start and play one game; both
   render the same world.
-- [ ] Actions from both players execute on both peers; final checksums
+- [x] Actions from both players execute on both peers; final checksums
   match in e2e.
-- [ ] Single-player flows are untouched (full suite reruns green).
+- [x] Single-player flows are untouched (full suite reruns green).
 
 ## Test plan
 

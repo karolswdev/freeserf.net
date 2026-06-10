@@ -99,7 +99,10 @@ export type SerfboundAcceptedCommandResult = {
     | "world-flag-built"
     | "road-built"
     | "building-built"
-    | "flag-demolished";
+    | "flag-demolished"
+    // Lockstep mode (SB-22-04): the action is queued for its scheduled
+    // turn instead of applying immediately.
+    | "queued-for-lockstep";
   readonly builtStructure?: SerfboundBuiltStructure;
   readonly snapshot: SerfboundCommandRouteSnapshot;
 };
@@ -166,6 +169,12 @@ export class SerfboundCommandRouter {
   #nextCommandId = 1;
   #log: SerfboundCommandLogEntry[] = [];
   #lastInspectedTile: MapTile | undefined;
+
+  // Lockstep mode (SB-22-04): world-mutating actions stamp this player
+  // and, when the hook is set, queue into the session instead of
+  // applying immediately — both peers apply them at the scheduled turn.
+  localPlayer = 0;
+  onWorldAction: ((action: SerfboundWorldAction) => void) | undefined;
 
   constructor(state: SerfboundGameState = new SerfboundGameState(), world?: SerfboundGameWorld) {
     this.state = state;
@@ -283,10 +292,14 @@ export class SerfboundCommandRouter {
     let action: SerfboundWorldAction;
     switch (command.type) {
       case "game.build-castle":
-        action = { kind: "build-castle", position: command.tile.position, player: 0 };
+        action = {
+          kind: "build-castle",
+          position: command.tile.position,
+          player: this.localPlayer,
+        };
         break;
       case "game.build-flag":
-        action = { kind: "build-flag", position: command.tile.position, player: 0 };
+        action = { kind: "build-flag", position: command.tile.position, player: this.localPlayer };
         break;
       case "game.build-road": {
         if (command.toTile === undefined) {
@@ -302,7 +315,7 @@ export class SerfboundCommandRouter {
           kind: "build-road",
           start: road.start,
           directions: road.directions,
-          player: 0,
+          player: this.localPlayer,
         };
         break;
       }
@@ -316,14 +329,33 @@ export class SerfboundCommandRouter {
           kind: "build-building",
           position: command.tile.position,
           building,
-          player: 0,
+          player: this.localPlayer,
           atTick: this.state.tick,
         };
         break;
       }
       case "game.demolish-flag":
-        action = { kind: "demolish-flag", position: command.tile.position, player: 0 };
+        action = {
+          kind: "demolish-flag",
+          position: command.tile.position,
+          player: this.localPlayer,
+        };
         break;
+    }
+
+    // Lockstep mode: queue for the scheduled turn instead of applying;
+    // the session applies it on every peer identically.
+    if (this.onWorldAction !== undefined) {
+      this.onWorldAction(action);
+      const result: SerfboundAcceptedCommandResult = {
+        status: "accepted",
+        commandId,
+        command,
+        effect: "queued-for-lockstep",
+        snapshot: this.snapshot(this.#log.length + 1),
+      };
+      this.#log.push(logEntryFromResult(result));
+      return result;
     }
 
     const outcome = applyWorldAction(world, action);

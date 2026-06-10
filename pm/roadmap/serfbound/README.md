@@ -1,17 +1,18 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [22 — Multiplayer Foundations](./phase-22-multiplayer-foundations/)
-**Status:** Phases 0–21 complete; Serfbound v0.1.0 shipped launch-ready
+**Current phase:** [23 — Online Play](./phase-23-online-play/)
+**Status:** Phases 0–22 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)),
 and Phase 21 closed the launch-review punch list: authentic frame
 chrome, font-shadow readability, native-resolution rendering with
 1x/2x/3x view scales, and touch gestures (see
 [phase-21-presentation-fidelity/final-summary.md](./phase-21-presentation-fidelity/final-summary.md)).
-The remaining post-launch track: multiplayer foundations (checksums,
-lockstep core, and the session wire protocol shipped; the loopback gate
-closes the phase), online play, community/identity, and data
-breadth/localization.
+Phase 22 closed with two browser tabs playing one lockstep game over a
+BroadcastChannel — zero servers, agreeing state checksums (see
+[phase-22-multiplayer-foundations/final-summary.md](./phase-22-multiplayer-foundations/final-summary.md)).
+The remaining post-launch track: online play (WebRTC), community/
+identity, and data breadth/localization.
 
 ## Vision
 
@@ -113,7 +114,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 19 | First-class browser experience: performance, mobile, PWA | complete | [phase-19-browser-experience](./phase-19-browser-experience/) |
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
-| 22 | Multiplayer foundations: checksums, lockstep, loopback play | in progress | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
+| 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
 | 23 | Online play: WebRTC transport, signaling, resilience | scaffolded | [phase-23-online-play](./phase-23-online-play/) |
 | 24 | Community and identity: profiles, accounts, matchmaking, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
 | 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |

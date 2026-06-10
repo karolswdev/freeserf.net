@@ -1,7 +1,7 @@
 # Phase 22 — Multiplayer Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-22-01..03 done.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -42,7 +42,7 @@ gate — all provable without a single hosted server.
 - [x] The session protocol encodes handshake, settings, actions, and
   checksums with versioning and rejects mismatches recoverably.
   (SB-22-03)
-- [ ] Two browser tabs play one game over a loopback transport in e2e
+- [x] Two browser tabs play one game over a loopback transport in e2e
   with matching final checksums. (SB-22-04)
 
 ## Story status
@@ -52,18 +52,16 @@ gate — all provable without a single hosted server.
 | SB-22-01 | Determinism checksums and desync detection | done | story-01-determinism-checksums.md | evidence-story-01.md |
 | SB-22-02 | Lockstep session core | done | story-02-lockstep-session-core.md | evidence-story-02.md |
 | SB-22-03 | Session wire protocol | done | story-03-session-wire-protocol.md | evidence-story-03.md |
-| SB-22-04 | Two-tab loopback gate | backlog | story-04-two-tab-loopback-gate.md | — |
+| SB-22-04 | Two-tab loopback gate | done | story-04-two-tab-loopback-gate.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-22-01..03 shipped: the state fingerprint, the lockstep session core,
-and the versioned wire protocol (hello/turn/checksum/leave with strict
-decode validation, recoverable `SessionProtocolError`s, and a handshake
-that rejects protocol/app-version/config/settings mismatches — see
-session-protocol.md). The simulated peers agree exactly with every
-bundle crossing the wire encoded. Standing record: rejoin-resync in
-Phase 23 must replay from tick 0 or ship serf serialization first.
-Next: SB-22-04 two-tab loopback gate.
+The phase is closed: two browser tabs host/join one lockstep game over
+a BroadcastChannel — both players act from their own tab, both worlds
+materialize both castles, and the cross-tab checksums agree (196/196
+unit, 11/11 browser, boundaries/docs/real-data green). See
+final-summary.md. Standing record for Phase 23: rejoin-resync must
+replay from tick 0 or ship serf serialization first.
 
 ## Active risks
 

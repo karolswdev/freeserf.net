@@ -9,6 +9,7 @@ import {
   type TypedAssetCatalog,
 } from "@serfbound/assets";
 import { PointerGestureTracker } from "./gestures.js";
+import { SerfboundLoopbackMultiplayer } from "./multiplayer.js";
 import {
   SerfboundAiPlayer,
   buildingType,
@@ -99,6 +100,7 @@ export * from "./popup.js";
 export * from "./init-screen.js";
 export * from "./audio.js";
 export * from "./gestures.js";
+export * from "./multiplayer.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -389,6 +391,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         >View scale</button>
         <button
           class="secondary-action"
+          data-testid="host-loopback-button"
+          type="button"
+        >Host 2P (this browser)</button>
+        <button
+          class="secondary-action"
+          data-testid="join-loopback-button"
+          type="button"
+        >Join 2P (this browser)</button>
+        <button
+          class="secondary-action"
           data-testid="error-report-button"
           type="button"
         >Copy error report</button>
@@ -435,6 +447,10 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let selectedInteraction: PointerMapInteraction | undefined;
   let currentPopup: PopupKind | undefined;
   let currentAiPlayers: SerfboundAiPlayer[] = [];
+  // Loopback multiplayer (SB-22-04): the active session and which world
+  // player this tab controls.
+  let currentMultiplayer: SerfboundLoopbackMultiplayer | undefined;
+  let currentLocalPlayer = 0;
   // Game speed: ticks per frame scale by the reference-style multiplier
   // (0 pauses). Keys: 1/2/4 set speeds, 0 pauses.
   let gameSpeedMultiplier = 1;
@@ -692,6 +708,25 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         root.dataset.serfboundGameState === "running" &&
         gameSpeedMultiplier > 0
       ) {
+        if (
+          currentMultiplayer !== undefined &&
+          currentMultiplayer.status.phase === "running" &&
+          currentSerfEngine !== undefined
+        ) {
+          // Lockstep mode: the session pump owns tick advancement (it
+          // holds at turn boundaries whose inputs are missing) and runs
+          // the engine at fixed 16-tick boundaries so both peers update
+          // identically. Speed stays at 1x — peers must consume turns
+          // at the same rate.
+          currentMultiplayer.pump({
+            state: commandRouter.state,
+            world: currentWorld,
+            engine: currentSerfEngine,
+            deltaTicks: 8,
+          });
+          syncWorldState(root, currentWorld);
+          syncMultiplayerState();
+        } else {
         for (let step = 0; step < 8 * gameSpeedMultiplier; step += 1) {
           commandRouter.state.advanceTick();
         }
@@ -741,6 +776,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
               setNotice("GAME OVER");
             }
           }
+        }
         }
 
         // Autosave the running session every 512 ticks.
@@ -850,7 +886,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     worldCastlePending: () =>
       currentWorld !== undefined &&
       root.dataset.serfboundGameState === "running" &&
-      currentWorld.players[0]?.hasCastle === false,
+      currentWorld.players[currentLocalPlayer]?.hasCastle === false,
     panelClick(interaction) {
       // The start screen owns setup-state canvas clicks: seed randomizes,
       // supplies cycle, START begins the seeded custom game.
@@ -1320,14 +1356,18 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     seedString?: string;
     initialSupplies?: number;
     mission?: string;
+    playerCount?: number;
+    playerSupplies?: number[];
+    multiplayerLocalPlayer?: number;
   }) => {
+    const { multiplayerLocalPlayer, ...gameOptions } = options;
     const result =
       options.mission !== undefined && currentImportedDataSource !== undefined
         ? startSerfboundMission(options.mission, currentImportedDataSource)
         : startSerfboundLocalGame(
             currentImportedDataSource === undefined
               ? {}
-              : { data: currentImportedDataSource, ...options },
+              : { data: currentImportedDataSource, ...gameOptions },
           );
     if (result.status === "started") {
       currentBuiltStructures = [];
@@ -1340,7 +1380,22 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentWorld = currentLandscapeAssets === undefined ? undefined : result.game.world();
       currentSerfEngine =
         currentLandscapeAssets === undefined ? undefined : result.game.serfEngine();
-      attachAiPlayers(result.game);
+      if (multiplayerLocalPlayer !== undefined && currentMultiplayer !== undefined) {
+        // Lockstep game: this tab controls one player, commands queue
+        // through the session, and no AI plays the other seat.
+        currentLocalPlayer = multiplayerLocalPlayer;
+        commandRouter.localPlayer = multiplayerLocalPlayer;
+        commandRouter.onWorldAction = (action) => currentMultiplayer?.submitAction(action);
+      } else {
+        currentLocalPlayer = 0;
+        if (currentMultiplayer !== undefined) {
+          currentMultiplayer.leave("local-game-started");
+          currentMultiplayer = undefined;
+        }
+
+        attachAiPlayers(result.game);
+      }
+
       renderCurrentScene();
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
@@ -1349,6 +1404,77 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
   };
   startGameNowRef = startGameNow;
+  // Loopback multiplayer (SB-22-04): host/join a two-player lockstep
+  // game between two tabs of this browser over a BroadcastChannel —
+  // zero servers, original data never crossing the wire.
+  const syncMultiplayerState = () => {
+    if (currentMultiplayer === undefined) {
+      delete root.dataset.serfboundMpRole;
+      delete root.dataset.serfboundMpPhase;
+      return;
+    }
+
+    const status = currentMultiplayer.status;
+    root.dataset.serfboundMpRole = status.role;
+    root.dataset.serfboundMpPhase = status.phase;
+    root.dataset.serfboundMpStalled = String(status.stalled);
+    root.dataset.serfboundMpExecutedTurn = String(status.executedTurn);
+    if (status.rejectReason !== null) {
+      root.dataset.serfboundMpRejectReason = status.rejectReason;
+    }
+
+    if (status.lastChecksumTick !== null) {
+      root.dataset.serfboundMpChecksumTick = String(status.lastChecksumTick);
+      root.dataset.serfboundMpChecksumAgreed = String(status.checksumAgreed);
+    }
+
+    if (status.desyncTick !== null) {
+      root.dataset.serfboundMpDesyncTick = String(status.desyncTick);
+    }
+
+    if (currentWorld !== undefined) {
+      root.dataset.serfboundMpCastles = currentWorld.players
+        .map((player) => (player.hasCastle ? "1" : "0"))
+        .join(",");
+    }
+  };
+  const startMultiplayer = (role: "host" | "join") => {
+    if (currentImportedDataSource === undefined || currentWorld !== undefined) {
+      return;
+    }
+
+    currentMultiplayer?.leave("superseded");
+    currentMultiplayer = new SerfboundLoopbackMultiplayer({
+      role,
+      appVersion: "0.1.0",
+      settings: {
+        seedString: initSeedString,
+        mapSize: 3,
+        playerCount: 2,
+        initialSupplies: initSupplies,
+        playerSupplies: null,
+      },
+      onReady: (settings, localPlayer) => {
+        startGameNow({
+          seedString: settings.seedString,
+          initialSupplies: settings.initialSupplies,
+          playerCount: settings.playerCount,
+          ...(settings.playerSupplies === null
+            ? {}
+            : { playerSupplies: [...settings.playerSupplies] }),
+          multiplayerLocalPlayer: localPlayer,
+        });
+        syncMultiplayerState();
+      },
+    });
+    syncMultiplayerState();
+  };
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='host-loopback-button']")
+    ?.addEventListener("click", () => startMultiplayer("host"));
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='join-loopback-button']")
+    ?.addEventListener("click", () => startMultiplayer("join"));
   startButton.addEventListener("click", () => {
     // With the init screen up (decoded mode), the shell button is the
     // accessible path to the same custom game; the catalog-only fallback

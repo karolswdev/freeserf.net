@@ -112,6 +112,13 @@ Touch play: tap to act, drag to scroll, pinch to zoom the world view,
 pan with two fingers, and press-and-hold a tile to inspect it without
 building anything.
 
+Two-player (experimental): with data imported, "Host 2P (this
+browser)" in one tab and "Join 2P (this browser)" in another tab of the
+same browser starts a lockstep match — both tabs simulate the same
+world and your commands execute on both. It runs entirely in your
+browser (no servers; your game data never leaves the machine). Internet
+play arrives with the online-play phase.
+
 ## Sound and music
 
 Sound effects and music decode from your own data and start after your
