@@ -101,6 +101,43 @@ export function decodeUiFontGlyph(
   return decodeDosTransparentSprite(data, palette);
 }
 
+// Replace every visible pixel's color, keeping coverage/alpha — the
+// reference tints whole glyph sets this way (TextureAtlasManager:
+// font #73b343, font shadow black).
+export function tintDecodedSprite(
+  sprite: DecodedDosSprite,
+  red: number,
+  green: number,
+  blue: number,
+): DecodedDosSprite {
+  const rgba = new Uint8ClampedArray(sprite.rgba);
+  for (let pixel = 0; pixel < rgba.length; pixel += 4) {
+    if (rgba[pixel + 3]! !== 0) {
+      rgba[pixel] = red;
+      rgba[pixel + 1] = green;
+      rgba[pixel + 2] = blue;
+    }
+  }
+
+  return { ...sprite, rgba };
+}
+
+// The font-shadow glyph set (one dark outline per font glyph, same
+// index mapping), tinted black like the reference so text stays
+// readable over any terrain.
+export function decodeUiFontShadowGlyph(
+  archive: DosPaArchive,
+  glyphIndex: number,
+): DecodedDosSprite | null {
+  const palette = uiPalette(archive);
+  const data = archive.getEntryBytes(uiResourceBase.fontShadow + glyphIndex);
+  if (palette === null || data === null) {
+    return null;
+  }
+
+  return tintDecodedSprite(decodeDosTransparentSprite(data, palette), 0, 0, 0);
+}
+
 export function decodeUiIcon(archive: DosPaArchive, index: number): DecodedDosSprite | null {
   const palette = uiPalette(archive);
   const data = archive.getEntryBytes(uiResourceBase.icon + index);

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  DosPaArchive,
+  decodeUiFontShadowGlyph,
   layoutUiText,
   mapCharacterToGlyphIndex,
   uiFontAdvance,
@@ -58,10 +60,29 @@ test("text layout advances 8 pixels per character and skips spaces", () => {
   );
 });
 
+test("the font-shadow set decodes black with the font's glyph coverage", () => {
+  const archive = new DosPaArchive(createDecodableGeneratedPaArchive());
+  const shadow = decodeUiFontShadowGlyph(archive, 0);
+  assert.notEqual(shadow, null);
+  let visible = 0;
+  for (let pixel = 0; pixel < shadow.rgba.length; pixel += 4) {
+    if (shadow.rgba[pixel + 3] !== 0) {
+      visible += 1;
+      assert.deepEqual(
+        [shadow.rgba[pixel], shadow.rgba[pixel + 1], shadow.rgba[pixel + 2]],
+        [0, 0, 0],
+        "shadow pixels tint black like the reference",
+      );
+    }
+  }
+  assert.equal(visible > 0, true, "shadow glyph has coverage");
+});
+
 test("decoded UI art lands in the render assets and the landscape atlas", () => {
   const decoded = buildDecodedRenderAssets(createDecodableGeneratedPaArchive());
   assert.notEqual(decoded, null);
   assert.equal(decoded.rawFontGlyphs.filter((glyph) => glyph !== null).length, 44);
+  assert.equal(decoded.rawFontShadows.filter((glyph) => glyph !== null).length, 44);
   assert.equal(decoded.rawIcons.size, 65);
   assert.equal(decoded.rawPanelButtons.size, 26);
   assert.equal(decoded.rawPopupFrames.filter((frame) => frame !== null).length, 4);
@@ -74,6 +95,7 @@ test("decoded UI art lands in the render assets and the landscape atlas", () => 
   assert.equal(assets.uiGlyphCount, 44);
   assert.equal(assets.uiIconCount, 65);
   assert.notEqual(assets.atlas.regions["uif:0"], undefined, "font glyph in atlas");
+  assert.notEqual(assets.atlas.regions["uifs:0"], undefined, "font shadow in atlas");
   assert.notEqual(assets.atlas.regions["uii:0"], undefined, "icon in atlas");
   assert.notEqual(assets.atlas.regions["uip:0"], undefined, "panel button in atlas");
   // All four Box.cs border pieces at their reference sizes (full-height
@@ -112,6 +134,24 @@ test("the UI overlay renders text, icon, frame, and cursor at 2x over the world"
     true,
     "decoded font text on screen",
   );
+
+  // Every glyph draws over its black font-shadow twin at the same spot,
+  // pushed shadow-first so the stable sort keeps the glyph on top.
+  const glyphSprites = uiSprites.filter((sprite) => /^uif:\d+$/.test(sprite.key));
+  for (const glyph of glyphSprites) {
+    const shadowIndex = scene.sprites.findIndex(
+      (sprite) =>
+        sprite.key === glyph.key.replace("uif:", "uifs:") &&
+        sprite.x === glyph.x &&
+        sprite.y === glyph.y,
+    );
+    assert.notEqual(shadowIndex, -1, `shadow under ${glyph.key}`);
+    assert.equal(
+      shadowIndex < scene.sprites.indexOf(glyph),
+      true,
+      `shadow sorts under ${glyph.key}`,
+    );
+  }
   assert.equal(uiSprites.some((sprite) => sprite.key === "uii:0"), true, "icon on screen");
   assert.equal(uiSprites.some((sprite) => sprite.key === "uic"), true, "cursor on screen");
 

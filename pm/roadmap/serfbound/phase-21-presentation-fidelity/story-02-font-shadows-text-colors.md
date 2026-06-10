@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 21
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-21-01
 - **Unblocks:** SB-21-03
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -25,11 +25,11 @@ but never decode or draw it.
 
 ## Acceptance criteria
 
-- [ ] Every `layoutUiText` consumer draws shadow glyphs beneath font
+- [x] Every `layoutUiText` consumer draws shadow glyphs beneath font
   glyphs.
-- [ ] Shadow sprites decode from the player's archive at base 810 with
+- [x] Shadow sprites decode from the player's archive at base 810 with
   per-glyph pairing to the font set.
-- [ ] Real-data captures show readable text over bright terrain.
+- [x] Real-data captures show readable text over bright terrain.
 
 ## Test plan
 

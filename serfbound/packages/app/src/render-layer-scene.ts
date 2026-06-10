@@ -6,6 +6,7 @@ import {
   decodeDosResourceSprite,
   decodeUiCursor,
   decodeUiFontGlyph,
+  decodeUiFontShadowGlyph,
   decodeUiFrame,
   decodeUiIcon,
   decodeSfxSamples,
@@ -84,6 +85,8 @@ export type DecodedRenderAssets = {
   // Decoded UI chrome (SB-16-01): font glyphs, icon sheet, panel buttons,
   // popup frame pieces, and the cursor.
   readonly rawFontGlyphs: readonly (DecodedDosSprite | null)[];
+  // The black-tinted font-shadow set drawn under every glyph (SB-21-02).
+  readonly rawFontShadows: readonly (DecodedDosSprite | null)[];
   readonly rawIcons: ReadonlyMap<number, DecodedDosSprite>;
   readonly rawPanelButtons: ReadonlyMap<number, DecodedDosSprite>;
   readonly rawPopupFrames: readonly (DecodedDosSprite | null)[];
@@ -697,8 +700,10 @@ export function buildDecodedRenderAssets(
   // UI chrome: the 44 font glyphs, icon sheet, panel buttons, popup
   // frames, and the cursor (partial archives skip what they lack).
   const rawFontGlyphs: (DecodedDosSprite | null)[] = [];
+  const rawFontShadows: (DecodedDosSprite | null)[] = [];
   for (let glyph = 0; glyph < uiFontGlyphCount; glyph += 1) {
     rawFontGlyphs.push(decodeUiSafely(() => decodeUiFontGlyph(archive, glyph)));
+    rawFontShadows.push(decodeUiSafely(() => decodeUiFontShadowGlyph(archive, glyph)));
   }
 
   const rawIcons = new Map<number, DecodedDosSprite>();
@@ -773,6 +778,11 @@ export function buildDecodedRenderAssets(
       sprites[`uif:${index}`] = zeroAnchored(glyph);
     }
   });
+  rawFontShadows.forEach((glyph, index) => {
+    if (glyph !== null) {
+      sprites[`uifs:${index}`] = zeroAnchored(glyph);
+    }
+  });
   const backgroundPattern = rawIcons.get(310);
   if (backgroundPattern !== undefined) {
     sprites["uii:310"] = zeroAnchored(backgroundPattern);
@@ -812,6 +822,7 @@ export function buildDecodedRenderAssets(
     rawSerfTorsos,
     rawSerfHeads,
     rawFontGlyphs,
+    rawFontShadows,
     rawIcons,
     rawPanelButtons,
     rawPopupFrames,
@@ -930,7 +941,11 @@ function createDecodedRenderScene(
     };
     const pushText = (text: string, x: number, y: number): void => {
       for (const placement of layoutUiText(text)) {
-        pushUi(`uif:${placement.glyphIndex}`, boxX + (x + placement.x) * scale, boxY + y * scale);
+        const glyphX = boxX + (x + placement.x) * scale;
+        const glyphY = boxY + y * scale;
+        // Shadow first, glyph on top (same position, like the original).
+        pushUi(`uifs:${placement.glyphIndex}`, glyphX, glyphY);
+        pushUi(`uif:${placement.glyphIndex}`, glyphX, glyphY);
       }
     };
 

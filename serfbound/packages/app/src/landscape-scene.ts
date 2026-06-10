@@ -372,6 +372,11 @@ export function buildLandscapeRenderAssets(
       uiGlyphCount += 1;
     }
   });
+  decodedAssets.rawFontShadows.forEach((glyph, index) => {
+    if (glyph !== null) {
+      sprites[`uifs:${index}`] = stripOffsets(glyph);
+    }
+  });
   for (const [index, icon] of decodedAssets.rawIcons) {
     sprites[`uii:${index}`] = stripOffsets(icon);
   }
@@ -792,14 +797,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
     const plankCount = inventory === null ? 0 : inventory.resources[7];
     const stoneCount = inventory === null ? 0 : inventory.resources[9];
     const hudText = `PLANK:${plankCount} STONE:${stoneCount}`;
-    const textX = 30 * uiScale;
-    const textY = 6 * uiScale;
-    for (const placement of layoutUiText(hudText)) {
-      pushUiSprite(
-        sprites, atlas, `uif:${placement.glyphIndex}`,
-        textX + placement.x * uiScale, textY, uiScale,
-      );
-    }
+    pushUiText(sprites, atlas, hudText, 30 * uiScale, 6 * uiScale, uiScale);
 
     pushUiSprite(sprites, atlas, "uii:0", 6 * uiScale, 2 * uiScale, uiScale);
     pushUiSprite(
@@ -832,12 +830,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   if (options.popup !== undefined && options.world !== undefined) {
     const rect = popupRect(options.size, uiScale);
     const pushPopupText = (text: string, x: number, y: number): void => {
-      for (const placement of layoutUiText(text)) {
-        pushUiSprite(
-          sprites, atlas, `uif:${placement.glyphIndex}`,
-          rect.x + (x + placement.x) * uiScale, rect.y + y * uiScale, uiScale,
-        );
-      }
+      pushUiText(sprites, atlas, text, rect.x + x * uiScale, rect.y + y * uiScale, uiScale);
     };
 
     // Interior: the DiagonalGreen 16x16 pattern tiled over the 128x144
@@ -991,12 +984,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   if (options.notice !== undefined && atlas.regions["uif:0"] !== undefined) {
     const noticeWidth = options.notice.length * 8 * uiScale;
     const noticeX = Math.max(0, Math.floor((options.size.width - noticeWidth) / 2));
-    for (const placement of layoutUiText(options.notice)) {
-      pushUiSprite(
-        sprites, atlas, `uif:${placement.glyphIndex}`,
-        noticeX + placement.x * uiScale, 18 * uiScale, uiScale,
-      );
-    }
+    pushUiText(sprites, atlas, options.notice, noticeX, 18 * uiScale, uiScale);
   }
 
   const sortedSprites = sprites.sort(compareLandscapeSprite);
@@ -1038,6 +1026,23 @@ function pushUiSprite(
   }
 
   sprites.push({ layer: "ui", key, x, y, sortY: y, sortX: x, scale });
+}
+
+// Game text draws like the original: the black font-shadow glyph first,
+// the colored font glyph on top at the same position.
+function pushUiText(
+  sprites: RenderSpritePrimitive[],
+  atlas: SpriteAtlas,
+  text: string,
+  x: number,
+  y: number,
+  scale: number,
+): void {
+  for (const placement of layoutUiText(text)) {
+    const glyphX = x + placement.x * scale;
+    pushUiSprite(sprites, atlas, `uifs:${placement.glyphIndex}`, glyphX, y, scale);
+    pushUiSprite(sprites, atlas, `uif:${placement.glyphIndex}`, glyphX, y, scale);
+  }
 }
 
 function compareLandscapeSprite(

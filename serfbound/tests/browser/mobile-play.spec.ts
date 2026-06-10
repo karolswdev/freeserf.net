@@ -36,10 +36,13 @@ test("a phone founds a settlement through the authentic UI by touch", async ({ p
 
   // Found the castle by tapping the map: probe a grid over the whole
   // visible map (valid sites are terrain-dependent per generated world).
+  // The layout can shift once the status panel reports the running game,
+  // so measure the canvas fresh before probing.
+  const probeBox = (await canvas.boundingBox()) ?? box;
   const probeColumns = 7;
   const probeRows = 8;
-  const probeStepX = Math.floor((box.width - 48) / (probeColumns - 1));
-  const probeStepY = Math.floor((box.height - 130) / (probeRows - 1));
+  const probeStepX = Math.floor((probeBox.width - 48) / (probeColumns - 1));
+  const probeStepY = Math.floor((probeBox.height - 130) / (probeRows - 1));
   for (let attempt = 0; attempt < probeColumns * probeRows; attempt += 1) {
     const x = 24 + (attempt % probeColumns) * probeStepX;
     const y = 70 + Math.floor(attempt / probeColumns) * probeStepY;
