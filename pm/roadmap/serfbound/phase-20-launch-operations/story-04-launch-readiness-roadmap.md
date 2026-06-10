@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 20
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-20-03
 - **Unblocks:** —
 - **Owner:** unassigned
@@ -18,10 +18,10 @@ The final gate - rerun every standing proof at the release commit, audit the ass
 
 ## Acceptance criteria
 
-- [ ] All standing gates rerun green at the release commit (evidence linked).
-- [ ] Boundary audit passes
-- [ ]  go decision recorded with signatures of evidence.
-- [ ] Post-launch roadmap records the multiplayer transport decision rationale.
+- [x] All standing gates rerun green at the release commit (evidence linked).
+- [x] Boundary audit passes
+- [x]  go decision recorded with signatures of evidence.
+- [x] Post-launch roadmap records the multiplayer transport decision rationale.
 
 ## Test plan
 

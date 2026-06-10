@@ -1,7 +1,7 @@
 # Phase 20 — Launch and Live Operations
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -38,7 +38,7 @@ post-launch roadmap — with multiplayer as the headline post-launch track.
   flow through a documented intake. (SB-20-02)
 - [x] Player and contributor docs cover the complete game accurately.
   (SB-20-03)
-- [ ] A launch readiness review passes on the release commit and the
+- [x] A launch readiness review passes on the release commit and the
   post-launch roadmap (multiplayer decision included) is recorded. (SB-20-04)
 
 ## Story status
@@ -48,14 +48,15 @@ post-launch roadmap — with multiplayer as the headline post-launch track.
 | SB-20-01 | Public release pipeline and versioning | done | story-01-public-release-pipeline.md | evidence-story-01.md |
 | SB-20-02 | Error reporting and issue intake | done | story-02-error-reporting-intake.md | evidence-story-02.md |
 | SB-20-03 | Full-game documentation refresh | done | story-03-documentation-refresh.md | evidence-story-03.md |
-| SB-20-04 | Launch readiness and post-launch roadmap | backlog | story-04-launch-readiness-roadmap.md | — |
+| SB-20-04 | Launch readiness and post-launch roadmap | done | story-04-launch-readiness-roadmap.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-20-03 is done: player and developer docs cover the complete game
-(module map, command reference, controls, install/offline, reporting),
-verified by the docs gate that runs in release CI. SB-20-04 (launch
-readiness and the post-launch roadmap) closes the phase.
+The phase — and the roadmap — is closed. Every standing gate passes at
+the release commit, the launch readiness review records GO, and the
+post-launch roadmap (WebRTC lockstep multiplayer over the world-action
+log, Amiga evaluation, localization, the polish backlog) is decided and
+recorded. See final-summary.md.
 
 ## Active risks
 

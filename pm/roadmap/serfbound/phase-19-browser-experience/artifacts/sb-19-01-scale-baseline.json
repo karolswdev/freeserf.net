@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "serfbound.scale-baseline",
-  "measuredAtIso": "2026-06-10T12:22:27.082Z",
+  "measuredAtIso": "2026-06-10T13:18:33.667Z",
   "budgets": {
     "minTicksPerSecondAtSize6": 200000,
     "maxSceneBuildMsAt1280": 50
@@ -12,10 +12,10 @@
       "columns": 64,
       "rows": 64,
       "totalTicks": 500000,
-      "wallMs": 220.4,
-      "ticksPerSecond": 2268959,
-      "heapBeforeMb": 7.1,
-      "heapAfterMb": 7.5,
+      "wallMs": 217,
+      "ticksPerSecond": 2303671,
+      "heapBeforeMb": 7.2,
+      "heapAfterMb": 7.9,
       "aiBuildings": 15,
       "serfs": 11
     },
@@ -24,10 +24,10 @@
       "columns": 128,
       "rows": 64,
       "totalTicks": 500000,
-      "wallMs": 340.7,
-      "ticksPerSecond": 1467459,
-      "heapBeforeMb": 7.4,
-      "heapAfterMb": 7.1,
+      "wallMs": 344.2,
+      "ticksPerSecond": 1452777,
+      "heapBeforeMb": 7.7,
+      "heapAfterMb": 7.3,
       "aiBuildings": 12,
       "serfs": 12
     },
@@ -36,10 +36,10 @@
       "columns": 128,
       "rows": 128,
       "totalTicks": 500000,
-      "wallMs": 280.7,
-      "ticksPerSecond": 1781388,
-      "heapBeforeMb": 9.1,
-      "heapAfterMb": 8.5,
+      "wallMs": 287.4,
+      "ticksPerSecond": 1739565,
+      "heapBeforeMb": 7.4,
+      "heapAfterMb": 8.8,
       "aiBuildings": 13,
       "serfs": 12
     },
@@ -48,10 +48,10 @@
       "columns": 256,
       "rows": 128,
       "totalTicks": 500000,
-      "wallMs": 242.9,
-      "ticksPerSecond": 2058646,
-      "heapBeforeMb": 7.8,
-      "heapAfterMb": 9.1,
+      "wallMs": 248.5,
+      "ticksPerSecond": 2012240,
+      "heapBeforeMb": 8.1,
+      "heapAfterMb": 7.4,
       "aiBuildings": 15,
       "serfs": 12
     }
@@ -60,12 +60,12 @@
     {
       "mapSize": 3,
       "builds": 30,
-      "averageBuildMs": 2.88
+      "averageBuildMs": 2.89
     },
     {
       "mapSize": 5,
       "builds": 30,
-      "averageBuildMs": 2.22
+      "averageBuildMs": 2.19
     }
   ]
 }

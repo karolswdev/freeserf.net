@@ -1,12 +1,13 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-20-launch-operations](./phase-20-launch-operations/current-phase-status.md)
-**Status:** Phases 0–19 complete. It is a first-class browser product:
-measured scale headroom, touch play through the responsive authentic UI,
-an installable offline-capable PWA that never caches original data,
-first-run onboarding, and accessibility. Phase 20 (launch and operations)
-is next.
+**Current phase:** all phases complete — see
+[phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)
+**Status:** Phases 0–20 complete. Serfbound v0.1.0 is launch-ready: the
+complete classic game, browser-native, from the player's own data — with
+the release pipeline, error intake, full documentation, a GO readiness
+review at the release commit, and the post-launch roadmap (WebRTC
+lockstep multiplayer over the world-action log) on record.
 
 ## Vision
 
@@ -106,7 +107,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 17 | Sound effects and music through WebAudio | complete | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
 | 18 | Missions, classic AI, and original savegames | complete | [phase-18-complete-game](./phase-18-complete-game/) |
 | 19 | First-class browser experience: performance, mobile, PWA | complete | [phase-19-browser-experience](./phase-19-browser-experience/) |
-| 20 | Public launch and live operations | ready | [phase-20-launch-operations](./phase-20-launch-operations/) |
+| 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 
 ## Delivery Gates
 
