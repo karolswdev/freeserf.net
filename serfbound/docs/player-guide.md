@@ -115,3 +115,12 @@ Serfbound installs as an app from your browser's install option. The app
 shell works offline; your imported data and saves live in this device's
 browser storage, so the game keeps playing without a network. Original
 game data is never uploaded or cached outside your device.
+
+## Reporting problems
+
+If something breaks, press "Copy error report" in the side panel and
+paste the result into a new GitHub issue (the "Serfbound bug report"
+template). The report carries your browser, the game version, and the
+last few errors with game facts like the tick and map seed — it never
+includes your imported game data. Reporting is always your explicit
+action; the game sends nothing on its own.

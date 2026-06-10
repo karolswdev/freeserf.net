@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 20
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-20-01
 - **Unblocks:** SB-20-03
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Live players hit bugs the suite never saw. They need an opt-in way to report err
 
 ## Acceptance criteria
 
-- [ ] Error reports contain actionable, privacy-reviewed context only.
-- [ ] Issue templates and a triage flow are documented.
-- [ ] A simulated failure produces a usable report end-to-end.
+- [x] Error reports contain actionable, privacy-reviewed context only.
+- [x] Issue templates and a triage flow are documented.
+- [x] A simulated failure produces a usable report end-to-end.
 
 ## Test plan
 

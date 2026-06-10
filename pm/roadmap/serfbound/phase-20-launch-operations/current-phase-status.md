@@ -34,7 +34,7 @@ post-launch roadmap — with multiplayer as the headline post-launch track.
   hosting path with cache-correct headers. (SB-20-01; the Pages pipeline
   ships verified — the repository Pages toggle is the maintainer's
   activation step, recorded)
-- [ ] Errors can be reported (opt-in) with enough context to act, and issues
+- [x] Errors can be reported (opt-in) with enough context to act, and issues
   flow through a documented intake. (SB-20-02)
 - [ ] Player and contributor docs cover the complete game accurately.
   (SB-20-03)
@@ -46,16 +46,16 @@ post-launch roadmap — with multiplayer as the headline post-launch track.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-20-01 | Public release pipeline and versioning | done | story-01-public-release-pipeline.md | evidence-story-01.md |
-| SB-20-02 | Error reporting and issue intake | backlog | story-02-error-reporting-intake.md | — |
+| SB-20-02 | Error reporting and issue intake | done | story-02-error-reporting-intake.md | evidence-story-02.md |
 | SB-20-03 | Full-game documentation refresh | backlog | story-03-documentation-refresh.md | — |
 | SB-20-04 | Launch readiness and post-launch roadmap | backlog | story-04-launch-readiness-roadmap.md | — |
 
 ## Where we are
 
-SB-20-01 is done: the GitHub Pages release pipeline runs the full
-data-free gates on serfbound-v* tags and deploys the version-stamped
-artifact; v0.1.0 is versioned with a capability changelog. SB-20-02
-(error reporting and intake) is next.
+SB-20-02 is done: errors buffer locally and the player copies an
+inspectable, data-free context report into the documented GitHub issue
+template — nothing transmits without explicit action. SB-20-03 (docs
+refresh) is next.
 
 ## Active risks
 

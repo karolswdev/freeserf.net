@@ -219,6 +219,39 @@ export function registerServiceWorker(): void {
   }
 }
 
+// Privacy-respecting error intake: errors buffer locally; the player
+// copies a context report (no game data, no archive bytes) into an
+// issue by explicit action only.
+const serfboundVersion = "0.1.0";
+const errorBuffer: { message: string; stack: string; at: string }[] = [];
+
+function recordError(message: string, stack: string | undefined): void {
+  errorBuffer.push({
+    message: message.slice(0, 500),
+    stack: (stack ?? "").slice(0, 2000),
+    at: new Date().toISOString(),
+  });
+  if (errorBuffer.length > 10) {
+    errorBuffer.shift();
+  }
+}
+
+export function buildErrorReport(gameFacts: Record<string, string | undefined>): string {
+  return JSON.stringify(
+    {
+      product: "serfbound",
+      version: serfboundVersion,
+      userAgent: typeof navigator === "undefined" ? "unknown" : navigator.userAgent,
+      generatedAt: new Date().toISOString(),
+      gameFacts,
+      errors: errorBuffer,
+      note: "No game data or archive contents are included in this report.",
+    },
+    null,
+    2,
+  );
+}
+
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
     options.importedArchiveStore ?? new BrowserIndexedDbImportedArchiveStore();
@@ -347,6 +380,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           type="button"
           disabled
         >Load game</button>
+        <button
+          class="secondary-action"
+          data-testid="error-report-button"
+          type="button"
+        >Copy error report</button>
         <label
           class="secondary-action import-control"
           data-testid="data-import-control"
@@ -441,6 +479,36 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   }
   root.ownerDocument.addEventListener("visibilitychange", () => {
     audioService.setVisible(!root.ownerDocument.hidden);
+  });
+  globalThis.addEventListener?.("error", (event) => {
+    recordError(String(event.message ?? event), (event as ErrorEvent).error?.stack);
+    root.dataset.serfboundErrorCount = String(errorBuffer.length);
+  });
+  globalThis.addEventListener?.("unhandledrejection", (event) => {
+    recordError(String((event as PromiseRejectionEvent).reason), undefined);
+    root.dataset.serfboundErrorCount = String(errorBuffer.length);
+  });
+  const errorReportButton = root.querySelector<HTMLButtonElement>(
+    "[data-testid='error-report-button']",
+  );
+  errorReportButton?.addEventListener("click", () => {
+    const report = buildErrorReport({
+      gameState: root.dataset.serfboundGameState,
+      gameTick: root.dataset.serfboundGameTick,
+      seed: root.dataset.serfboundLocalGameSeed,
+      mapSize: root.dataset.serfboundLocalGameMapSize,
+      mission: root.dataset.serfboundInitMission,
+      sceneSource: root.dataset.serfboundSceneSource,
+    });
+    root.dataset.serfboundErrorReportSize = String(report.length);
+    void globalThis.navigator?.clipboard?.writeText(report).then(
+      () => {
+        root.dataset.serfboundErrorReportState = "copied";
+      },
+      () => {
+        root.dataset.serfboundErrorReportState = "clipboard-unavailable";
+      },
+    );
   });
   const syncAudioState = () => {
     root.dataset.serfboundAudio = audioService.state;

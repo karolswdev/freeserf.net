@@ -809,3 +809,35 @@ async function countWebglNonBlankPixels(page) {
     return count;
   });
 }
+
+
+test("the error report copies actionable, data-free context on demand", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/");
+
+  // A runtime error lands in the local buffer (nothing is sent anywhere).
+  await page.evaluate(() => {
+    window.setTimeout(() => {
+      throw new Error("e2e-intake-test-error");
+    }, 0);
+  });
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-error-count",
+    /^[1-9]$/,
+  );
+
+  await page.getByTestId("error-report-button").click();
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-error-report-state",
+    "copied",
+  );
+  const report = await page.evaluate(() => navigator.clipboard.readText());
+  const parsed = JSON.parse(report);
+  expect(parsed.product).toBe("serfbound");
+  expect(parsed.version).toBe("0.1.0");
+  expect(JSON.stringify(parsed.errors)).toContain("e2e-intake-test-error");
+  expect(report).not.toContain("SPAU");
+});
