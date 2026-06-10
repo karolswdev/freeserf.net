@@ -17,6 +17,9 @@ const previewUrl = `http://127.0.0.1:${previewPort}/`;
 // the phase artifacts folder explicitly via SERFBOUND_CAPTURE_DIR.
 const artifactsDir = process.env["SERFBOUND_CAPTURE_DIR"] ?? "../.tmp/browser-screenshots";
 const namePrefix = process.env["SERFBOUND_CAPTURE_PREFIX"] ?? "capture";
+// SB-21-03: capture at a high-DPI scale factor to prove native-resolution
+// rendering (defaults to 1, today's baseline).
+const deviceScaleFactor = Math.max(1, Number(process.env["SERFBOUND_CAPTURE_DPR"] ?? "1") || 1);
 
 if (!enabled || configuredPath === undefined || configuredPath.trim() === "") {
   console.log(
@@ -62,7 +65,10 @@ try {
   await mkdir(artifactsDir, { recursive: true });
 
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 720 },
+    deviceScaleFactor,
+  });
   await page.goto(previewUrl);
 
   await page.getByTestId("data-import-input").setInputFiles(resolve(configuredPath));

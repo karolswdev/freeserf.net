@@ -510,6 +510,12 @@ export type LandscapeSceneOptions = {
   readonly notice?: string;
   // Audio settings shown in the sett popup (SB-17-03).
   readonly audio?: { readonly sfxMuted: boolean; readonly musicMuted: boolean };
+  // World view scale (SB-21-03): integer zoom of the map layers — the
+  // modern SVGA. UI chrome scales independently via uiScaleFor.
+  readonly view?: { readonly scale?: number };
+  // Device pixel ratio backing the canvas; keeps the UI chrome at its
+  // apparent CSS size on high-DPI backing stores.
+  readonly pixelRatio?: number;
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -521,6 +527,10 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   const scrollRow = wrap(Math.trunc(options.scroll.row), landscape.rows);
   const sprites: RenderSpritePrimitive[] = [];
   const primitives: RenderScenePrimitive[] = [];
+
+  // World view scale: map-layer geometry computes in map space and
+  // scales up at the push seam; the visible lattice shrinks to match.
+  const viewScale = Math.max(1, Math.trunc(options.view?.scale ?? 1));
 
   const pushSprite = (
     layer: RenderLayerKey,
@@ -538,15 +548,16 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
     sprites.push({
       layer,
       key,
-      x: anchorX + region.offsetX,
-      y: anchorY + region.offsetY,
+      x: (anchorX + region.offsetX) * viewScale,
+      y: (anchorY + region.offsetY) * viewScale,
       sortY,
       sortX,
+      ...(viewScale === 1 ? {} : { scale: viewScale }),
     });
   };
 
-  const latticeColumns = Math.ceil(options.size.width / tileWidth) + extraColumns;
-  const latticeRows = Math.ceil(options.size.height / tileHeight) + extraRowsBelow;
+  const latticeColumns = Math.ceil(options.size.width / (tileWidth * viewScale)) + extraColumns;
+  const latticeRows = Math.ceil(options.size.height / (tileHeight * viewScale)) + extraRowsBelow;
 
   for (let r = -extraRowsAbove; r <= latticeRows; r += 1) {
     const mapRow = scrollRow + r;
@@ -791,7 +802,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   // UI chrome overlay (SB-16-01 foundation): decoded font text, an icon,
   // a popup frame piece, and the cursor at 2x integer scale, in screen
   // space above the map (the panel bar and popups build on this layer).
-  const uiScale = uiScaleFor(options.size);
+  const uiScale = uiScaleFor(options.size, options.pixelRatio ?? 1);
   if (atlas.regions["uif:0"] !== undefined && options.world !== undefined) {
     const inventory = options.world.inventoryForPlayer(0);
     const plankCount = inventory === null ? 0 : inventory.resources[7];
@@ -1086,10 +1097,13 @@ export function screenToMapTile(
   landscape: ClassicMapLandscape,
   screen: { readonly x: number; readonly y: number },
   scroll: MapScroll,
+  viewScale = 1,
 ): { column: number; row: number; position: number } {
-  const r = Math.floor(screen.y / tileHeight);
+  const mapX = screen.x / viewScale;
+  const mapY = screen.y / viewScale;
+  const r = Math.floor(mapY / tileHeight);
   const stagger = (r & 1) === 1 ? tileWidth / 2 : 0;
-  const c = Math.round((screen.x - stagger) / tileWidth);
+  const c = Math.round((mapX - stagger) / tileWidth);
   const columnShift = (r + (r & 1)) >> 1;
   const column = wrap(scroll.column + c + columnShift, landscape.columns);
   const row = wrap(scroll.row + r, landscape.rows);

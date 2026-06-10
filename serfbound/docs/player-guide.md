@@ -103,6 +103,11 @@ Keyboard play: arrow keys scroll the map, Enter starts the configured
 game from the title screen, and 0/1/2/4 pause or set the game speed.
 Game sessions autosave automatically while running.
 
+High-resolution displays render at native sharpness automatically. The
+world view scale (1x/2x/3x zoom — the modern SVGA) cycles with the V
+key or the shell's "View scale" button; it follows your screen's pixel
+density by default.
+
 ## Sound and music
 
 Sound effects and music decode from your own data and start after your

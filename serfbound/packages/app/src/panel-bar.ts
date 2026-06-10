@@ -50,9 +50,13 @@ export const panelBackgroundLayout: readonly (readonly [number, number, number])
 ];
 
 // Narrow (mobile) canvases drop the chrome to 1x so the original
-// 320-wide layout still fits.
-export function uiScaleFor(canvas: RenderSize): number {
-  return canvas.width < 700 ? 1 : 2;
+// 320-wide layout still fits. The decision is made in CSS pixels; the
+// result multiplies by the integer device pixel ratio so chrome keeps
+// its apparent size on high-DPI backing stores while rendering sharp
+// (SB-21-03).
+export function uiScaleFor(canvas: RenderSize, pixelRatio = 1): number {
+  const ratio = Math.max(1, Math.round(pixelRatio));
+  return (canvas.width / ratio < 700 ? 1 : 2) * ratio;
 }
 
 export const panelBarWidth = 320;

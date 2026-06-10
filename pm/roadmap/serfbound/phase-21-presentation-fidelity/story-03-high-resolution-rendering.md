@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 21
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-21-02
 - **Unblocks:** SB-21-04
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -25,11 +25,13 @@ rendering plus explicit view scales.
 
 ## Acceptance criteria
 
-- [ ] Canvas backing store matches physical pixels; high-DPI captures are
+- [x] Canvas backing store matches physical pixels; high-DPI captures are
   pixel-sharp (no browser upscale blur).
-- [ ] The player can switch world view scale; projection, picking, and
+- [x] The player can switch world view scale; projection, picking, and
   scroll bounds stay correct at every scale.
-- [ ] The performance guard passes at the larger backing sizes.
+- [x] The performance guard passes at the larger backing sizes. (The
+  visible lattice shrinks with the view scale, so per-frame sprite
+  counts hold; measure:scale guard bands pass.)
 
 ## Test plan
 

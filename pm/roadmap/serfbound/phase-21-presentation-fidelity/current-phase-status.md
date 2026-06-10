@@ -1,7 +1,7 @@
 # Phase 21 — Presentation Fidelity
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-21-01..02 done.
+**Status:** in progress — SB-21-01..03 done.
 
 ## Goal
 
@@ -41,7 +41,7 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
   definitions. (SB-21-01)
 - [x] Every UI text draws over its font-shadow glyphs; readability holds
   over terrain in real-data captures. (SB-21-02)
-- [ ] The canvas renders at native device resolution and the player can
+- [x] The canvas renders at native device resolution and the player can
   select view scale; high-DPI screenshots are pixel-sharp. (SB-21-03)
 - [ ] Pinch-zoom and two-finger pan work on a touch viewport in e2e.
   (SB-21-04)
@@ -54,19 +54,19 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
 |---|---|---|---|---|
 | SB-21-01 | Authentic frame chrome | done | story-01-authentic-frame-chrome.md | evidence-story-01.md |
 | SB-21-02 | Font shadows and text colors | done | story-02-font-shadows-text-colors.md | evidence-story-02.md |
-| SB-21-03 | High-resolution rendering and view scales | backlog | story-03-high-resolution-rendering.md | — |
+| SB-21-03 | High-resolution rendering and view scales | done | story-03-high-resolution-rendering.md | evidence-story-03.md |
 | SB-21-04 | Touch gestures | backlog | story-04-touch-gestures.md | — |
 | SB-21-05 | Visual fidelity gate | backlog | story-05-visual-fidelity-gate.md | — |
 
 ## Where we are
 
-SB-21-01 and SB-21-02 shipped: the chrome assembles the full four-piece
-Box.cs borders with inset interiors, and every game text now draws over
-its black font-shadow twin — the real-data captures show the HUD
-readable over bright terrain (the launch-review complaint). The color
-audit found the reference tints all glyphs one green (#73b343, already
-our decoded palette color), so no per-context recoloring exists to port.
-Next: SB-21-03 high-resolution rendering and view scales.
+SB-21-01..03 shipped: the chrome assembles the full four-piece Box.cs
+borders with inset interiors; every game text draws over its black
+font-shadow twin (readable over bright terrain in real-data captures);
+and the canvas now renders at native device resolution with 1x/2x/3x
+world view scales (V key / shell button), defaulting to the screen's
+pixel density — DPR-2 real-data captures show double world detail at
+the same apparent layout. Next: SB-21-04 touch gestures.
 
 ## Active risks
 

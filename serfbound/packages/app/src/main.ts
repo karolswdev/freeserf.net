@@ -382,6 +382,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         >Load game</button>
         <button
           class="secondary-action"
+          data-testid="view-scale-button"
+          type="button"
+        >View scale</button>
+        <button
+          class="secondary-action"
           data-testid="error-report-button"
           type="button"
         >Copy error report</button>
@@ -645,6 +650,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     };
     renderCurrentScene();
   };
+  // SB-21-03: the shell's view-scale control cycles the world zoom
+  // (1x/2x/3x), same as the 'v' key.
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='view-scale-button']")
+    ?.addEventListener("click", () => {
+      cycleWorldViewScale();
+      renderCurrentScene();
+    });
   let currentTick = 0;
   let waveTimer: ReturnType<typeof setInterval> | undefined;
   const stopWaveAnimation = () => {
@@ -840,7 +853,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       // The start screen owns setup-state canvas clicks: seed randomizes,
       // supplies cycle, START begins the seeded custom game.
       if (currentWorld === undefined && initScreenSettings() !== undefined) {
-        const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height });
+        const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height }, canvasPixelRatio);
         const rect = initScreenRect({ width: canvas.width, height: canvas.height }, uiScale);
         const row = initScreenRowAt(rect, uiScale, interaction.screen.x, interaction.screen.y);
         if (row === "seed" && initMission === undefined) {
@@ -883,7 +896,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       // An open popup owns the pointer above the map: build items place
       // buildings at the selected tile, the flip button cycles pages, the
       // sett rows cycle knight occupation, anywhere else closes.
-      const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height });
+      const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height }, canvasPixelRatio);
       if (currentPopup !== undefined) {
         const popup = popupRect({ width: canvas.width, height: canvas.height }, uiScale);
         if (!pointInPopup(popup, interaction.screen.x, interaction.screen.y)) {
@@ -1098,6 +1111,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       }
     }
 
+    // 'v' cycles the world view scale (1x/2x/3x — the modern SVGA).
+    if (event.key === "v" || event.key === "V") {
+      cycleWorldViewScale();
+      renderCurrentScene();
+      return;
+    }
+
     // Keyboard play: Enter starts the configured game from the title
     // screen (the pointer-free path to the same custom/mission start).
     if (event.key === "Enter" && currentWorld === undefined && initScreenSettings() !== undefined) {
@@ -1146,12 +1166,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
     const deltaX = event.clientX - dragState.x;
     const deltaY = event.clientY - dragState.y;
-    const columnSteps = Math.trunc(deltaX / 32);
-    const rowSteps = Math.trunc(deltaY / 20);
+    // Drag deltas arrive in CSS pixels; one tile spans
+    // tileSize * worldScale device pixels = that / pixelRatio CSS pixels.
+    const stepX = (32 * effectiveWorldScale()) / canvasPixelRatio;
+    const stepY = (20 * effectiveWorldScale()) / canvasPixelRatio;
+    const columnSteps = Math.trunc(deltaX / stepX);
+    const rowSteps = Math.trunc(deltaY / stepY);
     if (columnSteps !== 0 || rowSteps !== 0) {
       dragState = {
-        x: dragState.x + columnSteps * 32,
-        y: dragState.y + rowSteps * 20,
+        x: dragState.x + columnSteps * stepX,
+        y: dragState.y + rowSteps * stepY,
       };
       applyScroll(-columnSteps, -rowSteps);
     }
@@ -1887,6 +1911,8 @@ function renderScene(
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
+          view: { scale: effectiveWorldScale() },
+          pixelRatio: canvasPixelRatio,
         })
       : createFirstRenderLayerScene({
           size,
@@ -1894,6 +1920,7 @@ function renderScene(
           ...(typedAssetCatalog === undefined ? {} : { typedAssetCatalog }),
           ...(decodedAssets === undefined ? {} : { decodedAssets }),
           ...(initScreen === undefined ? {} : { initScreen }),
+          pixelRatio: canvasPixelRatio,
         });
   root.dataset.serfboundScroll = `${scroll.column},${scroll.row}`;
   root.dataset.serfboundSceneMode = landscapeAssets !== undefined ? "landscape" : "preview";
@@ -1910,6 +1937,8 @@ function renderScene(
   root.dataset.serfboundBuiltStructureCount = String(builtStructures.length);
   root.dataset.serfboundCanvasWidth = String(canvas.width);
   root.dataset.serfboundCanvasHeight = String(canvas.height);
+  root.dataset.serfboundPixelRatio = String(canvasPixelRatio);
+  root.dataset.serfboundViewScale = String(effectiveWorldScale());
 
   const sceneState = root.querySelector<HTMLElement>("[data-testid='scene-state']");
   const sceneDetail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
@@ -2009,22 +2038,40 @@ function resolveCanvasPointer(
   landscapeContext?: PointerLandscapeContext,
 ): PointerMapInteraction {
   const rect = canvas.getBoundingClientRect();
+  // Events arrive in CSS pixels; hit tests and scenes work in canvas
+  // (device) pixels.
+  const toCanvasX = rect.width === 0 ? 1 : canvas.width / rect.width;
+  const toCanvasY = rect.height === 0 ? 1 : canvas.height / rect.height;
   const screen = {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
+    x: (event.clientX - rect.left) * toCanvasX,
+    y: (event.clientY - rect.top) * toCanvasY,
   };
 
   if (landscapeContext !== undefined) {
-    const tile = screenToMapTile(landscapeContext.landscape, screen, landscapeContext.scroll);
+    const worldScale = effectiveWorldScale();
+    const tile = screenToMapTile(
+      landscapeContext.landscape,
+      screen,
+      landscapeContext.scroll,
+      worldScale,
+    );
     return {
       screen,
       view: screen,
-      map: screen,
+      map: { x: screen.x / worldScale, y: screen.y / worldScale },
       tile,
     };
   }
 
-  return resolveFirstRenderLayerPointer(screen, { width: canvas.width, height: canvas.height });
+  // The decoded preview map scales by the device pixel ratio; resolve
+  // the tile in its map space but keep the canvas-pixel screen point
+  // (UI hit tests work in canvas pixels).
+  const previewScale = devicePixelScale();
+  const preview = resolveFirstRenderLayerPointer(
+    { x: screen.x / previewScale, y: screen.y / previewScale },
+    { width: canvas.width / previewScale, height: canvas.height / previewScale },
+  );
+  return { ...preview, screen, view: screen };
 }
 
 function applyPointerHoverState(
@@ -2566,10 +2613,34 @@ function observeSceneResize(canvas: HTMLCanvasElement, renderCurrentScene: () =>
   observer.observe(canvas);
 }
 
+// SB-21-03: the canvas backing store renders at native device
+// resolution; UI chrome and the world view scale up to keep their
+// apparent size, pixel-sharp. The ratio is clamped against degenerate
+// browser values.
+let canvasPixelRatio = 1;
+// The player's world view scale choice; null follows the screen (the
+// integer device pixel ratio), the modern default "SVGA" mode.
+let worldViewScaleChoice: number | null = null;
+
+function devicePixelScale(): number {
+  return Math.max(1, Math.round(canvasPixelRatio));
+}
+
+function effectiveWorldScale(): number {
+  return worldViewScaleChoice ?? devicePixelScale();
+}
+
+export function cycleWorldViewScale(): number {
+  const next = (effectiveWorldScale() % 3) + 1;
+  worldViewScaleChoice = next;
+  return next;
+}
+
 function resizeCanvasToDisplayedSize(canvas: HTMLCanvasElement) {
   const rect = canvas.getBoundingClientRect();
-  const width = Math.max(1, Math.round(rect.width));
-  const height = Math.max(1, Math.round(rect.height));
+  canvasPixelRatio = Math.max(1, Math.min(4, globalThis.devicePixelRatio || 1));
+  const width = Math.max(1, Math.round(rect.width * canvasPixelRatio));
+  const height = Math.max(1, Math.round(rect.height * canvasPixelRatio));
 
   if (canvas.width !== width) {
     canvas.width = width;

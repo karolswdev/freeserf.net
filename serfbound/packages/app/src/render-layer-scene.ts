@@ -138,6 +138,10 @@ export type FirstRenderLayerSceneOptions = {
     readonly mapSize: number;
     readonly mission?: string;
   };
+  // Device pixel ratio backing the canvas (SB-21-03): the decoded
+  // preview map and the UI chrome scale up so high-DPI backing stores
+  // keep their apparent CSS size, rendered sharp.
+  readonly pixelRatio?: number;
 };
 
 export type PointerMapInteraction = {
@@ -185,6 +189,7 @@ export function createFirstRenderLayerScene(
       options.decodedAssets,
       options.builtStructures ?? [],
       options.initScreen,
+      options.pixelRatio ?? 1,
     );
   }
 
@@ -864,11 +869,15 @@ function createDecodedRenderScene(
     readonly mapSize: number;
     readonly mission?: string;
   },
+  pixelRatio = 1,
 ): FirstRenderLayerScene {
   const { atlas } = decodedAssets;
   const sprites: RenderSpritePrimitive[] = [];
-  const columns = Math.ceil(virtualSize.width / decodedTileWidth) + 2;
-  const rows = Math.ceil(virtualSize.height / decodedTileHeight) + 4;
+  // High-DPI backing stores scale the preview map by the integer pixel
+  // ratio so the import preview keeps its apparent size, sharp.
+  const previewScale = Math.max(1, Math.round(pixelRatio));
+  const columns = Math.ceil(virtualSize.width / (decodedTileWidth * previewScale)) + 2;
+  const rows = Math.ceil(virtualSize.height / (decodedTileHeight * previewScale)) + 4;
 
   const pushSprite = (
     layer: RenderLayerKey,
@@ -885,10 +894,11 @@ function createDecodedRenderScene(
     sprites.push({
       layer,
       key,
-      x: anchorX + region.offsetX,
-      y: anchorY + region.offsetY,
+      x: (anchorX + region.offsetX) * previewScale,
+      y: (anchorY + region.offsetY) * previewScale,
       sortY,
       sortX: anchorX,
+      ...(previewScale === 1 ? {} : { scale: previewScale }),
     });
   };
 
@@ -917,7 +927,10 @@ function createDecodedRenderScene(
     }
   }
 
-  const { transform, heightProvider } = createSceneProjection(virtualSize);
+  const { transform, heightProvider } = createSceneProjection({
+    width: virtualSize.width / previewScale,
+    height: virtualSize.height / previewScale,
+  });
   for (const structure of builtStructures) {
     const top = transform.tileToScreen(structure.tile.position, heightProvider);
     const anchorX = top.x;
@@ -929,7 +942,7 @@ function createDecodedRenderScene(
   // The game start screen (SB-16-05): the GameInitBox condensed to the
   // options the engine supports, drawn from decoded art at 2x.
   if (initScreen !== undefined && atlas.regions["uif:0"] !== undefined) {
-    const scale = uiScaleFor(virtualSize);
+    const scale = uiScaleFor(virtualSize, pixelRatio);
     const boxWidth = 144 * scale;
     const boxHeight = 128 * scale;
     const boxX = Math.max(0, Math.floor((virtualSize.width - boxWidth) / 2));
