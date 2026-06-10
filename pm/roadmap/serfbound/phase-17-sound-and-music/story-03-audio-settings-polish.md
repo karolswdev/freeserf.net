@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 17
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-17-02
 - **Unblocks:** SB-18-01
 - **Owner:** unassigned
@@ -18,10 +18,10 @@ Sound needs to behave like a polished product - persistent volume/mute per chann
 
 ## Acceptance criteria
 
-- [ ] Settings persist and apply across reloads.
-- [ ] Hidden-tab and paused-game behavior is defined and tested.
-- [ ] Event coverage audit recorded
-- [ ]  gaps listed explicitly.
+- [x] Settings persist and apply across reloads.
+- [x] Hidden-tab and paused-game behavior is defined and tested.
+- [x] Event coverage audit recorded
+- [x]  gaps listed explicitly.
 
 ## Test plan
 

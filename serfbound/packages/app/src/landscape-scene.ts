@@ -500,6 +500,8 @@ export type LandscapeSceneOptions = {
   readonly popup?: { readonly kind: PopupKind };
   // A notification banner in the game font (SB-16-04).
   readonly notice?: string;
+  // Audio settings shown in the sett popup (SB-17-03).
+  readonly audio?: { readonly sfxMuted: boolean; readonly musicMuted: boolean };
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -886,7 +888,13 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         const maxLevel = (occupation >> 4) & 0xf;
         pushPopupText(`THREAT ${threat} LEVEL ${maxLevel}`, 8, row.y);
       });
-      pushPopupText(`MORALE ${player?.knightMorale ?? 0}`, 8, 144);
+      pushPopupText(`MORALE ${player?.knightMorale ?? 0}`, 8, 132);
+      const audio = options.audio;
+      pushPopupText(
+        `SFX ${audio?.sfxMuted === true ? "OFF" : "ON"} MUSIC ${audio?.musicMuted === true ? "OFF" : "ON"}`,
+        8,
+        146,
+      );
     } else if (kind === "map") {
       // The minimap: one colored pixel block per map tile (the reference
       // terrain palette), with the viewport marked; drawn as color

@@ -6,6 +6,45 @@ import { sfxSampleRate, type XmiEvent } from "@serfbound/assets";
 
 export type SerfboundAudioState = "idle" | "locked" | "unlocked" | "unavailable";
 
+// Persistent audio settings (SB-17-03).
+export type SerfboundAudioSettings = {
+  readonly sfxVolume: number;
+  readonly sfxMuted: boolean;
+  readonly musicVolume: number;
+  readonly musicMuted: boolean;
+};
+
+export const audioSettingsKey = "serfbound.audio-settings";
+
+type SettingsStorage = Pick<Storage, "getItem" | "setItem">;
+
+export function loadAudioSettings(storage: SettingsStorage): SerfboundAudioSettings | null {
+  try {
+    const raw = storage.getItem(audioSettingsKey);
+    if (raw === null) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<SerfboundAudioSettings>;
+    return {
+      sfxVolume: typeof parsed.sfxVolume === "number" ? parsed.sfxVolume : 1,
+      sfxMuted: parsed.sfxMuted === true,
+      musicVolume: typeof parsed.musicVolume === "number" ? parsed.musicVolume : 1,
+      musicMuted: parsed.musicMuted === true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveAudioSettings(storage: SettingsStorage, settings: SerfboundAudioSettings): void {
+  try {
+    storage.setItem(audioSettingsKey, JSON.stringify(settings));
+  } catch {
+    // Quota or privacy errors leave the in-memory settings in charge.
+  }
+}
+
 export class SerfboundAudioService {
   #context: AudioContext | undefined;
   #clips = new Map<number, Int16Array>();
@@ -138,6 +177,43 @@ export class SerfboundAudioService {
     this.scheduledNoteCount = scheduled;
     this.musicState = "playing";
     return true;
+  }
+
+  settings(): SerfboundAudioSettings {
+    return {
+      sfxVolume: this.sfxVolume,
+      sfxMuted: this.sfxMuted,
+      musicVolume: this.musicVolume,
+      musicMuted: this.musicMuted,
+    };
+  }
+
+  applySettings(settings: SerfboundAudioSettings): void {
+    this.sfxVolume = settings.sfxVolume;
+    this.sfxMuted = settings.sfxMuted;
+    this.musicVolume = settings.musicVolume;
+    this.musicMuted = settings.musicMuted;
+    if (this.musicMuted) {
+      this.stopMusic();
+    }
+  }
+
+  // Tab visibility: a hidden tab suspends the whole context (the original
+  // pauses when unfocused); visible resumes it.
+  setVisible(visible: boolean): void {
+    if (this.#context === undefined || this.state !== "unlocked") {
+      return;
+    }
+
+    try {
+      if (visible && this.#context.state === "suspended") {
+        void this.#context.resume();
+      } else if (!visible && this.#context.state === "running") {
+        void this.#context.suspend();
+      }
+    } catch {
+      // Suspension is best-effort.
+    }
   }
 
   playSfx(sfxId: number): boolean {

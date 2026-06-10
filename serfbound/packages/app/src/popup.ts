@@ -239,6 +239,31 @@ export function minimapTileAt(
   };
 }
 
+// The sett popup's audio row: SFX on the left half, MUSIC on the right.
+export const settAudioRowY = 146;
+
+export function settAudioToggleAt(
+  rect: PopupRect,
+  scale: number,
+  pointX: number,
+  pointY: number,
+): "sfx" | "music" | null {
+  const top = rect.y + settAudioRowY * scale;
+  if (pointY < top || pointY >= top + 12 * scale) {
+    return null;
+  }
+
+  if (pointX >= rect.x + 8 * scale && pointX < rect.x + 72 * scale) {
+    return "sfx";
+  }
+
+  if (pointX >= rect.x + 72 * scale && pointX < rect.x + (popupWidth - 8) * scale) {
+    return "music";
+  }
+
+  return null;
+}
+
 export function settOccupationRowAt(
   rect: PopupRect,
   scale: number,

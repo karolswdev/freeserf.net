@@ -218,6 +218,24 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   await canvas.click({ position: { x: 30, y: 300 }, force: true });
   await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
 
+  // Audio settings: the sett popup's audio row mutes music, persists the
+  // choice, and unmuting resumes playback.
+  const settSlot = { x: panelX + (64 + 4 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
+  await canvas.click({ position: settSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "sett");
+  const musicToggle = { x: popupX + 160, y: popupY + 146 * 2 + 6 };
+  await canvas.click({ position: musicToggle, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-music-muted", "true");
+  const persisted = await page.evaluate(() =>
+    window.localStorage.getItem("serfbound.audio-settings"),
+  );
+  expect(persisted).toContain('"musicMuted":true');
+  await canvas.click({ position: musicToggle, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-music-muted", "false");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-music", "playing");
+  await canvas.click({ position: { x: 30, y: 300 }, force: true });
+  await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
+
   // The minimap: the map slot opens it and clicking inside navigates the
   // viewport (the scroll position jumps to the clicked tile).
   const mapSlot = { x: panelX + (64 + 2 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };

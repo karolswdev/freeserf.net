@@ -1,12 +1,12 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-17-sound-and-music](./phase-17-sound-and-music/current-phase-status.md)
-**Status:** Phases 0–16 complete. The game looks and drives like the
-original: decoded fonts/icons/frames everywhere, the authentic panel bar
-and popup family run the game, the minimap navigates, and the start
-screen (with the decoded Blue Byte logo) fronts seeded custom games.
-Phase 17 (sound and music) is next.
+**Current phase:** [phase-18-complete-game](./phase-18-complete-game/current-phase-status.md)
+**Status:** Phases 0–17 complete. The game sounds like Settlers: all 39
+original clips decode and fire on the reference events, the XMI tracks
+parse exactly and play through WebAudio after the first gesture, and
+audio settings persist with tab-visibility handling. Phase 18 (the
+complete game) is next.
 
 ## Vision
 
@@ -103,8 +103,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 14 | Run every classic production chain | complete | [phase-14-working-economy](./phase-14-working-economy/) |
 | 15 | Knights, territory, and combat | complete | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
 | 16 | Rebuild the original interface browser-native | complete | [phase-16-original-interface](./phase-16-original-interface/) |
-| 17 | Sound effects and music through WebAudio | ready | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
-| 18 | Missions, classic AI, and original savegames | planned | [phase-18-complete-game](./phase-18-complete-game/) |
+| 17 | Sound effects and music through WebAudio | complete | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
+| 18 | Missions, classic AI, and original savegames | ready | [phase-18-complete-game](./phase-18-complete-game/) |
 | 19 | First-class browser experience: performance, mobile, PWA | planned | [phase-19-browser-experience](./phase-19-browser-experience/) |
 | 20 | Public launch and live operations | planned | [phase-20-launch-operations](./phase-20-launch-operations/) |
 
@@ -241,6 +241,11 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current sound proof:** the 39 reference DOS clips decode with exact
+  ConvertToWav parity and fire on commands, popups, construction, defeat,
+  and production work loops; XMI tracks parse with the exact chunk walk
+  and play through the recorded WebAudio-oscillator path; mute settings
+  persist and tab visibility pauses/resumes.
 - **Current original-interface proof:** the UI is decoded original art —
   game font, icons, frames, panel bar, popups (build pages, resources
   box, knight occupation), minimap with click-to-navigate, notifications,

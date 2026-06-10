@@ -195,6 +195,8 @@ export class SerfboundSerfEngine {
   readonly serfIndexes: Uint32Array;
   // Game.RandomInt source for combat (seeded for deterministic outcomes).
   readonly random: FreeserfRandom;
+  // Production event hook (the app maps products to work-loop sounds).
+  onProduct: ((buildingType: number, product: number) => void) | undefined;
   #nextSerfIndex = 1;
   readonly #dispatchedBuildings = new Set<number>();
 
@@ -1153,6 +1155,8 @@ export class SerfboundSerfEngine {
     if (sourceFlag === undefined) {
       return;
     }
+
+    this.onProduct?.(building.type, product);
 
     let destination = 0;
     const consumerTypes = productConsumers[product];

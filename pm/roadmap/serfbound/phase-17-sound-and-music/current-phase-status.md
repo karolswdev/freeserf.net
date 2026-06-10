@@ -1,7 +1,7 @@
 # Phase 17 — Sound and Music
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -34,7 +34,7 @@ with persistent volume/mute controls.
 - [x] XMI music parses and a chosen playback path plays the classic tracks in
   the browser, with the decision recorded. (SB-17-02: WebAudio oscillator
   synth, no bundled audio)
-- [ ] Volume/mute for SFX and music persist; audio respects autoplay rules
+- [x] Volume/mute for SFX and music persist; audio respects autoplay rules
   and tab visibility. (SB-17-03)
 
 ## Story status
@@ -43,14 +43,16 @@ with persistent volume/mute controls.
 |---|---|---|---|---|
 | SB-17-01 | Decode and fire DOS sound effects | done | story-01-dos-sound-effects.md | evidence-story-01.md |
 | SB-17-02 | Play XMI music in the browser | done | story-02-xmi-music-playback.md | evidence-story-02.md |
-| SB-17-03 | Audio settings, hooks, and polish | backlog | story-03-audio-settings-polish.md | — |
+| SB-17-03 | Audio settings, hooks, and polish | done | story-03-audio-settings-polish.md | evidence-story-03.md |
 
 ## Where we are
 
-SB-17-02 is done: the exact XMI chunk walk parses the original tracks
-(10,409 events from real track 0) and they play through the recorded
-WebAudio-oscillator decision after the first gesture. SB-17-03 (audio
-settings and polish) closes the phase.
+The phase is closed. The game sounds like Settlers: all 39 original
+clips decode and fire on commands, popups, construction, defeat, and the
+work loops; the XMI tracks parse exactly and play through the recorded
+WebAudio-oscillator decision after the first gesture; mute settings
+persist and the tab's visibility pauses and resumes the audio. See
+final-summary.md.
 
 ## Active risks
 

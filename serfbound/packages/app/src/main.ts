@@ -70,11 +70,16 @@ import {
   pointInPopup,
   popupBuildItemAt,
   popupRect,
+  settAudioToggleAt,
   settOccupationRowAt,
   type PopupKind,
 } from "./popup.js";
 
-import { SerfboundAudioService } from "./audio.js";
+import {
+  SerfboundAudioService,
+  loadAudioSettings,
+  saveAudioSettings,
+} from "./audio.js";
 import {
   initScreenRect,
   initScreenRowAt,
@@ -363,6 +368,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   // unlocked by the first canvas gesture (autoplay policy).
   const audioService = new SerfboundAudioService();
   activeAudioService = audioService;
+  try {
+    const persisted = loadAudioSettings(globalThis.localStorage);
+    if (persisted !== null) {
+      audioService.applySettings(persisted);
+    }
+  } catch {
+    // No storage available: defaults apply.
+  }
+  root.ownerDocument.addEventListener("visibilitychange", () => {
+    audioService.setVisible(!root.ownerDocument.hidden);
+  });
   const syncAudioState = () => {
     root.dataset.serfboundAudio = audioService.state;
     root.dataset.serfboundMusic = audioService.musicState;
@@ -457,6 +473,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentPopup,
       currentNotice,
       initScreenSettings(),
+      { sfxMuted: audioService.sfxMuted, musicMuted: audioService.musicMuted },
     );
   };
   const applyScroll = (columnDelta: number, rowDelta: number) => {
@@ -506,6 +523,22 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         }
 
         if (currentSerfEngine !== undefined) {
+          if (currentSerfEngine.onProduct === undefined) {
+            let lastWorkSfxAt = 0;
+            currentSerfEngine.onProduct = (_buildingTypeValue, product) => {
+              const now = Date.now();
+              if (now - lastWorkSfxAt < 700) {
+                return;
+              }
+
+              const clip = productionSfx[product];
+              if (clip !== undefined) {
+                lastWorkSfxAt = now;
+                audioService.playSfx(clip);
+              }
+            };
+          }
+
           currentSerfEngine.update(commandRouter.state.tick);
           syncWorldState(root, currentWorld);
 
@@ -698,9 +731,33 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
             }
           }
         } else if (currentPopup === "sett") {
+          const toggle = settAudioToggleAt(popup, 2, interaction.screen.x, interaction.screen.y);
+          if (toggle === "sfx") {
+            audioService.sfxMuted = !audioService.sfxMuted;
+          } else if (toggle === "music") {
+            audioService.musicMuted = !audioService.musicMuted;
+            if (audioService.musicMuted) {
+              audioService.stopMusic();
+            } else if (audioService.musicState === "ready") {
+              audioService.playMusic();
+            }
+          }
+
+          if (toggle !== null) {
+            try {
+              saveAudioSettings(globalThis.localStorage, audioService.settings());
+            } catch {
+              // In-memory only without storage.
+            }
+
+            root.dataset.serfboundSfxMuted = String(audioService.sfxMuted);
+            root.dataset.serfboundMusicMuted = String(audioService.musicMuted);
+            syncAudioState();
+          }
+
           const row = settOccupationRowAt(popup, 2, interaction.screen.x, interaction.screen.y);
           const player = currentWorld.players[0];
-          if (row !== null && player !== undefined) {
+          if (toggle === null && row !== null && player !== undefined) {
             const cycle = knightOccupationCycle;
             const index = cycle.indexOf(player.knightOccupation[row] ?? cycle[0]!);
             player.knightOccupation[row] = cycle[(index + 1) % cycle.length]!;
@@ -1533,6 +1590,24 @@ function applyStorageErrorState(
   setResetEnabled(root, canClearStoredData);
 }
 
+// Work-loop sounds: products map to the reference clips of the labor
+// that produced them (Audio.TypeSfx).
+const productionSfx: Readonly<Record<number, number>> = {
+  6: sfxType.treeFall, // lumber
+  7: sfxType.sawing, // plank
+  9: sfxType.pickBlow, // stone
+  3: sfxType.mowing, // wheat
+  4: sfxType.millGrinding, // flour
+  1: sfxType.pigOink, // pig
+  10: sfxType.pickBlow, // iron ore
+  12: sfxType.pickBlow, // coal
+  13: sfxType.pickBlow, // gold ore
+  11: sfxType.goldBoils, // steel
+  14: sfxType.goldBoils, // gold bar
+  24: sfxType.metalHammering, // sword
+  25: sfxType.metalHammering, // shield
+};
+
 // Engine building type value -> the command router's buildingKind name.
 function buildingKindNameOf(value: number): string {
   const entry = Object.entries(buildingType).find(([, typeValue]) => typeValue === value);
@@ -1553,6 +1628,7 @@ function renderScene(
   popup?: PopupKind,
   notice?: string,
   initScreen?: InitScreenSettings,
+  audio?: { sfxMuted: boolean; musicMuted: boolean },
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
@@ -1573,6 +1649,7 @@ function renderScene(
           ...(panelButtons === undefined ? {} : { panel: { buttons: panelButtons } }),
           ...(popup === undefined ? {} : { popup: { kind: popup } }),
           ...(notice === undefined ? {} : { notice }),
+          ...(audio === undefined ? {} : { audio }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
