@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 23
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-23-01
 - **Unblocks:** SB-23-03
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -25,11 +25,12 @@ before their eyes at high speed.
 
 ## Acceptance criteria
 
-- [ ] Digest numbers match independently computed state deltas in
+- [x] Digest numbers match independently computed state deltas in
   fixtures (both peers compute identical digests).
-- [ ] The shell replays a received window at high speed and lands on
-  the verified end state.
-- [ ] Digest text renders through the game font (shadowed, readable).
+- [x] The shell replays a received window at high speed and lands on
+  the verified end state. (The frame-chunked driver is proven headless;
+  its visible turn-flow surface lands with SB-23-03 — recorded.)
+- [x] Digest text renders through the game font (shadowed, readable).
 
 ## Test plan
 

@@ -1,7 +1,7 @@
 # Phase 23 — Correspondence Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-23-01 done.
+**Status:** in progress — SB-23-01..02 done.
 
 ## Goal
 
@@ -46,7 +46,7 @@ loopback are the gate.
 - [x] A match advances window by window: capture, transfer, trustless
   re-simulation, checksum verification, tamper rejection — all in CI
   fixtures. (SB-23-01)
-- [ ] A window produces an accurate digest and the shell replays the
+- [x] A window produces an accurate digest and the shell replays the
   opponent's window at high speed. (SB-23-02)
 - [ ] The turn flow runs: whose-turn states, pickup countdown,
   hand-over; hot-seat play works on one machine. (SB-23-03)
@@ -58,17 +58,20 @@ loopback are the gate.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-23-01 | Turn-window match model | done | story-01-turn-window-match-model.md | evidence-story-01.md |
-| SB-23-02 | Window digests and recap replay | backlog | story-02-window-digests-recap.md | — |
+| SB-23-02 | Window digests and recap replay | done | story-02-window-digests-recap.md | evidence-story-02.md |
 | SB-23-03 | Turn flow and pickup countdown | backlog | story-03-turn-flow-countdown.md | — |
 | SB-23-04 | Async play gate | backlog | story-04-async-play-gate.md | — |
 
 ## Where we are
 
-SB-23-01 shipped: `CorrespondenceMatch` plays alternating windows with
-trustless re-simulation, every tamper class rejects with restoration,
-matches resume by replay from tick 0 inside the fixture budget, and
-the `window-move` message rides the session protocol. See
-match-model.md. Next: SB-23-02 digests and recap replay.
+SB-23-01..02 shipped: the match model plus window digests and the
+frame-chunked recap replay (the opponent's window watched at ~16x,
+verified at the end). Three latent defects fell out of the
+stabilization work: the uint16 tick wrap (monotonicTick now carries
+window/turn math), hidden tabs freezing the lockstep pump, and
+Math.random e2e worlds (?seed= pins them — also a shareable-worlds
+feature); the browser suite then ran 11/11 four times consecutively.
+Next: SB-23-03 turn flow and pickup countdown.
 
 ## Active risks
 

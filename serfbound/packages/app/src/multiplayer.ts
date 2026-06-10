@@ -137,7 +137,7 @@ export class SerfboundLoopbackMultiplayer {
 
     // Close local input turns slightly ahead of the simulation so the
     // bundle for turn N+delay is on the wire before turn N ends.
-    const simTurn = Math.floor(hooks.state.tick / session.turnTicks);
+    const simTurn = Math.floor(hooks.state.monotonicTick / session.turnTicks);
     while (session.localTurn <= simTurn + 1) {
       for (const action of this.#pendingActions) {
         session.submit(action);
@@ -149,7 +149,7 @@ export class SerfboundLoopbackMultiplayer {
 
     this.#stalled = false;
     for (let step = 0; step < hooks.deltaTicks; step += 1) {
-      const turnOfNextTick = Math.floor(hooks.state.tick / session.turnTicks);
+      const turnOfNextTick = Math.floor(hooks.state.monotonicTick / session.turnTicks);
       if (session.executedTurn < turnOfNextTick) {
         if (session.readyThroughTurn() < turnOfNextTick) {
           this.#stalled = true;
@@ -166,7 +166,7 @@ export class SerfboundLoopbackMultiplayer {
       }
 
       hooks.state.advanceTick();
-      const tick = hooks.state.tick;
+      const tick = hooks.state.monotonicTick;
       if (tick % 16 === 0) {
         hooks.engine.update(tick);
       }

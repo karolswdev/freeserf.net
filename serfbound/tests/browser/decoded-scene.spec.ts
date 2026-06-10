@@ -10,7 +10,7 @@ const decodedSceneScreenshotPath =
 test("importing a decodable archive renders the decoded sprite scene", async ({ page }) => {
   test.setTimeout(300_000);
   await mkdir(dirname(decodedSceneScreenshotPath), { recursive: true });
-  await page.goto("/");
+  await page.goto("/?seed=6235842872325272");
 
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-scene-source",
@@ -87,6 +87,18 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   }
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-mission", "CUSTOM");
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-supplies", "35");
+
+  // The seed-row test above randomized the world; re-pin the
+  // deterministic seed before starting so the founding flow plays the
+  // same world every run (?seed wins on load), and restore supplies 35.
+  await page.goto("/?seed=6235842872325272");
+  await expect(page.getByTestId("data-state")).toHaveText("Data imported");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-init-seed",
+    "6235842872325272",
+  );
+  await canvas.click({ position: { x: initX + 144, y: initY + 56 * 2 + 8 }, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-supplies", "35");
   await canvas.click({ position: { x: initX + 144, y: initY + 100 * 2 + 10 }, force: true });
   await expect(page.getByTestId("game-state")).toHaveText("Running");
   await expect(page.locator("#app")).toHaveAttribute(
@@ -100,18 +112,32 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   );
   await expect(page.getByTestId("command-state")).toHaveText("Place your castle");
 
-  // Click around until a valid castle site accepts (terrain-dependent).
+  // Probe for a valid castle site over the visible map. The world is
+  // pinned (?seed), so this is deterministic; the scroll passes guard
+  // against future seed/layout changes.
   let castleClick = { x: 0, y: 0 };
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    const x = 120 + (attempt % 6) * 140;
-    const y = 100 + Math.floor(attempt / 6) * 90;
-    await canvas.click({ position: { x, y } });
-    const hasCastle = await page
-      .locator("#app")
-      .getAttribute("data-serfbound-world-has-castle");
-    if (hasCastle === "true") {
-      castleClick = { x, y };
-      break;
+  const probeBox = (await canvas.boundingBox()) ?? setupBox;
+  const probeColumns = 8;
+  const probeRows = 9;
+  const probeStepX = Math.floor((probeBox.width - 80) / (probeColumns - 1));
+  const probeStepY = Math.floor((probeBox.height - 170) / (probeRows - 1));
+  outer: for (let pass = 0; pass < 3; pass += 1) {
+    for (let attempt = 0; attempt < probeColumns * probeRows; attempt += 1) {
+      const x = 40 + (attempt % probeColumns) * probeStepX;
+      const y = 90 + Math.floor(attempt / probeColumns) * probeStepY;
+      await canvas.click({ position: { x, y } });
+      const hasCastle = await page
+        .locator("#app")
+        .getAttribute("data-serfbound-world-has-castle");
+      if (hasCastle === "true") {
+        castleClick = { x, y };
+        break outer;
+      }
+    }
+
+    // Empty pass: scroll a screenful and try fresh terrain.
+    for (let scrolls = 0; scrolls < 12; scrolls += 1) {
+      await page.keyboard.press("ArrowRight");
     }
   }
   await expect(page.locator("#app")).toHaveAttribute(

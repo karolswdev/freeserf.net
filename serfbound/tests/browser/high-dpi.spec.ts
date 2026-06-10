@@ -12,7 +12,7 @@ test.use({
 
 test("a DPR-2 display renders native-resolution and plays by pointer", async ({ page }) => {
   test.setTimeout(120_000);
-  await page.goto("/");
+  await page.goto("/?seed=6235842872325272");
 
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",

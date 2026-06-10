@@ -8,7 +8,7 @@ import { createDecodableGeneratedPaArchive } from "@serfbound/test-support";
 // agree across the tabs.
 
 async function importData(page: Page): Promise<void> {
-  await page.goto("/");
+  await page.goto("/?seed=6235842872325272");
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",
     mimeType: "application/octet-stream",
@@ -55,8 +55,12 @@ test("two tabs host and join one lockstep game with agreeing checksums", async (
     await expect(page.getByTestId("game-state")).toHaveText("Running");
   }
 
-  // Both players found their castles from their own tab.
+  // Both players found their castles from their own tab (each brought
+  // to front while acting — the visibility fix keeps the backgrounded
+  // peer pumping regardless, just throttled).
+  await hostPage.bringToFront();
   await probeCastleClicks(hostPage);
+  await joinPage.bringToFront();
   await probeCastleClicks(joinPage);
 
   // Both worlds materialize both castles (lockstep applied each

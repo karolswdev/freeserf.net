@@ -155,6 +155,14 @@ export class SerfboundGameState {
     return this.#random.next();
   }
 
+  // A monotonic tick counter for window/turn bookkeeping (SB-23-02):
+  // the uint16 game tick wraps every 65536 ticks; game time (uint32
+  // seconds plus the sub-second tick remainder) does not. Increments by
+  // gameSpeed per advance, exactly like the wrapped tick.
+  get monotonicTick(): number {
+    return this.gameTime * ticksPerSecond + this.#gameTimeTicksOfSecond;
+  }
+
   advanceTick(): readonly SerfboundTickEvent[] {
     this.#constTick = this.#constTick === 0xffffffff ? 0 : uint32(this.#constTick + 1);
 

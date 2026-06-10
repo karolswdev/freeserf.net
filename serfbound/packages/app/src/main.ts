@@ -101,6 +101,7 @@ export * from "./init-screen.js";
 export * from "./audio.js";
 export * from "./gestures.js";
 export * from "./multiplayer.js";
+export * from "./recap.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -544,7 +545,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let startGameNowRef:
     | ((options: { seedString?: string; initialSupplies?: number; mission?: string }) => void)
     | undefined;
-  let initSeedString = randomSeedString(Math.random);
+  // ?seed=XXXXXXXXXXXXXXXX (16 digits 1-8) pins the start-screen seed:
+  // shareable worlds, and deterministic e2e runs. Otherwise random.
+  const urlSeed = (() => {
+    try {
+      const value = new URLSearchParams(globalThis.location?.search ?? "").get("seed");
+      return value !== null && /^[1-8]{16}$/.test(value) ? value : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  let initSeedString = urlSeed ?? randomSeedString(Math.random);
   let initSupplies = 20;
   let initMission: string | undefined;
   const initScreenSettings = (): InitScreenSettings | undefined => {
@@ -688,11 +699,15 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     const reducedMotion =
       typeof globalThis.matchMedia === "function" &&
       globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // A running lockstep session must keep pumping even in a hidden
+    // tab — the peer's simulation waits on our turn bundles (the
+    // browser may still throttle the cadence; lockstep holds safely).
+    const multiplayerRunning =
+      currentMultiplayer !== undefined && currentMultiplayer.status.phase === "running";
     const shouldAnimate =
       currentLandscapeAssets !== undefined &&
       currentLandscapeAssets.waveFrameCount > 0 &&
-      !reducedMotion &&
-      !root.ownerDocument.hidden;
+      ((!reducedMotion && !root.ownerDocument.hidden) || multiplayerRunning);
     if (!shouldAnimate) {
       stopWaveAnimation();
       return;

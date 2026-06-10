@@ -12,7 +12,7 @@ test.use({
 
 test("a phone founds a settlement through the authentic UI by touch", async ({ page }) => {
   test.setTimeout(120_000);
-  await page.goto("/");
+  await page.goto("/?seed=6235842872325272");
 
   await page.getByTestId("data-import-input").setInputFiles({
     name: "SPAU.PA",
@@ -37,7 +37,35 @@ test("a phone founds a settlement through the authentic UI by touch", async ({ p
   // Found the castle by tapping the map: probe a grid over the whole
   // visible map (valid sites are terrain-dependent per generated world).
   // The layout can shift once the status panel reports the running game,
-  // so measure the canvas fresh before probing.
+  // so measure the canvas fresh before probing. Probes dispatch
+  // synthetic down+up pairs — Playwright's tap() can straddle the 500ms
+  // long-press threshold on a loaded CI machine, turning the tap into
+  // a tile inspect.
+  const quickTap = (x: number, y: number) =>
+    page.evaluate(
+      ({ x, y }) => {
+        const target = document.querySelector("[data-testid='terrain-preview']");
+        if (target === null) {
+          throw new Error("canvas missing");
+        }
+
+        const rect = target.getBoundingClientRect();
+        for (const type of ["pointerdown", "pointerup"]) {
+          target.dispatchEvent(
+            new PointerEvent(type, {
+              pointerId: 99,
+              pointerType: "touch",
+              isPrimary: true,
+              clientX: rect.left + x,
+              clientY: rect.top + y,
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+        }
+      },
+      { x, y },
+    );
   const probeBox = (await canvas.boundingBox()) ?? box;
   const probeColumns = 7;
   const probeRows = 8;
@@ -46,7 +74,7 @@ test("a phone founds a settlement through the authentic UI by touch", async ({ p
   for (let attempt = 0; attempt < probeColumns * probeRows; attempt += 1) {
     const x = 24 + (attempt % probeColumns) * probeStepX;
     const y = 70 + Math.floor(attempt / probeColumns) * probeStepY;
-    await canvas.tap({ position: { x, y }, force: true });
+    await quickTap(x, y);
     const hasCastle = await page
       .locator("#app")
       .getAttribute("data-serfbound-world-has-castle");
