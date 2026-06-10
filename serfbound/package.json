@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc -b packages/engine packages/assets packages/test-support packages/app",
     "build:web": "npm run build && vite build",
+    "capture:local:screenshots": "npm run build:web && node scripts/capture-local-screenshots.mjs",
     "ci:release": "npm test && npm run check:boundaries && npm run test:release:static && npm run test:docs && npm run test:local:assets",
     "clean": "tsc -b --clean packages/engine packages/assets packages/test-support packages/app",
     "check:boundaries": "node scripts/check-boundaries.mjs",

@@ -228,6 +228,31 @@ for (const key of ["tile:up:5:40", "obj:flag", "obj:tree"]) {
 }
 assert.equal(realAtlas.rgba.length, realAtlas.width * realAtlas.height * 4);
 
+// SB-10-04: the full decoded scene path must work with real data.
+const { buildDecodedRenderAssets, createFirstRenderLayerScene: createScene } = await import(
+  "../packages/app/dist/main.js"
+);
+const decodedAssets = buildDecodedRenderAssets(archiveBytes, catalog);
+assert.notEqual(decodedAssets, null, "real archive builds decoded render assets");
+assert.equal(decodedAssets.source, "dos-pa-decoded");
+assert.equal(decodedAssets.terrainTriangleCount > 10, true, "terrain combos composed");
+for (const key of ["obj:tree", "obj:pine", "obj:stone", "obj:flag"]) {
+  assert.equal(decodedAssets.objectKeys.includes(key), true, `${key} decoded from real data`);
+}
+
+const decodedScene = createScene({
+  size: { width: 960, height: 540 },
+  decodedAssets,
+  builtStructures: [{ id: 1, kind: "flag", tile: { column: 3, row: 2, position: 11 } }],
+});
+assert.equal(decodedScene.assetSummary.source, "dos-pa-decoded");
+assert.equal(decodedScene.sprites.length > 1000, true, "decoded scene fills the canvas");
+assert.equal(
+  decodedScene.sprites.filter((sprite) => sprite.key === "obj:flag").length,
+  1,
+  "built flag renders the real flag sprite",
+);
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites, and composed real terrain triangles into a ${realAtlas.width}x${realAtlas.height} atlas.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites, composed real terrain triangles into a ${realAtlas.width}x${realAtlas.height} atlas, and built a decoded scene with ${decodedScene.sprites.length} sprites.`,
 );

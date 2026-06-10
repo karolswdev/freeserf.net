@@ -94,7 +94,18 @@ npm run test:local:assets
 
 If the environment variable is not set, the command exits successfully with a
 skip message. If local data is present, the command compares parser, typed asset
-catalog, and render-layer facts against metadata-only local oracle output.
+catalog, and render-layer facts against metadata-only local oracle output, then
+decodes real palettes and sprites, composes terrain triangles, and builds a
+decoded render scene.
+
+To capture decoded-scene screenshots from real local data (used for phase
+evidence; same opt-in environment variables):
+
+```bash
+SERFBOUND_RUN_LOCAL_ASSET_TESTS=1 \
+SERFBOUND_SPAU_PA="../serfbound-local-data/sources/TheSettlersDemo/Serf-City-Life-is-Feudal_DOS_EN/SPAU.PA" \
+npm run capture:local:screenshots
+```
 
 ## Static Release Commands
 

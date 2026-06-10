@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-06-10.
 **Current phase:** [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/current-phase-status.md)
-**Status:** Phases 0–9 complete for the infrastructure slice; Phase 10 (decoded
-game art from real `SPAU.PA`) is in progress because the shipped scene is still
-synthetic — see the Phase 10 status doc for the recorded gap.
+**Status:** Phases 0–10 complete. Phase 10 closed the recorded gap from the
+infrastructure slice: imported local `SPAU.PA` now renders authentic decoded
+Settlers terrain, objects, and flags in the browser.
 
 ## Vision
 
@@ -94,7 +94,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 7 | Ship the first local playable vertical slice | complete | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | complete | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | complete | [phase-9-release-operations](./phase-9-release-operations/) |
-| 10 | Decode real DOS sprites and render authentic game art in the browser | in progress | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
+| 10 | Decode real DOS sprites and render authentic game art in the browser | complete | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
 
 ## Delivery Gates
 
@@ -214,6 +214,10 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current real-data visual proof:** decoded-scene screenshots from local
+  `SPAU.PA` live under `phase-10-authentic-asset-rendering/artifacts/` and
+  regenerate via opt-in `npm run capture:local:screenshots`; the opt-in local
+  asset suite asserts real decode, composition, and decoded-scene facts.
 - **Current decoded render path:** `@serfbound/app` builds decoded render
   assets from imported archive bytes (terrain triangle composition + runtime
   texture atlas), renders them through a textured WebGL2 path with authentic

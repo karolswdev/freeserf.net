@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 10
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-10-03
 - **Unblocks:** —
 - **Owner:** unassigned
@@ -26,14 +26,14 @@ check path so it stays reproducible.
 
 ## Acceptance criteria
 
-- [ ] An opt-in script captures browser screenshots of the decoded scene from
+- [x] An opt-in script captures browser screenshots of the decoded scene from
   real local `SPAU.PA` into the phase `artifacts/` folder.
-- [ ] The screenshot visibly shows authentic Settlers terrain (real ground
+- [x] The screenshot visibly shows authentic Settlers terrain (real ground
   textures, not flat colors) and at least one authentic map object or flag
   sprite, verified by a human-readable review note in the evidence file.
-- [ ] `npm run test:local:assets` asserts real-data decoding invariants
+- [x] `npm run test:local:assets` asserts real-data decoding invariants
   (palettes, sprite dimensions, decoded scene source, sprite counts).
-- [ ] `npm run ci:release` passes data-free; the capture path is opt-in only.
+- [x] `npm run ci:release` passes data-free; the capture path is opt-in only.
 
 ## Test plan
 

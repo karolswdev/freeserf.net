@@ -1,7 +1,7 @@
 # Phase 10 — Authentic Asset Rendering
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -39,7 +39,7 @@ synthetic triangle scene with decoded game art.
 - [x] The browser scene renders decoded terrain, at least one authentic map
   object, and the real flag sprite for built structures when real data is
   imported, with graceful fallback for non-decodable archives. (SB-10-03)
-- [ ] A captured browser screenshot using real local `SPAU.PA` visibly shows
+- [x] A captured browser screenshot using real local `SPAU.PA` visibly shows
   authentic Settlers terrain and sprites, recorded as phase evidence. (SB-10-04)
 
 ## Story status
@@ -49,15 +49,17 @@ synthetic triangle scene with decoded game art.
 | SB-10-01 | Port DOS palette and sprite decoders | done | story-01-dos-sprite-decoders.md | evidence-story-01.md |
 | SB-10-02 | Compose terrain triangles into a texture atlas | done | story-02-terrain-composition-atlas.md | evidence-story-02.md |
 | SB-10-03 | Render decoded sprites in the browser scene | done | story-03-decoded-webgl-scene.md | evidence-story-03.md |
-| SB-10-04 | Prove authentic visuals with real local data | in-progress | story-04-real-data-visual-proof.md | — |
+| SB-10-04 | Prove authentic visuals with real local data | done | story-04-real-data-visual-proof.md | evidence-story-04.md |
 
 ## Where we are
 
-SB-10-01 through SB-10-03 are done: the browser now decodes imported archive
-bytes, composes terrain, and renders sprite scenes through a textured WebGL2
-path, proven end-to-end in Chromium with a CI-safe decodable fixture and
-spot-checked against real local data. SB-10-04 (real-data visual proof) is in
-progress.
+Phase 10 is complete. Imported local `SPAU.PA` renders authentic Settlers
+terrain, trees, stones, and flag sprites in the browser. Visual proof from
+real data lives under `artifacts/story-04-*.png` with a human review note in
+evidence-story-04. Real-data decode/scene checks are wired into the opt-in
+local asset suite, and screenshots regenerate via
+`npm run capture:local:screenshots`. Known gaps (synthetic height field, no
+scrolling) are recorded for the next phase.
 
 ## Active risks
 
@@ -85,6 +87,11 @@ progress.
   succeeds (palette 3 present and at least one terrain combo composes);
   otherwise the app keeps the catalog/fixture scene, so the CI-generated
   minimal archive and all pre-existing browser tests stay valid — SB-10-03.
+- 2026-06-10 — Real-data proof is reproducible, not one-off: decoded-scene
+  screenshots regenerate via the opt-in `npm run capture:local:screenshots`,
+  and the visual gate was reviewed by a human-readable note before close. The
+  1D ridge field was upgraded to 2D crossed waves after review showed
+  artificial striping — SB-10-04.
 
 ## Decisions deferred
 

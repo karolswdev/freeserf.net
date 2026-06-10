@@ -283,6 +283,8 @@ const decodedFieldColumns = 84;
 const decodedFieldRows = 104;
 const fieldWavePeriod = 12;
 const fieldHeightSteps = [0, 0, 1, 2, 3, 3, 3] as const;
+const fieldCrossWavePeriod = 17;
+const fieldCrossHeightSteps = [0, 0, 0, 1, 1, 2, 2, 1, 1] as const;
 
 const decodedObjectSprites = [
   { kind: "tree", spriteIndex: 0 },
@@ -297,13 +299,18 @@ function wrapValue(value: number, period: number): number {
   return ((value % period) + period) % period;
 }
 
-function fieldWave(value: number): number {
-  const phase = wrapValue(value, fieldWavePeriod);
-  return Math.min(phase, fieldWavePeriod - phase);
+function fieldWave(value: number, period: number): number {
+  const phase = wrapValue(value, period);
+  return Math.min(phase, period - phase);
 }
 
+// Two crossed triangle waves give a 2D rolling field. Per-lattice-step height
+// deltas stay small, and the rare steeper combination falls back to a clamped
+// mask code so terrain never leaves holes.
 function fieldHeight(column: number, row: number): number {
-  return fieldHeightSteps[fieldWave(column + (row >> 1))] ?? 0;
+  const ridge = fieldHeightSteps[fieldWave(column + (row >> 1), fieldWavePeriod)] ?? 0;
+  const cross = fieldCrossHeightSteps[fieldWave(column - row, fieldCrossWavePeriod)] ?? 0;
+  return ridge + cross;
 }
 
 function vertexScreenX(column: number, row: number): number {
@@ -333,11 +340,11 @@ function fieldTerrain(column: number, row: number, heights: readonly number[]): 
     return 0; // water
   }
 
-  if (min >= 3) {
+  if (min >= 4) {
     return 14; // snow
   }
 
-  if (max >= 3) {
+  if (max >= 4) {
     return 11; // tundra
   }
 
@@ -386,7 +393,13 @@ function decodedTriangleUp(column: number, row: number): DecodedTriangle | null 
   const right = downRight(column, row);
   const leftHeight = fieldHeight(left.column, left.row);
   const rightHeight = fieldHeight(right.column, right.row);
-  const maskCode = triangleMaskCodeUp(apexHeight, leftHeight, rightHeight);
+  const maskCode =
+    triangleMaskCodeUp(apexHeight, leftHeight, rightHeight) ??
+    triangleMaskCodeUp(
+      apexHeight,
+      clampNeighborHeight(apexHeight, leftHeight),
+      clampNeighborHeight(apexHeight, rightHeight),
+    );
   if (maskCode === null) {
     return null;
   }
@@ -398,13 +411,23 @@ function decodedTriangleUp(column: number, row: number): DecodedTriangle | null 
   };
 }
 
+function clampNeighborHeight(apexHeight: number, neighborHeight: number): number {
+  return apexHeight + Math.max(-2, Math.min(2, neighborHeight - apexHeight));
+}
+
 function decodedTriangleDown(column: number, row: number): DecodedTriangle | null {
   const apexHeight = fieldHeight(column, row);
   const left = upLeft(column, row);
   const right = upRight(column, row);
   const leftHeight = fieldHeight(left.column, left.row);
   const rightHeight = fieldHeight(right.column, right.row);
-  const maskCode = triangleMaskCodeDown(apexHeight, leftHeight, rightHeight);
+  const maskCode =
+    triangleMaskCodeDown(apexHeight, leftHeight, rightHeight) ??
+    triangleMaskCodeDown(
+      apexHeight,
+      clampNeighborHeight(apexHeight, leftHeight),
+      clampNeighborHeight(apexHeight, rightHeight),
+    );
   if (maskCode === null) {
     return null;
   }
