@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 8
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-8-01, SB-3-03
 - **Unblocks:** SB-8-04, SB-9-04
 - **Owner:** unassigned
@@ -22,11 +22,13 @@ there is a playable slice to measure.
 
 ## Acceptance criteria
 
-- [ ] Decision document records main-thread vs worker choice.
-- [ ] Decision cites Phase 8 performance evidence.
-- [ ] If workers are chosen, message contracts and transfer costs are tested.
-- [ ] If workers are deferred, stop signals for revisiting are explicit.
-- [ ] Normal play remains pure browser.
+- [x] Decision document records main-thread vs worker choice.
+- [x] Decision cites Phase 8 performance evidence.
+- [x] If workers are chosen, message contracts and transfer costs are tested;
+  workers are deferred here, with future test requirements documented before
+  any worker path can be enabled.
+- [x] If workers are deferred, stop signals for revisiting are explicit.
+- [x] Normal play remains pure browser.
 
 ## Test plan
 
@@ -38,5 +40,5 @@ there is a playable slice to measure.
 
 ## Notes / open questions
 
-Do not add workers to feel sophisticated. Add them only when measurements say
-they buy something.
+Decision: keep the current playable slice main-thread-first. Workers are
+deferred until Phase 8 or later measurements trip explicit stop signals.

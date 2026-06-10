@@ -29,7 +29,7 @@ recovery.
 ## Exit criteria (evidence required)
 
 - [x] Tick/render frame budgets are measured on representative browsers.
-- [ ] Main-thread and worker strategy is documented and implemented or
+- [x] Main-thread and worker strategy is documented and implemented or
   explicitly deferred.
 - [ ] Persistence survives reloads and has recovery/reset behavior.
 - [ ] Browser compatibility matrix is documented with at least Chrome, Firefox,
@@ -42,8 +42,8 @@ recovery.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-8-01 | Establish performance budgets | done | story-01-performance-budgets.md | evidence-story-01.md |
-| SB-8-02 | Decide worker and threading model | ready | story-02-worker-threading-model.md | — |
-| SB-8-03 | Harden persistence recovery | backlog | story-03-persistence-recovery.md | — |
+| SB-8-02 | Decide worker and threading model | done | story-02-worker-threading-model.md | evidence-story-02.md |
+| SB-8-03 | Harden persistence recovery | ready | story-03-persistence-recovery.md | — |
 | SB-8-04 | Verify browser compatibility | backlog | story-04-browser-compatibility.md | — |
 
 ## Where we are
@@ -51,8 +51,10 @@ recovery.
 Phase 8 is in progress. SB-8-01 added a repeatable performance measurement
 script, explicit first-slice budgets, and a local Chromium baseline for
 simulation tick, browser frame cadence, import, save, and reload/load timings.
-The next responsible move is SB-8-02: use the measured baseline to decide
-whether workers are justified yet.
+SB-8-02 used that baseline to choose a main-thread-first browser runtime for
+the current playable slice, with Workers explicitly deferred until measured
+stop signals trip. The next responsible move is SB-8-03: harden persistence
+recovery around corrupt, stale, failed, or quota-limited browser storage.
 
 ## Active risks
 
@@ -69,8 +71,13 @@ whether workers are justified yet.
   local `SPAU.PA` import <= 1000 ms, save <= 100 ms, and reload/load <= 1000
   ms. These are regression tripwires, not release-grade performance promises —
   SB-8-01.
+- 2026-06-09 — Keep the current playable slice main-thread-first. Workers are
+  deferred because the measured tick, frame, import, save, and reload/load
+  costs remain within SB-8-01 budgets. Revisit only when the stop signals in
+  `worker-threading-decision.md` trip — SB-8-02.
 
 ## Decisions deferred
 
-- Worker-first vs main-thread-first simulation — revisit in SB-8-02 — default to
-  simple main-thread until measured pressure justifies workers.
+- Worker implementation boundary — deferred until measured pressure justifies a
+  dedicated PMO story. The first candidate is deterministic simulation only,
+  not a broad app/render/persistence Worker.

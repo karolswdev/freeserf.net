@@ -237,6 +237,11 @@ For Serfbound specifically, every implementation story must identify:
   with `npm run measure:performance`, capturing simulation tick average,
   desktop Chromium frame cadence, local `SPAU.PA` import, save, and reload/load
   timings plus explicit regression stop signals.
+- **Current worker/threading strategy:** Phase 8 keeps the current playable
+  slice main-thread-first. Web Workers are deferred until measured stop signals
+  trip; any future worker path must prove message contracts, transfer/clone
+  costs, deterministic equivalence, browser compatibility, and failure
+  recovery before being enabled.
 
 ## Glossary
 
