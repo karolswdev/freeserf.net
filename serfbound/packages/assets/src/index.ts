@@ -46,6 +46,16 @@ export {
 } from "./sprite-atlas.js";
 
 export {
+  convertSfxToPcm16,
+  decodeSfxSamples,
+  dosSfxLevel,
+  sfxArchiveBase,
+  sfxSampleRate,
+  sfxType,
+  type SfxTypeValue,
+} from "./audio-sfx.js";
+
+export {
   decodeUiCursor,
   decodeUiFontGlyph,
   decodeUiFrame,

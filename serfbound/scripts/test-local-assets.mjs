@@ -283,6 +283,26 @@ const torsoMaskPixels = torso.playerMask.rgba.filter(
 ).length;
 assert.equal(torsoMaskPixels > 0, true, "player-color region exists");
 
+// SB-17-01: real DOS sound effects decode to PCM16 at 8000 Hz.
+const { decodeSfxSamples, sfxType, sfxSampleRate } = await import(
+  "../packages/assets/dist/index.js"
+);
+assert.equal(sfxSampleRate, 8000);
+let decodedSfxCount = 0;
+for (const sfxId of Object.values(sfxType)) {
+  const samples = decodeSfxSamples(spriteArchive, sfxId);
+  if (samples !== null) {
+    assert.equal(samples.length > 0, true, `sfx ${sfxId} has samples`);
+    assert.equal(
+      samples.some((sample) => sample !== samples[0]),
+      true,
+      `sfx ${sfxId} is not silence`,
+    );
+    decodedSfxCount += 1;
+  }
+}
+assert.equal(decodedSfxCount > 20, true, "most reference clips decode from real data");
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, object sprites, ${animationTable.length} serf animations, and player-color torsos; composed terrain into a ${realAtlas.width}x${realAtlas.height} atlas and a decoded scene with ${decodedScene.sprites.length} sprites.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, object sprites, ${animationTable.length} serf animations, player-color torsos, and ${decodedSfxCount} DOS sound effects; composed terrain into a ${realAtlas.width}x${realAtlas.height} atlas and a decoded scene with ${decodedScene.sprites.length} sprites.`,
 );

@@ -212,6 +212,15 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
   for (let piece = 0; piece < 26; piece += 1) {
     entries.push({ index: 1780 + piece, bytes: solidSprite(8, 40, 90 + piece * 2) });
   }
+  // Sound effects: raw 8-bit PCM payloads at 3900 + id.
+  for (const sfx of [1, 2, 4, 8, 34, 42, 76]) {
+    const pcm = new Uint8Array(64);
+    for (let i = 0; i < pcm.length; i += 1) {
+      pcm[i] = (32 + sfx * 3 + i * 5) & 0xff;
+    }
+    entries.push({ index: 3900 + sfx, bytes: pcm });
+  }
+
   entries.push({
     index: 3999,
     bytes: concatBytes([spriteHeader(16, 16), fullCoverageRuns(16 * 16, 250)]),

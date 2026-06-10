@@ -1,7 +1,7 @@
 # Phase 17 — Sound and Music
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -28,8 +28,9 @@ with persistent volume/mute controls.
 
 ## Exit criteria (evidence required)
 
-- [ ] DOS SFX entries decode to playable WebAudio buffers; reference event
-  mapping fires the right clip (build thud, sawing, fights…). (SB-17-01)
+- [x] DOS SFX entries decode to playable WebAudio buffers; reference event
+  mapping fires the right clip (build thud, sawing, fights…). (SB-17-01;
+  per-serf work-loop hooks land with SB-17-03)
 - [ ] XMI music parses and a chosen playback path plays the classic tracks in
   the browser, with the decision recorded. (SB-17-02)
 - [ ] Volume/mute for SFX and music persist; audio respects autoplay rules
@@ -39,13 +40,16 @@ with persistent volume/mute controls.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-17-01 | Decode and fire DOS sound effects | backlog | story-01-dos-sound-effects.md | — |
+| SB-17-01 | Decode and fire DOS sound effects | done | story-01-dos-sound-effects.md | evidence-story-01.md |
 | SB-17-02 | Play XMI music in the browser | backlog | story-02-xmi-music-playback.md | — |
 | SB-17-03 | Audio settings, hooks, and polish | backlog | story-03-audio-settings-polish.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 16 closes.
+SB-17-01 is done: all 39 reference clips decode from real data with the
+exact ConvertToWav math, the gesture-gated audio service plays them at
+the DOS 8000 Hz, and the event mapping fires on commands, popups,
+construction, and defeat. SB-17-02 (XMI music) is next.
 
 ## Active risks
 

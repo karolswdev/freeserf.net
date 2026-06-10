@@ -2,6 +2,7 @@ import {
   assetImportBoundary,
   buildTypedAssetCatalog,
   parseDosPaCatalog,
+  sfxType,
   validateArchiveFileSelection,
   type ArchiveValidationResult,
   type DosPaCatalog,
@@ -73,6 +74,7 @@ import {
   type PopupKind,
 } from "./popup.js";
 
+import { SerfboundAudioService } from "./audio.js";
 import {
   initScreenRect,
   initScreenRowAt,
@@ -84,6 +86,7 @@ import {
 export * from "./panel-bar.js";
 export * from "./popup.js";
 export * from "./init-screen.js";
+export * from "./audio.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -356,6 +359,16 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       root.dataset.serfboundPopup = popup;
     }
   };
+  // The browser audio service: DOS clips loaded with decoded assets,
+  // unlocked by the first canvas gesture (autoplay policy).
+  const audioService = new SerfboundAudioService();
+  activeAudioService = audioService;
+  const syncAudioState = () => {
+    root.dataset.serfboundAudio = audioService.state;
+    if (audioService.lastSfx !== null) {
+      root.dataset.serfboundLastSfx = String(audioService.lastSfx);
+    }
+  };
   // The start screen's custom-game choices (GameInitBox settings).
   let startGameNowRef:
     | ((options: { seedString?: string; initialSupplies?: number }) => void)
@@ -502,10 +515,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
             ).length;
             if (doneCount > lastDoneBuildingCount && lastDoneBuildingCount > 0) {
               setNotice("BUILDING COMPLETE");
+              audioService.playSfx(sfxType.hammerBlow);
+              syncAudioState();
             }
 
             lastDoneBuildingCount = doneCount;
             if (currentWorld.players[0]?.defeated === true) {
+              if (root.dataset.serfboundNotification !== "GAME OVER") {
+                audioService.playSfx(sfxType.ahhh);
+                syncAudioState();
+              }
+
               setNotice("GAME OVER");
             }
           }
@@ -577,6 +597,10 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   ) => {
     currentTypedAssetCatalog = typedAssetCatalog;
     currentDecodedAssets = buildDecodedRenderAssets(archiveBytes, catalog) ?? undefined;
+    if (currentDecodedAssets !== undefined) {
+      audioService.loadClips(currentDecodedAssets.rawSfx);
+    }
+    syncAudioState();
     currentImportedDataSource = localGameDataSourceFromCatalog(catalog, archiveName);
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
     renderCurrentScene();
@@ -718,10 +742,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         }
       } else if (slot === 2) {
         setPopup("map");
+        audioService.playSfx(sfxType.click);
       } else if (slot === 3) {
         setPopup("stats");
+        audioService.playSfx(sfxType.click);
       } else if (slot === 4) {
         setPopup("sett");
+        audioService.playSfx(sfxType.click);
       } else if (slot === 1) {
         // Road mode toggle, same semantics as the shell road button.
         if (root.dataset.serfboundRoadMode !== "idle") {
@@ -819,6 +846,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   let dragState: { x: number; y: number } | undefined;
   canvas.addEventListener("pointerdown", (event) => {
+    audioService.unlock();
+    syncAudioState();
     if (currentLandscapeAssets !== undefined) {
       dragState = { x: event.clientX, y: event.clientY };
       canvas.setPointerCapture(event.pointerId);
@@ -1780,7 +1809,16 @@ function syncWorldState(
   }
 }
 
+// The reference event-to-clip mapping for commands: accepted actions
+// click in, rejected ones refuse (Audio.TypeSfx Accepted/NotAccepted).
+let activeAudioService: SerfboundAudioService | undefined;
+
 function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResult): void {
+  if (activeAudioService !== undefined) {
+    activeAudioService.playSfx(result.status === "accepted" ? sfxType.accepted : sfxType.notAccepted);
+    root.dataset.serfboundLastSfx = String(activeAudioService.lastSfx ?? "");
+  }
+
   root.dataset.serfboundCommandState = result.status;
   if (result.status === "accepted") {
     root.dataset.serfboundLastEffect = result.effect;

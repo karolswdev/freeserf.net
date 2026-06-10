@@ -8,9 +8,11 @@ import {
   decodeUiFontGlyph,
   decodeUiFrame,
   decodeUiIcon,
+  decodeSfxSamples,
   decodeUiLogo,
   decodeUiPanelButton,
   layoutUiText,
+  sfxType,
   parseSerfAnimationTable,
   uiFontGlyphCount,
   type ComposedSerfTorso,
@@ -83,6 +85,8 @@ export type DecodedRenderAssets = {
   readonly rawBottomFrames: readonly (DecodedDosSprite | null)[];
   readonly rawCursor: DecodedDosSprite | null;
   readonly rawLogo: DecodedDosSprite | null;
+  // Decoded DOS sound effects (SB-17-01), PCM16 by clip id.
+  readonly rawSfx: ReadonlyMap<number, Int16Array>;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -718,6 +722,19 @@ export function buildDecodedRenderAssets(
   const rawCursor = decodeUiSafely(() => decodeUiCursor(archive));
   const rawLogo = decodeUiSafely(() => decodeUiLogo(archive));
 
+  // Sound effects: decode every reference clip the archive defines.
+  const rawSfx = new Map<number, Int16Array>();
+  for (const sfxId of Object.values(sfxType)) {
+    try {
+      const samples = decodeSfxSamples(archive, sfxId);
+      if (samples !== null) {
+        rawSfx.set(sfxId, samples);
+      }
+    } catch {
+      // partial archives skip missing clips
+    }
+  }
+
   // UI chrome for the pre-game scenes (the init screen draws over the
   // import preview, which uses this atlas directly).
   const zeroAnchored = (sprite: DecodedDosSprite): DecodedDosSprite => ({
@@ -770,6 +787,7 @@ export function buildDecodedRenderAssets(
     rawBottomFrames,
     rawCursor,
     rawLogo,
+    rawSfx,
   };
 }
 

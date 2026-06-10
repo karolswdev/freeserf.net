@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 17
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-16-05
 - **Unblocks:** SB-17-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ The DOS archive carries the original effect clips (entries 3900+). They must dec
 
 ## Acceptance criteria
 
-- [ ] SFX entries decode from real data in opt-in checks (format facts asserted).
-- [ ] Events fire mapped clips (observable via the audio service state in tests).
-- [ ] AudioContext unlocks on first gesture without console errors.
+- [x] SFX entries decode from real data in opt-in checks (format facts asserted).
+- [x] Events fire mapped clips (observable via the audio service state in tests).
+- [x] AudioContext unlocks on first gesture without console errors.
 
 ## Test plan
 

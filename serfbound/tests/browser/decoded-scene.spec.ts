@@ -264,6 +264,11 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "BUILDING COMPLETE",
   );
 
+  // Audio: the first canvas gesture unlocked WebAudio and the event
+  // mapping has fired clips (the build commands clicked in).
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-audio", "unlocked");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-last-sfx", /^\d+$/);
+
   // The stats updated live: construction logistics drew planks from the
   // castle stock while the settlement built itself.
   const stockAfterConstruction = await page
