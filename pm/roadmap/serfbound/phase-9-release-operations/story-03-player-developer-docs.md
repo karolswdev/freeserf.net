@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 9
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-8-03, SB-9-02
 - **Unblocks:** SB-9-04
 - **Owner:** unassigned
@@ -23,11 +23,11 @@ workflow, local asset checks, and release commands.
 
 ## Acceptance criteria
 
-- [ ] Player docs explain how to provide local data.
-- [ ] Player docs explain save/load/reset/troubleshooting.
-- [ ] Developer docs explain CI-safe vs local/manual tests.
-- [ ] Developer docs explain PMO story/evidence flow.
-- [ ] Docs do not imply original assets are bundled or hosted.
+- [x] Player docs explain how to provide local data.
+- [x] Player docs explain save/load/reset/troubleshooting.
+- [x] Developer docs explain CI-safe vs local/manual tests.
+- [x] Developer docs explain PMO story/evidence flow.
+- [x] Docs do not imply original assets are bundled or hosted.
 
 ## Test plan
 
@@ -39,5 +39,6 @@ workflow, local asset checks, and release commands.
 
 ## Notes / open questions
 
-Docs should be terse and operational. Avoid long history unless it directly
-helps a player or developer act.
+Docs are split into player, developer, and static hosting pages under
+`serfbound/docs/`. `npm run test:docs` checks required topics and forbidden
+asset-hosting implications.

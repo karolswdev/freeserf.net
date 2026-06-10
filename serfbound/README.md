@@ -30,6 +30,7 @@ npm run build
 npm run build:web
 npm run release:static
 npm run test:release:static
+npm run test:docs
 npm test
 npm run check:boundaries
 ```
@@ -43,6 +44,9 @@ forbidden original-data, .NET, native runtime, and desktop packaging output.
 `/serfbound/`, checks cache headers, imports generated `SPAU.PA` data through
 the browser, and verifies IndexedDB restore after reload. See
 `docs/static-hosting-release.md` for the release path.
+`npm run test:docs` checks that the player, developer, and static hosting docs
+cover the required release topics without implying original assets are bundled
+or hosted.
 `npm test` runs the default CI-safe test spine. It builds the workspace, uses
 Node's built-in test runner against committed fixtures under
 `pm/roadmap/serfbound/reference-fixtures/ci/`, builds the static browser shell,

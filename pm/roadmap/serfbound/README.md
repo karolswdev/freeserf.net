@@ -171,6 +171,11 @@ For Serfbound specifically, every implementation story must identify:
   `/serfbound/`, checks cache headers, imports generated `SPAU.PA`, and proves
   IndexedDB restore after reload. The release mechanics are documented in
   `serfbound/docs/static-hosting-release.md`.
+- **Current operational docs:** `serfbound/docs/player-guide.md` documents
+  local data import, start/play, save/load/reset, troubleshooting, and browser
+  origin storage behavior; `serfbound/docs/developer-guide.md` documents setup,
+  CI-safe vs local/manual tests, oracle fixtures, PMO flow, and release
+  commands. `npm run test:docs` verifies required release documentation topics.
 - **Current runtime boundary baseline:**
   `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
 - **Current static shell proof:**
