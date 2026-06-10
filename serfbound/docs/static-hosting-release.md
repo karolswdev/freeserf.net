@@ -126,3 +126,18 @@ Do not release the artifact if any of these are true:
   desktop packaging.
 - The hosted app cannot import a local `SPAU.PA` through the browser file picker
   and restore it from IndexedDB after reload.
+
+## Public releases through GitHub Pages
+
+Tagging `serfbound-v*` runs `.github/workflows/serfbound-pages.yml`:
+the data-free release gates (tests, boundary checks, static-hosting
+verification, docs checks) run first, the artifact builds with a
+`version.json` stamp (tag + commit), and GitHub Pages deploys it. The
+site serves from the repository subpath, which the artifact supports via
+relative asset URLs (verified by `npm run test:release:static`).
+
+Versioned history lives in `CHANGELOG.md`. The PWA shell cache version
+(`public/sw.js`) must bump alongside any release that changes the shell.
+
+Enabling: the repository's Pages setting must select "GitHub Actions" as
+the source (a one-time repository toggle by the maintainer).

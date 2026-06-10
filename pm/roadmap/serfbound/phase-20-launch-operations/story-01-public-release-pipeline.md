@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 20
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-19-05
 - **Unblocks:** SB-20-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Phase 9 defined the static hosting path; launch makes it real - an actual public
 
 ## Acceptance criteria
 
-- [ ] Custom domains/CDN tuning beyond correctness.:A tagged release deploys to a public URL through the documented path.
-- [ ] Cache headers verified in production config.
-- [ ] Rollback to the previous version is demonstrated.
+- [x] Custom domains/CDN tuning beyond correctness.:A tagged release deploys to a public URL through the documented path.
+- [x] Cache headers verified in production config.
+- [x] Rollback to the previous version is demonstrated.
 
 ## Test plan
 
