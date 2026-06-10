@@ -41,6 +41,7 @@ export type SerfboundGameSnapshot = {
     readonly inventoryScheduleCounter: number;
   };
   readonly builtStructures: readonly SerfboundBuiltStructure[];
+  readonly worldActions?: readonly unknown[];
 };
 
 export type SerfboundBuiltStructureKind = "flag";
@@ -68,6 +69,7 @@ export type SerfboundGameStateOptions = {
   readonly inventoryScheduleCounter?: number;
   readonly tickDifference?: number;
   readonly builtStructures?: readonly SerfboundBuiltStructure[];
+  readonly worldActions?: readonly unknown[];
 };
 
 export class SerfboundGameState {
@@ -83,6 +85,7 @@ export class SerfboundGameState {
   #knightMoraleCounter: number;
   #inventoryScheduleCounter: number;
   #builtStructures: SerfboundBuiltStructure[];
+  #worldActions: unknown[] = [];
 
   constructor(options: SerfboundGameStateOptions = {}) {
     this.mapGeometry = new MapGeometry(options.mapSize ?? 3);
@@ -95,6 +98,7 @@ export class SerfboundGameState {
     this.#tickDifference = Math.trunc(options.tickDifference ?? 0);
     this.#knightMoraleCounter = Math.trunc(options.knightMoraleCounter ?? 0);
     this.#inventoryScheduleCounter = Math.trunc(options.inventoryScheduleCounter ?? 0);
+    this.#worldActions = [...(options.worldActions ?? [])];
     this.#builtStructures = (options.builtStructures ?? []).map((structure) => ({
       id: Math.trunc(structure.id),
       kind: structure.kind,
@@ -120,6 +124,7 @@ export class SerfboundGameState {
       knightMoraleCounter: snapshot.counters.knightMoraleCounter,
       inventoryScheduleCounter: snapshot.counters.inventoryScheduleCounter,
       builtStructures: snapshot.builtStructures,
+      worldActions: snapshot.worldActions ?? [],
     });
   }
 
@@ -191,6 +196,14 @@ export class SerfboundGameState {
     return events;
   }
 
+  get worldActions(): readonly unknown[] {
+    return [...this.#worldActions];
+  }
+
+  recordWorldAction(action: unknown): void {
+    this.#worldActions.push(action);
+  }
+
   get builtStructures(): readonly SerfboundBuiltStructure[] {
     return this.#builtStructures.map((structure) => ({
       ...structure,
@@ -248,6 +261,7 @@ export class SerfboundGameState {
         inventoryScheduleCounter: this.#inventoryScheduleCounter,
       },
       builtStructures: this.builtStructures,
+      worldActions: this.worldActions,
     };
   }
 }

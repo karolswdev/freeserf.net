@@ -43,6 +43,7 @@ test("SerfboundGameState exposes a stable initial snapshot", () => {
       inventoryScheduleCounter: 0,
     },
     builtStructures: [],
+    worldActions: [],
   });
 });
 
@@ -84,6 +85,7 @@ test("SerfboundGameState advances source-derived tick and schedule counters dete
       inventoryScheduleCounter: 14,
     },
     builtStructures: [],
+    worldActions: [],
   });
 });
 

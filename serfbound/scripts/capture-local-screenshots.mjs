@@ -77,11 +77,20 @@ try {
 
   await page.getByTestId("start-game-button").click();
   await page.locator("#app[data-serfbound-game-state='running']").waitFor();
-  await page.getByTestId("terrain-preview").click({ position: { x: 470, y: 280 } });
-  await page.getByTestId("build-flag-button").click();
-  await page
-    .locator("#app[data-serfbound-built-structure-count='1']")
-    .waitFor({ timeout: 5_000 });
+
+  // Found the castle: click around until a valid site accepts.
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const x = 100 + (attempt % 8) * 130;
+    const y = 90 + Math.floor(attempt / 8) * 100;
+    await page.getByTestId("terrain-preview").click({ position: { x, y } });
+    const hasCastle = await page
+      .locator("#app")
+      .getAttribute("data-serfbound-world-has-castle");
+    if (hasCastle === "true") {
+      break;
+    }
+  }
+  await page.locator("#app[data-serfbound-world-has-castle='true']").waitFor({ timeout: 5_000 });
 
   const flagShot = `${artifactsDir}/${namePrefix}-running-game-desktop.png`;
   await page.screenshot({ fullPage: true, path: flagShot });

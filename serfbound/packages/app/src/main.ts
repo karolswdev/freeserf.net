@@ -15,6 +15,7 @@ import {
   uint16,
   type SerfboundBuiltStructure,
   type SerfboundCommandResult,
+  type SerfboundLocalGame,
   type SerfboundLocalGameDataSource,
   type SerfboundLocalGameSnapshot,
   type SerfboundLocalGameStartResult,
@@ -149,6 +150,8 @@ type PointerLandscapeContext = {
 type PointerMapInteractionHandlers = {
   readonly commandRouter: () => SerfboundCommandRouter;
   readonly landscapeContext: () => PointerLandscapeContext | undefined;
+  readonly worldCastlePending: () => boolean;
+  readonly onWorldChanged: () => void;
   readonly onSelection: (interaction: PointerMapInteraction) => void;
 };
 
@@ -291,6 +294,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
   let currentDecodedAssets: DecodedRenderAssets | undefined;
   let currentLandscapeAssets: LandscapeRenderAssets | undefined;
+  let currentWorld: ReturnType<SerfboundLocalGame["world"]> | undefined;
   let currentScroll: MapScroll = { column: 0, row: 0 };
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
@@ -303,6 +307,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentTypedAssetCatalog,
       currentDecodedAssets,
       currentLandscapeAssets,
+      currentWorld,
       currentScroll,
       currentTick,
       currentBuiltStructures,
@@ -371,6 +376,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     currentScroll = { column: 0, row: 0 };
     currentTick = 0;
     stopWaveAnimation();
+    currentWorld = undefined;
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
     currentLocalGameSnapshot = undefined;
@@ -410,6 +416,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentLandscapeAssets === undefined
         ? undefined
         : { landscape: currentLandscapeAssets.landscape, scroll: currentScroll },
+    worldCastlePending: () =>
+      currentWorld !== undefined &&
+      root.dataset.serfboundGameState === "running" &&
+      currentWorld.players[0]?.hasCastle === false,
+    onWorldChanged() {
+      syncWorldState(root, currentWorld);
+      renderCurrentScene();
+    },
     onSelection(interaction) {
       selectedInteraction = interaction;
       syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
@@ -530,13 +544,18 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentImportedDataSource === undefined ? {} : { data: currentImportedDataSource },
     );
     if (result.status === "started") {
-      commandRouter = new SerfboundCommandRouter(result.game.state);
       currentBuiltStructures = [];
       currentLocalGameSnapshot = result.snapshot;
       startLandscapeRendering(result.game);
+      commandRouter = new SerfboundCommandRouter(
+        result.game.state,
+        currentLandscapeAssets === undefined ? undefined : result.game.world(),
+      );
+      currentWorld = currentLandscapeAssets === undefined ? undefined : result.game.world();
       renderCurrentScene();
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
+    syncWorldState(root, currentWorld);
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
   });
@@ -549,6 +568,20 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   buildFlagButton.addEventListener("click", () => {
     const interaction = selectedInteraction;
     if (interaction === undefined) {
+      return;
+    }
+
+    if (currentWorld !== undefined) {
+      const worldResult = commandRouter.dispatch({
+        type: "game.build-flag",
+        source: "pointer",
+        tile: interaction.tile,
+      });
+      currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
+      applyCommandResultState(root, worldResult);
+      syncWorldState(root, currentWorld);
+      renderCurrentScene();
+      syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
       return;
     }
 
@@ -607,9 +640,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         currentLocalGameSnapshot = restored.snapshot;
         currentBuiltStructures = restored.snapshot.state.builtStructures;
         selectedInteraction = undefined;
-        commandRouter = new SerfboundCommandRouter(restored.game.state);
         startLandscapeRendering(restored.game);
+        commandRouter = new SerfboundCommandRouter(
+          restored.game.state,
+          currentLandscapeAssets === undefined ? undefined : restored.game.world(),
+        );
+        currentWorld = currentLandscapeAssets === undefined ? undefined : restored.game.world();
         applyRunningLocalGameSnapshot(root, restored.snapshot);
+        syncWorldState(root, currentWorld);
         renderCurrentScene();
         syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
         applyLocalGameLoadedState(root, record);
@@ -1026,6 +1064,7 @@ function renderScene(
   typedAssetCatalog: TypedAssetCatalog | undefined,
   decodedAssets: DecodedRenderAssets | undefined,
   landscapeAssets: LandscapeRenderAssets | undefined,
+  world: SerfboundLocalGame["world"] extends () => infer W ? W | undefined : never,
   scroll: MapScroll,
   tick: number,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
@@ -1044,6 +1083,7 @@ function renderScene(
           scroll,
           tick,
           builtStructures,
+          ...(world === undefined ? {} : { world }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
@@ -1102,6 +1142,24 @@ function attachPointerMapInteraction(
     const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
     applyPointerHoverState(root, interaction, event.pointerType);
     applyPointerSelectionState(root, interaction);
+
+    // Castle placement mode: the first click of a fresh world game places
+    // the castle (the original founding act).
+    if (handlers.worldCastlePending()) {
+      const castleResult = handlers.commandRouter().dispatch({
+        type: "game.build-castle",
+        source: "pointer",
+        tile: interaction.tile,
+      });
+      applyCommandResultState(root, castleResult);
+      if (castleResult.status === "accepted") {
+        handlers.onWorldChanged();
+      }
+
+      handlers.onSelection(interaction);
+      return;
+    }
+
     applyCommandResultState(
       root,
       handlers.commandRouter().dispatch({
@@ -1170,6 +1228,32 @@ function applyPointerSelectionState(root: HTMLElement, interaction: PointerMapIn
     `Position ${interaction.tile.position} - map ${Math.round(interaction.map.x)},${Math.round(interaction.map.y)}`;
 }
 
+function syncWorldState(
+  root: HTMLElement,
+  world: { players: readonly { hasCastle: boolean }[]; flags: ReadonlyMap<number, unknown>; buildings: ReadonlyMap<number, unknown> } | undefined,
+): void {
+  if (world === undefined) {
+    delete root.dataset.serfboundWorldHasCastle;
+    delete root.dataset.serfboundWorldFlagCount;
+    delete root.dataset.serfboundWorldBuildingCount;
+    return;
+  }
+
+  const hasCastle = world.players[0]?.hasCastle ?? false;
+  root.dataset.serfboundWorldHasCastle = String(hasCastle);
+  root.dataset.serfboundWorldFlagCount = String(world.flags.size);
+  root.dataset.serfboundWorldBuildingCount = String(world.buildings.size);
+
+  if (!hasCastle && root.dataset.serfboundGameState === "running") {
+    const state = root.querySelector<HTMLElement>("[data-testid='command-state']");
+    const detail = root.querySelector<HTMLElement>("[data-testid='command-detail']");
+    if (state !== null && detail !== null) {
+      state.textContent = "Place your castle";
+      detail.textContent = "Select open land to found your settlement.";
+    }
+  }
+}
+
 function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResult): void {
   root.dataset.serfboundCommandState = result.status;
   root.dataset.serfboundCommandId = String(result.commandId);
@@ -1185,6 +1269,20 @@ function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResu
       getCommandStateElement(root).textContent = "Flag built";
       getCommandDetailElement(root).textContent =
         `Flag placed at tile ${tile.column},${tile.row}.`;
+      return;
+    }
+
+    if (result.effect === "castle-built") {
+      getCommandStateElement(root).textContent = "Castle founded";
+      getCommandDetailElement(root).textContent =
+        `Your castle stands at tile ${result.command.tile.column},${result.command.tile.row}.`;
+      return;
+    }
+
+    if (result.effect === "world-flag-built") {
+      getCommandStateElement(root).textContent = "Flag built";
+      getCommandDetailElement(root).textContent =
+        `Flag placed at tile ${result.command.tile.column},${result.command.tile.row}.`;
       return;
     }
 

@@ -31,7 +31,7 @@ with authentic construction sprites.
 
 - [x] Flags connect into a road graph with reference-equivalent merge/split
   semantics and path costs. (SB-12-01, SB-12-02)
-- [ ] The castle places under original validity rules and claims territory
+- [x] The castle places under original validity rules and claims territory
   with rendered borders. (SB-12-03)
 - [ ] Buildings progress visually from cleared ground to frame to finished
   building using authentic construction sprites. (SB-12-04)
@@ -44,16 +44,16 @@ with authentic construction sprites.
 |---|---|---|---|---|
 | SB-12-01 | Port the flag and road graph | done | story-01-flag-and-road-graph.md | evidence-story-01.md |
 | SB-12-02 | Port road pathfinding and road-building mode | done | story-02-road-pathfinding-mode.md | evidence-story-02.md |
-| SB-12-03 | Place the castle and claim territory | in-progress | story-03-castle-and-territory.md | — |
-| SB-12-04 | Construct buildings with progress sprites | backlog | story-04-building-construction.md | — |
+| SB-12-03 | Place the castle and claim territory | done | story-03-castle-and-territory.md | evidence-story-03.md |
+| SB-12-04 | Construct buildings with progress sprites | in-progress | story-04-building-construction.md | — |
 | SB-12-05 | Found a settlement end-to-end | backlog | story-05-settlement-end-to-end.md | — |
 
 ## Where we are
 
-SB-12-02 is done: the A* pathfinder matches reference walk costs and roads
-render with authentic path masks (slope + terrain selection per
-RenderRoadSegment). Interactive road mode transfers to SB-12-05's build UI.
-SB-12-03 (castle + territory) is in progress.
+SB-12-03 is done: the founding act works end-to-end — castle placement
+claims territory via the ported influence tables, the authentic castle sprite
+renders with border stakes, and saved games replay the world-action log to
+identical state. SB-12-04 (construction stages) is in progress.
 
 ## Active risks
 
@@ -73,6 +73,9 @@ SB-12-03 (castle + territory) is in progress.
   deterministic node-expansion cap (reproducibility); all 270 path
   ground/mask combos precompose so roads built mid-game never miss atlas
   regions — SB-12-02.
+- 2026-06-10 — Saves store the accepted world-action log and restores replay
+  it over the deterministically regenerated world (small saves, exact
+  restoration) — SB-12-03.
 
 ## Decisions deferred
 

@@ -1,6 +1,8 @@
 import { FreeserfRandom, uint16 } from "./index.js";
+import { SerfboundGameWorld } from "./game-world.js";
 import { generateClassicMap, type ClassicMapLandscape } from "./map-generator.js";
 import { SerfboundGameState, type SerfboundGameSnapshot } from "./simulation.js";
+import { isSerfboundWorldAction, replayWorldActions } from "./world-commands.js";
 
 export type SerfboundLocalGameDataSource = {
   readonly kind: "imported-dos-pa-catalog";
@@ -75,6 +77,7 @@ export class SerfboundLocalGame {
   readonly settings: SerfboundLocalGameSettings;
   readonly state: SerfboundGameState;
   #landscape: ClassicMapLandscape | undefined;
+  #world: SerfboundGameWorld | undefined;
 
   constructor(
     data: SerfboundLocalGameDataSource,
@@ -91,6 +94,20 @@ export class SerfboundLocalGame {
   landscape(): ClassicMapLandscape {
     this.#landscape ??= landscapeForLocalGameSettings(this.settings);
     return this.#landscape;
+  }
+
+  // The game world rebuilds from the landscape plus the accepted world-action
+  // log (saved in the game state), so restores replay to identical state.
+  world(): SerfboundGameWorld {
+    if (this.#world === undefined) {
+      this.#world = new SerfboundGameWorld(this.landscape());
+      replayWorldActions(
+        this.#world,
+        this.state.worldActions.filter(isSerfboundWorldAction),
+      );
+    }
+
+    return this.#world;
   }
 
   snapshot(): SerfboundLocalGameSnapshot {

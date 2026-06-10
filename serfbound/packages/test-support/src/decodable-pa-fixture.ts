@@ -130,6 +130,25 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
     });
   }
 
+  // Building sprites (map_object 0x98..0xc0 -> entries 1402..1442) with
+  // shadows, plus 10 territory border sprites (map_border 610..619).
+  for (let sprite = 0x98; sprite <= 0xc0; sprite += 1) {
+    entries.push({
+      index: 1250 + sprite,
+      bytes: concatBytes([spriteHeader(48, 40, -24, -39), fullCoverageRuns(48 * 40, 60 + sprite)]),
+    });
+    entries.push({
+      index: 1500 + sprite,
+      bytes: concatBytes([spriteHeader(48, 12, -24, -5), fullCoverageRuns(48 * 12, null)]),
+    });
+  }
+  for (let border = 0; border < 10; border += 1) {
+    entries.push({
+      index: 610 + border,
+      bytes: concatBytes([spriteHeader(8, 8, -4, -4), fullCoverageRuns(8 * 8, 240 + border)]),
+    });
+  }
+
   // Flag frame 0 (map_object 128 -> entry 1378) with its shadow (1628).
   entries.push({
     index: 1378,

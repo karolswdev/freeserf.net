@@ -111,6 +111,14 @@ function clampNeighbor(apexHeight: number, neighborHeight: number): number {
   return apexHeight + Math.max(-4, Math.min(4, neighborHeight - apexHeight));
 }
 
+// RenderBuilding.MapBuildingSprite: map_object sprite index per building type.
+export const mapBuildingSprite: readonly number[] = [
+  0, 0xa7, 0xa8, 0xae, 0xa9,
+  0xa3, 0xa4, 0xa5, 0xa6,
+  0xaa, 0xc0, 0xab, 0x9a, 0x9c, 0x9b, 0xbc,
+  0xa2, 0xa0, 0xa1, 0x99, 0x9d, 0x9e, 0x98, 0x9f, 0xb2,
+];
+
 export function buildLandscapeRenderAssets(
   decodedAssets: DecodedRenderAssets,
   landscape: ClassicMapLandscape,
@@ -180,6 +188,31 @@ export function buildLandscapeRenderAssets(
     sprites["obj:flag"] = flag.sprite;
     if (flag.shadow !== null) {
       sprites["objshadow:flag"] = flag.shadow;
+    }
+  }
+
+  // All building sprites precompose so construction at any time resolves.
+  for (const spriteIndex of mapBuildingSprite) {
+    if (spriteIndex === 0) {
+      continue;
+    }
+
+    const decoded = decodedAssets.rawMapObjects.get(spriteIndex);
+    if (decoded === undefined) {
+      continue;
+    }
+
+    sprites[`mo:${spriteIndex}`] = decoded.sprite;
+    if (decoded.shadow !== null) {
+      sprites[`mos:${spriteIndex}`] = decoded.shadow;
+    }
+  }
+
+  // Territory border sprites.
+  for (let borderIndex = 0; borderIndex < decodedAssets.rawBorders.length; borderIndex += 1) {
+    const border = decodedAssets.rawBorders[borderIndex];
+    if (border !== null && border !== undefined) {
+      sprites[`border:${borderIndex}`] = border;
     }
   }
 
@@ -358,6 +391,40 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         // World flags (map object 1) render the real flag sprite.
         pushSprite("shadows", "objshadow:flag", apexX, apexY, apexY, apexX);
         pushSprite("markers", "obj:flag", apexX, apexY, apexY, apexX);
+      } else if (objectType >= 2 && objectType <= 4 && options.world !== undefined) {
+        // Buildings render their reference map_object sprite by type.
+        const building = options.world.buildingAt(position);
+        if (building !== null) {
+          const spriteIndex = mapBuildingSprite[building.type] ?? 0;
+          if (spriteIndex !== 0) {
+            pushSprite("shadows", `mos:${spriteIndex}`, apexX, apexY, apexY, apexX);
+            pushSprite("objects", `mo:${spriteIndex}`, apexX, apexY, apexY, apexX);
+          }
+        }
+      }
+
+      // Territory borders: a border sprite marks every edge whose two
+      // positions have different owners. Sprite selection is simplified to a
+      // deterministic terrain/parity pick until the RenderBorderSegment port.
+      if (options.world !== undefined) {
+        const world = options.world;
+        const borderDirections = [
+          { direction: "Right", dx: tileWidth / 2, dy: 0 },
+          { direction: "DownRight", dx: tileWidth / 4, dy: tileHeight / 2 },
+          { direction: "Down", dx: -tileWidth / 4, dy: tileHeight / 2 },
+        ] as const;
+        for (const { direction, dx, dy } of borderDirections) {
+          const other = world.move(position, direction);
+          if (world.owners[position] !== world.owners[other]!) {
+            const waterEdge =
+              landscape.typesUp[position]! <= 3 || landscape.typesUp[other]! <= 3;
+            const borderIndex = (waterEdge ? 6 : 0) + ((position ^ other) & 1);
+            const otherHeight = landscape.heights[other]!;
+            const midY =
+              r * tileHeight + dy - heightStep * Math.trunc((apexHeight + otherHeight) / 2);
+            pushSprite("markers", `border:${borderIndex}`, apexX + dx, midY, midY, apexX + dx);
+          }
+        }
       }
 
       // Road segments per Freeserf.Core/Render/RenderRoadSegment: drawn for

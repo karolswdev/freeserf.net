@@ -56,6 +56,7 @@ export type DecodedRenderAssets = {
   readonly rawWaves: readonly (DecodedDosSprite | null)[];
   readonly rawPathGrounds: readonly (DecodedDosSprite | null)[];
   readonly rawPathMasks: readonly (DecodedDosSprite | null)[];
+  readonly rawBorders: readonly (DecodedDosSprite | null)[];
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -566,10 +567,10 @@ export function buildDecodedRenderAssets(
     rawMasksDown.push(decodeMask("down", maskCode));
   }
 
-  // Map object sprites 0..84 cover everything the classic generator places
-  // (trees through dead trees); 128 is the flag.
+  // Map object sprites 0..192 cover generator objects (0..84), the flag
+  // (128), and building sprites (0x98..0xc0 per RenderBuilding).
   const rawMapObjects = new Map<number, DecodedMapObjectSprite>();
-  for (const spriteIndex of [...Array.from({ length: 85 }, (_, index) => index), 128]) {
+  for (const spriteIndex of Array.from({ length: 193 }, (_, index) => index)) {
     const sprite = decodeSafely(archive, "map_object", spriteIndex);
     if (sprite === null) {
       continue;
@@ -596,6 +597,11 @@ export function buildDecodedRenderAssets(
     rawPathMasks.push(decodeSafely(archive, "path_mask", maskIndex));
   }
 
+  const rawBorders: (DecodedDosSprite | null)[] = [];
+  for (let borderIndex = 0; borderIndex < 10; borderIndex += 1) {
+    rawBorders.push(decodeSafely(archive, "map_border", borderIndex));
+  }
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
@@ -609,6 +615,7 @@ export function buildDecodedRenderAssets(
     rawWaves,
     rawPathGrounds,
     rawPathMasks,
+    rawBorders,
   };
 }
 

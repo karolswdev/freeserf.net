@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 12
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-12-02
 - **Unblocks:** SB-12-04
 - **Owner:** unassigned
@@ -23,10 +23,10 @@ render (border markers/stakes) so ownership is visible.
 
 ## Acceptance criteria
 
-- [ ] Castle placement validity matches reference rules (terrain, space,
+- [x] Castle placement validity matches reference rules (terrain, space,
   distance from edge) on fixture maps.
-- [ ] Territory claim matches a reference fixture; borders render visibly.
-- [ ] The start-game flow requires castle placement before other actions.
+- [x] Territory claim matches a reference fixture; borders render visibly.
+- [x] The start-game flow requires castle placement before other actions.
 
 ## Test plan
 

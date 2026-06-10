@@ -1,5 +1,12 @@
 import type { MapPoint, MapTile } from "./index.js";
+import type { SerfboundGameWorld } from "./game-world.js";
+import { findShortestRoad } from "./pathfinder.js";
 import { SerfboundGameState, type SerfboundBuiltStructure } from "./simulation.js";
+import {
+  applyWorldAction,
+  buildingTypeFromKind,
+  type SerfboundWorldAction,
+} from "./world-commands.js";
 
 export type SerfboundCommandSource = "pointer" | "keyboard" | "system";
 
@@ -19,9 +26,27 @@ export type SerfboundBuildCommand = {
   readonly source?: SerfboundCommandSource;
 };
 
+export type SerfboundWorldCommandType =
+  | "game.build-castle"
+  | "game.build-flag"
+  | "game.build-road"
+  | "game.build-building"
+  | "game.demolish-flag";
+
+export type SerfboundWorldCommand = {
+  readonly type: SerfboundWorldCommandType;
+  readonly tile: MapTile;
+  // Road target flag (game.build-road paths from tile to toTile).
+  readonly toTile?: MapTile;
+  // Building kind name for game.build-building (e.g. "lumberjack").
+  readonly buildingKind?: string;
+  readonly source?: SerfboundCommandSource;
+};
+
 export type SerfboundCommand =
   | SerfboundDebugInspectTileCommand
-  | SerfboundBuildCommand;
+  | SerfboundBuildCommand
+  | SerfboundWorldCommand;
 
 export type SerfboundCommandRejectReason =
   | "unsupported-command"
@@ -31,7 +56,10 @@ export type SerfboundCommandRejectReason =
   | "invalid-map-coordinate"
   | "invalid-build-target"
   | "tile-occupied"
-  | "build-command-deferred";
+  | "build-command-deferred"
+  | "world-required"
+  | "invalid-build-position"
+  | "no-road-found";
 
 export type SerfboundCommandRouteSnapshot = {
   readonly schemaVersion: 1;
@@ -52,13 +80,26 @@ export type SerfboundCommandRouteSnapshot = {
     readonly lastInspectedTile?: MapTile;
   };
   readonly builtStructures: readonly SerfboundBuiltStructure[];
+  readonly world?: {
+    readonly hasCastle: boolean;
+    readonly castlePosition: number | null;
+    readonly flagCount: number;
+    readonly buildingCount: number;
+  };
 };
 
 export type SerfboundAcceptedCommandResult = {
   readonly status: "accepted";
   readonly commandId: number;
   readonly command: SerfboundCommand;
-  readonly effect: "debug-inspection-recorded" | "flag-built";
+  readonly effect:
+    | "debug-inspection-recorded"
+    | "flag-built"
+    | "castle-built"
+    | "world-flag-built"
+    | "road-built"
+    | "building-built"
+    | "flag-demolished";
   readonly builtStructure?: SerfboundBuiltStructure;
   readonly snapshot: SerfboundCommandRouteSnapshot;
 };
@@ -110,15 +151,25 @@ const commandSources = new Set<SerfboundCommandSource>([
 ]);
 const buildTargets = new Set<SerfboundBuildTarget>(["flag", "road", "hut"]);
 
+const worldCommandTypes = new Set<SerfboundWorldCommandType>([
+  "game.build-castle",
+  "game.build-flag",
+  "game.build-road",
+  "game.build-building",
+  "game.demolish-flag",
+]);
+
 export class SerfboundCommandRouter {
   readonly state: SerfboundGameState;
+  readonly world: SerfboundGameWorld | undefined;
 
   #nextCommandId = 1;
   #log: SerfboundCommandLogEntry[] = [];
   #lastInspectedTile: MapTile | undefined;
 
-  constructor(state: SerfboundGameState = new SerfboundGameState()) {
+  constructor(state: SerfboundGameState = new SerfboundGameState(), world?: SerfboundGameWorld) {
     this.state = state;
+    this.world = world;
   }
 
   get log(): readonly SerfboundCommandLogEntry[] {
@@ -141,6 +192,10 @@ export class SerfboundCommandRouter {
       };
       this.#log.push(logEntryFromResult(result));
       return result;
+    }
+
+    if (worldCommandTypes.has(parsed.command.type as SerfboundWorldCommandType)) {
+      return this.dispatchWorldCommand(commandId, parsed.command as SerfboundWorldCommand);
     }
 
     if (parsed.command.type === "game.build" && parsed.command.building !== "flag") {
@@ -199,6 +254,94 @@ export class SerfboundCommandRouter {
     return result;
   }
 
+  private dispatchWorldCommand(
+    commandId: number,
+    command: SerfboundWorldCommand,
+  ): SerfboundCommandResult {
+    const reject = (
+      reason: SerfboundCommandRejectReason,
+      message: string,
+    ): SerfboundRejectedCommandResult => {
+      const result: SerfboundRejectedCommandResult = {
+        status: "rejected",
+        commandId,
+        reason,
+        message,
+        commandType: command.type,
+        command,
+        snapshot: this.snapshot(this.#log.length + 1),
+      };
+      this.#log.push(logEntryFromResult(result));
+      return result;
+    };
+
+    const world = this.world;
+    if (world === undefined) {
+      return reject("world-required", "This command needs a running game world.");
+    }
+
+    let action: SerfboundWorldAction;
+    switch (command.type) {
+      case "game.build-castle":
+        action = { kind: "build-castle", position: command.tile.position, player: 0 };
+        break;
+      case "game.build-flag":
+        action = { kind: "build-flag", position: command.tile.position, player: 0 };
+        break;
+      case "game.build-road": {
+        if (command.toTile === undefined) {
+          return reject("invalid-command", "Road commands need a target tile.");
+        }
+
+        const road = findShortestRoad(world, command.tile.position, command.toTile.position);
+        if (road === null) {
+          return reject("no-road-found", "No valid road connects these positions.");
+        }
+
+        action = {
+          kind: "build-road",
+          start: road.start,
+          directions: road.directions,
+          player: 0,
+        };
+        break;
+      }
+      case "game.build-building": {
+        const building = buildingTypeFromKind(command.buildingKind ?? "");
+        if (building === null) {
+          return reject("invalid-build-target", "Unknown building kind.");
+        }
+
+        action = {
+          kind: "build-building",
+          position: command.tile.position,
+          building,
+          player: 0,
+        };
+        break;
+      }
+      case "game.demolish-flag":
+        action = { kind: "demolish-flag", position: command.tile.position, player: 0 };
+        break;
+    }
+
+    const outcome = applyWorldAction(world, action);
+    if (!outcome.ok) {
+      return reject(outcome.reason as SerfboundCommandRejectReason, outcome.message);
+    }
+
+    this.state.recordWorldAction(action);
+    const result: SerfboundAcceptedCommandResult = {
+      status: "accepted",
+      commandId,
+      command,
+      effect: outcome.effect as SerfboundAcceptedCommandResult["effect"],
+      snapshot: this.snapshot(this.#log.length + 1),
+    };
+    this.#log.push(logEntryFromResult(result));
+    return result;
+  }
+
   private parseCommand(input: unknown): CommandParseResult {
     if (!isRecord(input)) {
       return invalidCommand("Command must be an object.");
@@ -213,6 +356,12 @@ export class SerfboundCommandRouter {
         return this.parseDebugInspectCommand(input);
       case "game.build":
         return this.parseBuildCommand(input);
+      case "game.build-castle":
+      case "game.build-flag":
+      case "game.build-road":
+      case "game.build-building":
+      case "game.demolish-flag":
+        return this.parseWorldCommand(input);
       default:
         return {
           status: "invalid",
@@ -284,6 +433,39 @@ export class SerfboundCommandRouter {
     };
   }
 
+  private parseWorldCommand(input: Record<string, unknown>): CommandParseResult {
+    const tile = this.parseTile(input.tile);
+    if (tile.status === "invalid") {
+      return tile;
+    }
+
+    const source = parseOptionalSource(input.source);
+    if (source.status === "invalid") {
+      return source;
+    }
+
+    let toTile: MapTile | undefined;
+    if (input.toTile !== undefined) {
+      const parsedTo = this.parseTile(input.toTile);
+      if (parsedTo.status === "invalid") {
+        return parsedTo;
+      }
+
+      toTile = parsedTo.tile;
+    }
+
+    return {
+      status: "valid",
+      command: {
+        type: input.type as SerfboundWorldCommandType,
+        tile: tile.tile,
+        ...(toTile === undefined ? {} : { toTile }),
+        ...(typeof input.buildingKind === "string" ? { buildingKind: input.buildingKind } : {}),
+        ...(source.source === undefined ? {} : { source: source.source }),
+      },
+    };
+  }
+
   private parseTile(input: unknown): TileParseResult {
     if (!isRecord(input)) {
       return {
@@ -345,6 +527,16 @@ export class SerfboundCommandRouter {
           : { lastInspectedTile: this.#lastInspectedTile }),
       },
       builtStructures: game.builtStructures,
+      ...(this.world === undefined
+        ? {}
+        : {
+            world: {
+              hasCastle: this.world.players[0]?.hasCastle ?? false,
+              castlePosition: this.world.players[0]?.castlePosition ?? null,
+              flagCount: this.world.flags.size,
+              buildingCount: this.world.buildings.size,
+            },
+          }),
     };
   }
 }
