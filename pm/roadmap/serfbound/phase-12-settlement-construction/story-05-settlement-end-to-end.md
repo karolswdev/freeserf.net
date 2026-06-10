@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 12
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-12-04
 - **Unblocks:** SB-13-01
 - **Owner:** unassigned
@@ -22,10 +22,10 @@ generated world, with everything saved and restored.
 
 ## Acceptance criteria
 
-- [ ] Browser flow works end-to-end: place castle → lay road → place hut →
+- [x] Browser flow works end-to-end: place castle → lay road → place hut →
   construction completes → save → reload → load → state intact.
-- [ ] All commands route through the deterministic command router.
-- [ ] Real-data screenshots of the founded settlement recorded as evidence;
+- [x] All commands route through the deterministic command router.
+- [x] Real-data screenshots of the founded settlement recorded as evidence;
   data-free browser test covers the same flow on the fixture archive.
 
 ## Test plan

@@ -1,7 +1,7 @@
 # Phase 12 — Settlement Construction
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -35,7 +35,7 @@ with authentic construction sprites.
   with rendered borders. (SB-12-03)
 - [x] Buildings progress visually from cleared ground to frame to finished
   building using authentic construction sprites. (SB-12-04)
-- [ ] A browser user can found a small settlement end-to-end (castle → road →
+- [x] A browser user can found a small settlement end-to-end (castle → road →
   hut) with screenshot evidence from real local data. (SB-12-05)
 
 ## Story status
@@ -46,13 +46,16 @@ with authentic construction sprites.
 | SB-12-02 | Port road pathfinding and road-building mode | done | story-02-road-pathfinding-mode.md | evidence-story-02.md |
 | SB-12-03 | Place the castle and claim territory | done | story-03-castle-and-territory.md | evidence-story-03.md |
 | SB-12-04 | Construct buildings with progress sprites | done | story-04-building-construction.md | evidence-story-04.md |
-| SB-12-05 | Found a settlement end-to-end | in-progress | story-05-settlement-end-to-end.md | — |
+| SB-12-05 | Found a settlement end-to-end | done | story-05-settlement-end-to-end.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-12-04 is done: buildings level, frame, and complete on the game clock with
-authentic stage sprites, and construction timing survives save/restore.
-SB-12-05 (build UI + end-to-end founding) is in progress.
+Phase 12 is complete. A browser player founds a settlement exactly as the
+original demands: place the castle (territory claimed via the ported
+influence tables, borders staked), lay roads in road mode through the A*
+pathfinder, queue buildings that level, frame, and finish on the game clock —
+and the whole settlement survives save/reload/load via deterministic
+world-action replay. Proven data-free in CI and with real local data.
 
 ## Active risks
 

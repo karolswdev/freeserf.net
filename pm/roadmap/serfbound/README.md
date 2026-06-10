@@ -1,10 +1,11 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-12-settlement-construction](./phase-12-settlement-construction/current-phase-status.md)
-**Status:** Phases 0–11 complete. Running games render the parity-proven
-classic generator's world with real art, animated water, and a scrolling
-viewport. Phase 12 (settlement construction) is next.
+**Current phase:** [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/current-phase-status.md)
+**Status:** Phases 0–12 complete. Browser players found settlements with
+original rules on the generated world: castle and territory, interactive
+roads, staged construction, and save/load via world-action replay. Phase 13
+(the serf engine) is next.
 
 ## Vision
 
@@ -96,8 +97,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 9 | Package, document, and operate Serfbound as a browser product | complete | [phase-9-release-operations](./phase-9-release-operations/) |
 | 10 | Decode real DOS sprites and render authentic game art in the browser | complete | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
 | 11 | Generate the original world and make it scrollable | complete | [phase-11-original-map-world](./phase-11-original-map-world/) |
-| 12 | Found settlements: castle, flags, roads, construction | ready | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
-| 13 | Bring serfs to life: state machine and authentic animation | planned | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
+| 12 | Found settlements: castle, flags, roads, construction | complete | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
+| 13 | Bring serfs to life: state machine and authentic animation | ready | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
 | 14 | Run every classic production chain | planned | [phase-14-working-economy](./phase-14-working-economy/) |
 | 15 | Knights, territory, and combat | planned | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
 | 16 | Rebuild the original interface browser-native | planned | [phase-16-original-interface](./phase-16-original-interface/) |
@@ -239,6 +240,10 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current settlement proof:** the engine game world ports the reference
+  flag/road graph, build validity, castle/territory (influence tables), and
+  A* pathfinding; the app founds settlements end-to-end (castle → roads →
+  buildings with stage sprites) with saves replaying the world-action log.
 - **Current generated-world proof:** `@serfbound/engine` ports the classic
   map generator with tile-for-tile fixture parity
   (`map-generator-classic.json`); running games render the generated world

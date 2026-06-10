@@ -215,6 +215,9 @@ function cloneLocalGameSnapshot(
         ...structure,
         tile: { ...structure.tile },
       })),
+      worldActions: (snapshot.state.worldActions ?? []).map((action) =>
+        JSON.parse(JSON.stringify(action)) as unknown,
+      ),
     },
     renderer: { ...snapshot.renderer },
   };

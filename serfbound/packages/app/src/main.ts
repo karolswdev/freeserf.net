@@ -151,6 +151,7 @@ type PointerMapInteractionHandlers = {
   readonly commandRouter: () => SerfboundCommandRouter;
   readonly landscapeContext: () => PointerLandscapeContext | undefined;
   readonly worldCastlePending: () => boolean;
+  readonly roadModeClick: (interaction: PointerMapInteraction) => boolean;
   readonly onWorldChanged: () => void;
   readonly onSelection: (interaction: PointerMapInteraction) => void;
 };
@@ -243,6 +244,18 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           type="button"
           disabled
         >Build flag</button>
+        <button
+          class="secondary-action"
+          data-testid="build-road-button"
+          type="button"
+          disabled
+        >Build road</button>
+        <button
+          class="secondary-action"
+          data-testid="build-lumberjack-button"
+          type="button"
+          disabled
+        >Build lumberjack</button>
         <button
           class="primary-action"
           data-testid="start-game-button"
@@ -431,6 +444,39 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentWorld !== undefined &&
       root.dataset.serfboundGameState === "running" &&
       currentWorld.players[0]?.hasCastle === false,
+    roadModeClick(interaction) {
+      const mode = root.dataset.serfboundRoadMode;
+      if (currentWorld === undefined || mode === "idle" || mode === undefined) {
+        return false;
+      }
+
+      if (mode === "awaiting-start") {
+        roadModeFrom = interaction;
+        setRoadMode("awaiting-end");
+        getCommandStateElement(root).textContent = "Build road";
+        getCommandDetailElement(root).textContent = "Select the destination flag.";
+        return true;
+      }
+
+      const from = roadModeFrom;
+      setRoadMode("idle");
+      if (from === undefined) {
+        return true;
+      }
+
+      const result = commandRouter.dispatch({
+        type: "game.build-road",
+        source: "pointer",
+        tile: from.tile,
+        toTile: interaction.tile,
+      });
+      currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
+      applyCommandResultState(root, result);
+      syncWorldState(root, currentWorld);
+      renderCurrentScene();
+      syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
+      return true;
+    },
     onWorldChanged() {
       syncWorldState(root, currentWorld);
       renderCurrentScene();
@@ -568,6 +614,59 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
     syncWorldState(root, currentWorld);
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
+    syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
+  });
+
+  let roadModeFrom: PointerMapInteraction | undefined;
+  const setRoadMode = (mode: "idle" | "awaiting-start" | "awaiting-end") => {
+    root.dataset.serfboundRoadMode = mode;
+    if (mode === "idle") {
+      roadModeFrom = undefined;
+    }
+  };
+  setRoadMode("idle");
+
+  const buildRoadButton = root.querySelector<HTMLButtonElement>("[data-testid='build-road-button']");
+  if (buildRoadButton === null) {
+    throw new Error("Serfbound shell build road button did not mount.");
+  }
+
+  buildRoadButton.addEventListener("click", () => {
+    if (root.dataset.serfboundRoadMode !== "idle") {
+      setRoadMode("idle");
+      getCommandStateElement(root).textContent = "Road mode ended";
+      getCommandDetailElement(root).textContent = "Select a tile to inspect available actions.";
+      return;
+    }
+
+    setRoadMode("awaiting-start");
+    getCommandStateElement(root).textContent = "Build road";
+    getCommandDetailElement(root).textContent = "Select the starting flag.";
+  });
+
+  const buildLumberjackButton = root.querySelector<HTMLButtonElement>(
+    "[data-testid='build-lumberjack-button']",
+  );
+  if (buildLumberjackButton === null) {
+    throw new Error("Serfbound shell build lumberjack button did not mount.");
+  }
+
+  buildLumberjackButton.addEventListener("click", () => {
+    const interaction = selectedInteraction;
+    if (interaction === undefined || currentWorld === undefined) {
+      return;
+    }
+
+    const result = commandRouter.dispatch({
+      type: "game.build-building",
+      source: "pointer",
+      tile: interaction.tile,
+      buildingKind: "lumberjack",
+    });
+    currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
+    applyCommandResultState(root, result);
+    syncWorldState(root, currentWorld);
+    renderCurrentScene();
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
   });
 
@@ -1154,6 +1253,11 @@ function attachPointerMapInteraction(
     applyPointerHoverState(root, interaction, event.pointerType);
     applyPointerSelectionState(root, interaction);
 
+    if (handlers.roadModeClick(interaction)) {
+      handlers.onSelection(interaction);
+      return;
+    }
+
     // Castle placement mode: the first click of a fresh world game places
     // the castle (the original founding act).
     if (handlers.worldCastlePending()) {
@@ -1259,6 +1363,16 @@ function syncWorldState(
 
   const hasCastle = world.players[0]?.hasCastle ?? false;
   root.dataset.serfboundWorldHasCastle = String(hasCastle);
+  const roadButton = root.querySelector<HTMLButtonElement>("[data-testid='build-road-button']");
+  if (roadButton !== null) {
+    roadButton.disabled = !hasCastle;
+  }
+  const lumberjackButton = root.querySelector<HTMLButtonElement>(
+    "[data-testid='build-lumberjack-button']",
+  );
+  if (lumberjackButton !== null) {
+    lumberjackButton.disabled = !hasCastle;
+  }
   root.dataset.serfboundWorldFlagCount = String(world.flags.size);
   root.dataset.serfboundWorldBuildingCount = String(world.buildings.size);
   root.dataset.serfboundWorldBuildingDoneCount = String(
@@ -1277,6 +1391,11 @@ function syncWorldState(
 
 function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResult): void {
   root.dataset.serfboundCommandState = result.status;
+  if (result.status === "accepted") {
+    root.dataset.serfboundLastEffect = result.effect;
+  } else {
+    delete root.dataset.serfboundLastEffect;
+  }
   root.dataset.serfboundCommandId = String(result.commandId);
   root.dataset.serfboundCommandLogLength = String(result.snapshot.commandLogLength);
   root.dataset.serfboundBuiltStructureCount = String(result.snapshot.builtStructures.length);
@@ -1304,6 +1423,19 @@ function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResu
       getCommandStateElement(root).textContent = "Flag built";
       getCommandDetailElement(root).textContent =
         `Flag placed at tile ${result.command.tile.column},${result.command.tile.row}.`;
+      return;
+    }
+
+    if (result.effect === "road-built") {
+      getCommandStateElement(root).textContent = "Road built";
+      getCommandDetailElement(root).textContent = "Your flags are connected.";
+      return;
+    }
+
+    if (result.effect === "building-built") {
+      getCommandStateElement(root).textContent = "Construction started";
+      getCommandDetailElement(root).textContent =
+        `Builders raise a new building at tile ${result.command.tile.column},${result.command.tile.row}.`;
       return;
     }
 
