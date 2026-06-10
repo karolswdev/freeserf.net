@@ -31,7 +31,7 @@ synthetic triangle scene with decoded game art.
 
 ## Exit criteria (evidence required)
 
-- [ ] Palettes 3, 3997, and 3998 and all four DOS sprite payload types decode
+- [x] Palettes 3, 3997, and 3998 and all four DOS sprite payload types decode
   from real local `SPAU.PA` through opt-in local checks. (SB-10-01)
 - [ ] Terrain triangles compose from decoded `map_ground` sprites and
   `map_mask_up`/`map_mask_down` masks using the reference mask tables, packed
@@ -46,16 +46,17 @@ synthetic triangle scene with decoded game art.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-10-01 | Port DOS palette and sprite decoders | in-progress | story-01-dos-sprite-decoders.md | — |
-| SB-10-02 | Compose terrain triangles into a texture atlas | ready | story-02-terrain-composition-atlas.md | — |
+| SB-10-01 | Port DOS palette and sprite decoders | done | story-01-dos-sprite-decoders.md | evidence-story-01.md |
+| SB-10-02 | Compose terrain triangles into a texture atlas | in-progress | story-02-terrain-composition-atlas.md | — |
 | SB-10-03 | Render decoded sprites in the browser scene | ready | story-03-decoded-webgl-scene.md | — |
 | SB-10-04 | Prove authentic visuals with real local data | ready | story-04-real-data-visual-proof.md | — |
 
 ## Where we are
 
-Phase 10 is open. The session handoff recorded that phases 0–9 shipped a
-working browser shell around a synthetic scene with no decoded game art; this
-phase closes that gap. SB-10-01 (DOS sprite decoders) is in progress.
+SB-10-01 is done: real `SPAU.PA` palettes and sprite payloads decode in
+browser-native TypeScript, cross-validated by the 61+61 mask counts from the
+reference renderer. SB-10-02 (terrain composition + texture atlas) is in
+progress.
 
 ## Active risks
 
@@ -70,6 +71,11 @@ phase closes that gap. SB-10-01 (DOS sprite decoders) is in progress.
 - 2026-06-10 — Phase 10 exists because phases 0–9 validated infrastructure but
   shipped no decoded game art (recorded in the session handoff). The phase gate
   is visual authenticity from real local `SPAU.PA`, not more plumbing.
+- 2026-06-10 — Sprite decoding is a 1:1 TypeScript port of
+  `Freeserf.Core/Data/DataSourceDos.cs` (header layout, RLE drop/fill streams,
+  palette application, flag frame fixup), emitting RGBA for browser textures
+  instead of the reference BGRA and returning `null` for undefined entries so
+  partial demo archives stay importable — SB-10-01.
 
 ## Decisions deferred
 

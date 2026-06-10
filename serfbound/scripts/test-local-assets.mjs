@@ -135,6 +135,68 @@ assert.equal(scene.assetSummary.mapObjectsStatus.startsWith("partial:"), true);
 assert.equal(scene.layers.length, 5);
 assert.equal(scene.primitives.length > 100, true);
 
+// SB-10-01: real DOS palette and sprite payloads must decode, not just catalog.
+const { DosPaArchive, decodeDosResourceSprite } = await import(
+  "../packages/assets/dist/index.js"
+);
+const spriteArchive = new DosPaArchive(archiveBytes, catalog);
+
+for (const paletteIndex of [3, 3997, 3998]) {
+  const dosPalette = spriteArchive.getPalette(paletteIndex);
+  assert.notEqual(dosPalette, null, `palette ${paletteIndex} decodes`);
+  assert.equal(dosPalette.byteLength, 768, `palette ${paletteIndex} is 256 RGB triples`);
+}
+
+for (let groundIndex = 0; groundIndex < 33; groundIndex += 1) {
+  const ground = decodeDosResourceSprite(spriteArchive, "map_ground", groundIndex);
+  assert.notEqual(ground, null, `map_ground ${groundIndex} decodes`);
+  assert.equal(ground.width, 32, `map_ground ${groundIndex} width`);
+  assert.equal(ground.height, 20, `map_ground ${groundIndex} height`);
+  assert.equal(
+    ground.rgba.some((value, index) => index % 4 === 3 && value === 0xff),
+    true,
+    `map_ground ${groundIndex} has opaque pixels`,
+  );
+}
+
+let decodedUpMasks = 0;
+let decodedDownMasks = 0;
+for (let maskIndex = 0; maskIndex < 81; maskIndex += 1) {
+  const up = decodeDosResourceSprite(spriteArchive, "map_mask_up", maskIndex);
+  if (up !== null) {
+    decodedUpMasks += 1;
+    assert.equal(up.width <= 32 && up.height <= 41, true, `map_mask_up ${maskIndex} bounds`);
+  }
+
+  const down = decodeDosResourceSprite(spriteArchive, "map_mask_down", maskIndex);
+  if (down !== null) {
+    decodedDownMasks += 1;
+    assert.equal(down.width <= 32 && down.height <= 41, true, `map_mask_down ${maskIndex} bounds`);
+  }
+}
+
+assert.equal(decodedUpMasks, 61, "61 up masks decode (reference atlas count)");
+assert.equal(decodedDownMasks, 61, "61 down masks decode (reference atlas count)");
+
+const flagSprite = decodeDosResourceSprite(spriteArchive, "map_object", 128);
+assert.notEqual(flagSprite, null, "map_object flag frame decodes");
+assert.equal(flagSprite.width > 0 && flagSprite.height > 0, true, "flag has dimensions");
+assert.equal(
+  flagSprite.rgba.some((value, index) => index % 4 === 3 && value === 0xff),
+  true,
+  "flag has opaque pixels",
+);
+
+const treeSprite = decodeDosResourceSprite(spriteArchive, "map_object", 0);
+assert.notEqual(treeSprite, null, "map_object tree sprite decodes");
+const treeShadow = decodeDosResourceSprite(spriteArchive, "map_shadow", 0);
+assert.notEqual(treeShadow, null, "map_shadow tree shadow decodes");
+assert.equal(
+  treeShadow.rgba.some((value, index) => index % 4 === 3 && value === 0x80),
+  true,
+  "tree shadow uses overlay alpha",
+);
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog and matched Phase 1 oracle metadata plus typed catalog and render-layer scene facts.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, and decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites.`,
 );

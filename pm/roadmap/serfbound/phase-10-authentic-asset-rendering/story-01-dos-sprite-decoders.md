@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 10
-- **Status:** in-progress
+- **Status:** done
 - **Depends on:** SB-4-02, SB-4-04
 - **Unblocks:** SB-10-02
 - **Owner:** unassigned
@@ -27,14 +27,14 @@ browser-native TypeScript.
 
 ## Acceptance criteria
 
-- [ ] A synthetic in-memory `.PA` fixture decodes through all four sprite types
+- [x] A synthetic in-memory `.PA` fixture decodes through all four sprite types
   in CI with exact expected RGBA output.
-- [ ] Malformed payloads (truncated header, wrong solid size, RLE overflow)
+- [x] Malformed payloads (truncated header, wrong solid size, RLE overflow)
   fail with typed decode errors, not silent corruption.
-- [ ] Opt-in local checks decode palettes 3, 3997, 3998 and representative real
+- [x] Opt-in local checks decode palettes 3, 3997, 3998 and representative real
   sprites (`map_ground`, `map_mask_up`, `map_mask_down`, `map_object` flag)
   from local `SPAU.PA` and assert their dimensions.
-- [ ] CI (`npm test`) stays green without `serfbound-local-data/`.
+- [x] CI (`npm test`) stays green without `serfbound-local-data/`.
 
 ## Test plan
 

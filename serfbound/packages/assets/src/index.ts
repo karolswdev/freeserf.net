@@ -1,3 +1,18 @@
+export {
+  DosPaArchive,
+  DosSpriteDecodeError,
+  decodeDosMaskSprite,
+  decodeDosOverlaySprite,
+  decodeDosResourceSprite,
+  decodeDosSolidSprite,
+  decodeDosTransparentSprite,
+  dosPaletteByteLength,
+  dosSpriteArchiveIndex,
+  dosSpriteHeaderByteLength,
+  type DecodedDosSprite,
+  type DosPalette,
+} from "./dos-sprites.js";
+
 export type AssetImportBoundary = {
   readonly source: "user-provided-local-file";
   readonly storesOriginalPayloadInGit: false;
@@ -238,7 +253,7 @@ export class DosPaCatalogParseError extends Error {
   }
 }
 
-type DosResourceDefinition = {
+export type DosResourceDefinition = {
   readonly name: string;
   readonly type: DosPaResourceCatalogEntry["type"];
   readonly count: number;
@@ -247,7 +262,7 @@ type DosResourceDefinition = {
   readonly spriteType: DosPaResourceCatalogEntry["spriteType"];
 };
 
-const dosResourceDefinitions: readonly DosResourceDefinition[] = [
+export const dosResourceDefinitions: readonly DosResourceDefinition[] = [
   { name: "none", type: "Unknown", count: 0, dosIndex: 0, dosPalette: 0, spriteType: "Unknown" },
   { name: "art_landscape", type: "Sprite", count: 1, dosIndex: 1, dosPalette: 3997, spriteType: "Solid" },
   { name: "animation", type: "Animation", count: 200, dosIndex: 2, dosPalette: 0, spriteType: "Unknown" },
