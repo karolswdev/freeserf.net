@@ -1,4 +1,4 @@
-# Phase 25 — Data Breadth and Localization
+# Phase 26 — Data Breadth and Localization
 
 **Last updated:** 2026-06-10.
 **Status:** not started.
@@ -35,26 +35,26 @@ ship a localized interface within the original glyph set's limits.
 ## Exit criteria (evidence required)
 
 - [ ] The Amiga evaluation runs against a real corpus and the go/no-go
-  decision is recorded with evidence. (SB-25-01)
+  decision is recorded with evidence. (SB-26-01)
 - [ ] If go: Amiga archives import, decode, and play behind the same
-  typed catalog with opt-in parity tests. (SB-25-02)
+  typed catalog with opt-in parity tests. (SB-26-02)
 - [ ] UI strings live in language tables with English extracted as the
-  reference language and a second language proving the path. (SB-25-03)
+  reference language and a second language proving the path. (SB-26-03)
 - [ ] The localized-UI gate passes: language switch in the shell, glyph
-  coverage audited, real-data captures recorded. (SB-25-04)
+  coverage audited, real-data captures recorded. (SB-26-04)
 
 ## Story status
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-25-01 | Amiga corpus evaluation | backlog | story-01-amiga-corpus-evaluation.md | — |
-| SB-25-02 | Amiga decoders behind the typed catalog | backlog | story-02-amiga-decoders.md | — |
-| SB-25-03 | String extraction and language tables | backlog | story-03-string-extraction-language-tables.md | — |
-| SB-25-04 | Localized UI gate | backlog | story-04-localized-ui-gate.md | — |
+| SB-26-01 | Amiga corpus evaluation | backlog | story-01-amiga-corpus-evaluation.md | — |
+| SB-26-02 | Amiga decoders behind the typed catalog | backlog | story-02-amiga-decoders.md | — |
+| SB-26-03 | String extraction and language tables | backlog | story-03-string-extraction-language-tables.md | — |
+| SB-26-04 | Localized UI gate | backlog | story-04-localized-ui-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 24 closes (SB-25-03/04 do not actually
+Scaffolded; starts after Phase 24 closes (SB-26-03/04 do not actually
 depend on multiplayer and may be pulled earlier if priorities shift —
 record the re-ordering decision here if so).
 

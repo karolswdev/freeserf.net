@@ -1,10 +1,10 @@
-# SB-26-02 — Signaling Relay and Invite Links
+# SB-27-02 — Signaling Relay and Invite Links
 
 - **Project:** serfbound
-- **Phase:** 26
+- **Phase:** 27
 - **Status:** backlog
-- **Depends on:** SB-26-01
-- **Unblocks:** SB-26-03
+- **Depends on:** SB-27-01
+- **Unblocks:** SB-27-03
 - **Owner:** unassigned
 
 ## Problem
@@ -20,7 +20,7 @@ way.
   enough to self-host), invite-link UX (create/join by code), relay
   contract tests proving it never sees gameplay traffic, graceful
   fallback to manual signaling when the relay is unreachable.
-- **Out:** Lobbies/discovery (Phase 24), TURN, persistence of sessions.
+- **Out:** Lobbies/discovery (Phase 25), TURN, persistence of sessions.
 
 ## Acceptance criteria
 

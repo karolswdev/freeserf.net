@@ -1,10 +1,10 @@
-# SB-24-02 — Identity Decision and Account Service
+# SB-25-02 — Identity Decision and Account Service
 
 - **Project:** serfbound
-- **Phase:** 24
+- **Phase:** 25
 - **Status:** backlog
-- **Depends on:** SB-24-01
-- **Unblocks:** SB-24-03
+- **Depends on:** SB-25-01
+- **Unblocks:** SB-25-03
 - **Owner:** unassigned
 
 ## Problem
@@ -21,7 +21,7 @@ minimal service implementing exactly that.
   (deployment story recorded), client linking of the local profile to an
   account, account deletion end-to-end, data-minimization contract tests
   pinning the stored schema to the record.
-- **Out:** Matchmaking (SB-24-03), any profile data beyond the record.
+- **Out:** Matchmaking (SB-25-03), any profile data beyond the record.
 
 ## Acceptance criteria
 

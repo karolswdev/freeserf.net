@@ -1,9 +1,9 @@
-# SB-26-04 — Online Play Gate
+# SB-27-04 — Online Play Gate
 
 - **Project:** serfbound
-- **Phase:** 26
+- **Phase:** 27
 - **Status:** backlog
-- **Depends on:** SB-26-03
+- **Depends on:** SB-27-03
 - **Unblocks:** —
 - **Owner:** unassigned
 

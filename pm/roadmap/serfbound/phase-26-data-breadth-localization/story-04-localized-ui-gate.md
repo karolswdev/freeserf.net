@@ -1,10 +1,10 @@
-# SB-25-04 — Localized UI Gate
+# SB-26-04 — Localized UI Gate
 
 - **Project:** serfbound
-- **Phase:** 25
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-25-03
-- **Unblocks:** SB-26-01
+- **Depends on:** SB-26-03
+- **Unblocks:** SB-27-01
 - **Owner:** unassigned
 
 ## Problem

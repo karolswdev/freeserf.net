@@ -1,15 +1,15 @@
-# SB-25-02 — Amiga Decoders Behind the Typed Catalog
+# SB-26-02 — Amiga Decoders Behind the Typed Catalog
 
 - **Project:** serfbound
-- **Phase:** 25
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-25-01
-- **Unblocks:** SB-25-03
+- **Depends on:** SB-26-01
+- **Unblocks:** SB-26-03
 - **Owner:** unassigned
 
 ## Problem
 
-If SB-25-01 records go: Amiga archives must import, decode, and play
+If SB-26-01 records go: Amiga archives must import, decode, and play
 through the same typed asset catalog the DOS path uses — parallel
 decoders behind the interface, invisible to the engine and renderer.
 

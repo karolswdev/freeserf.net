@@ -1,10 +1,10 @@
-# SB-25-03 — String Extraction and Language Tables
+# SB-26-03 — String Extraction and Language Tables
 
 - **Project:** serfbound
-- **Phase:** 25
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-25-02
-- **Unblocks:** SB-25-04
+- **Depends on:** SB-26-02
+- **Unblocks:** SB-26-04
 - **Owner:** unassigned
 
 ## Problem
@@ -21,7 +21,7 @@ glyphs) — all still rendered through the decoded original font.
   table format + lookup; a complete German table; glyph-coverage
   validation at table load (every character maps via
   `MapCharacterToSpriteIndex`).
-- **Out:** Language switch UI (SB-25-04); docs translation.
+- **Out:** Language switch UI (SB-26-04); docs translation.
 
 ## Acceptance criteria
 
@@ -35,7 +35,7 @@ glyphs) — all still rendered through the decoded original font.
 
 - **Unit:** Extraction completeness and glyph-coverage checks in CI.
 - **Integration / e2e:** Founding e2e reruns identically in English.
-- **Manual / device:** n/a until SB-25-04 captures.
+- **Manual / device:** n/a until SB-26-04 captures.
 - **Design handoff:** Table format doc in the phase folder.
 
 ## Notes / open questions

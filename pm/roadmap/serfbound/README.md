@@ -1,7 +1,7 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [24 — Community and Identity](./phase-24-community-identity/)
+**Current phase:** [24 — Repository Independence](./phase-24-repository-independence/)
 **Status:** Phases 0–23 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)).
 Post-launch so far: Phase 21 closed the launch-review punch list
@@ -11,8 +11,9 @@ zero servers; Phase 23 shipped correspondence play — offline-chess
 Serfbound with trustless turn windows, recaps, digests, hot-seat
 pass-and-play, and two-tab async matches (see
 [phase-23-correspondence-foundations/final-summary.md](./phase-23-correspondence-foundations/final-summary.md)).
-Remaining: identity/challenges/the turn mailbox (24), data breadth and
-localization (25), realtime WebRTC online play (26).
+Remaining: repository independence — Serfbound's own GPL-3.0 repo with
+zero .NET (24), identity/challenges/the turn mailbox (25), data breadth
+and localization (26), realtime WebRTC online play (27).
 
 ## Vision
 
@@ -116,9 +117,10 @@ and either prove the new behavior intentionally or defer the decision.
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
 | 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | complete | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
-| 24 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
-| 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |
-| 26 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-26-realtime-online-play](./phase-26-realtime-online-play/) |
+| 24 | Repository independence: standalone GPL-3.0 repo, zero .NET | scaffolded | [phase-24-repository-independence](./phase-24-repository-independence/) |
+| 25 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-25-community-identity](./phase-25-community-identity/) |
+| 26 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-26-data-breadth-localization](./phase-26-data-breadth-localization/) |
+| 27 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-27-realtime-online-play](./phase-27-realtime-online-play/) |
 
 ## Delivery Gates
 
@@ -156,11 +158,13 @@ when the previous phase has evidence:
 - Phase 22 proves lockstep multiplayer works with zero servers (loopback).
 - Phase 23 proves correspondence play: trustless turn windows, recaps, and
   hot-seat/async matches with zero servers.
-- Phase 24 proves identity, challenges, and the turn mailbox can exist
+- Phase 24 proves Serfbound stands alone: its own GPL-3.0 repository with
+  zero .NET, gates green in the new home.
+- Phase 25 proves identity, challenges, and the turn mailbox can exist
   without gating play or eroding the privacy posture.
-- Phase 25 proves data breadth (Amiga, evidence-gated) and localization
+- Phase 26 proves data breadth (Amiga, evidence-gated) and localization
   within the original fonts.
-- Phase 26 proves realtime online play works peer-to-peer over WebRTC.
+- Phase 27 proves realtime online play works peer-to-peer over WebRTC.
 
 Phases 11 onward inherit the Phase 10 standing rule: a phase gates on something
 a player can see or play, captured from real local data via the visual gate —

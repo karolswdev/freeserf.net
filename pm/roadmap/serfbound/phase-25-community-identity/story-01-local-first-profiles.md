@@ -1,10 +1,10 @@
-# SB-24-01 — Local-First Profiles
+# SB-25-01 — Local-First Profiles
 
 - **Project:** serfbound
-- **Phase:** 24
+- **Phase:** 25
 - **Status:** backlog
-- **Depends on:** SB-23-04
-- **Unblocks:** SB-24-02
+- **Depends on:** SB-24-04
+- **Unblocks:** SB-25-02
 - **Owner:** unassigned
 
 ## Problem
@@ -20,7 +20,7 @@ dependency.
   local match history (opponent, result, duration, checksum-verified
   flag), export/import of the profile with the existing data-reset
   flows.
-- **Out:** Hosted identity (SB-24-02), discovery (SB-24-03).
+- **Out:** Hosted identity (SB-25-02), discovery (SB-25-03).
 
 ## Acceptance criteria
 

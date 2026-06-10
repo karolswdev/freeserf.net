@@ -1,10 +1,10 @@
-# SB-24-03 — Challenges and the Turn Mailbox
+# SB-25-03 — Challenges and the Turn Mailbox
 
 - **Project:** serfbound
-- **Phase:** 24
+- **Phase:** 25
 - **Status:** backlog
-- **Depends on:** SB-24-02
-- **Unblocks:** SB-24-04
+- **Depends on:** SB-25-02
+- **Unblocks:** SB-25-04
 - **Owner:** unassigned
 
 ## Problem
@@ -25,7 +25,7 @@ game data.
   push/email recorded as a separate decision), open-match listing for a
   player, lobby listing for open challenges, contract tests pinning the
   service to moves-and-checksums-only payloads.
-- **Out:** Ratings (SB-24-04); spectators; realtime play (Phase 26).
+- **Out:** Ratings (SB-25-04); spectators; realtime play (Phase 27).
 
 ## Acceptance criteria
 

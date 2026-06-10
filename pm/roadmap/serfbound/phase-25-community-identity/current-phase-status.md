@@ -1,4 +1,4 @@
-# Phase 24 — Community and Identity
+# Phase 25 — Community and Identity
 
 **Last updated:** 2026-06-10.
 **Status:** not started.
@@ -22,7 +22,7 @@ accounts and zero servers.
   match results feeding a ladder, abuse/operations posture for the
   hosted pieces.
 - **Out:** Monetization (none — GPL project, standing rule), social
-  graphs/chat platforms, federation, realtime play (Phase 26).
+  graphs/chat platforms, federation, realtime play (Phase 27).
 
 ## Non-negotiable constraints
 
@@ -36,27 +36,27 @@ accounts and zero servers.
 ## Exit criteria (evidence required)
 
 - [ ] Local profiles persist and travel into multiplayer sessions with
-  no hosted dependency. (SB-24-01)
+  no hosted dependency. (SB-25-01)
 - [ ] The identity decision record ships and the optional account
-  service implements exactly it. (SB-24-02)
+  service implements exactly it. (SB-25-02)
 - [ ] Challenges create matches with agreed terms; turn moves flow
   through the mailbox (re-verified client-side, always) and missed
-  pickups forfeit per the recorded semantics. (SB-24-03)
+  pickups forfeit per the recorded semantics. (SB-25-03)
 - [ ] Verified match results produce a ladder with an honest
-  abuse/operations posture; phase gate reruns green. (SB-24-04)
+  abuse/operations posture; phase gate reruns green. (SB-25-04)
 
 ## Story status
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-24-01 | Local-first profiles | backlog | story-01-local-first-profiles.md | — |
-| SB-24-02 | Identity decision and account service | backlog | story-02-identity-account-service.md | — |
-| SB-24-03 | Challenges and the turn mailbox | backlog | story-03-challenges-turn-mailbox.md | — |
-| SB-24-04 | Ladder and operations gate | backlog | story-04-ladder-operations-gate.md | — |
+| SB-25-01 | Local-first profiles | backlog | story-01-local-first-profiles.md | — |
+| SB-25-02 | Identity decision and account service | backlog | story-02-identity-account-service.md | — |
+| SB-25-03 | Challenges and the turn mailbox | backlog | story-03-challenges-turn-mailbox.md | — |
+| SB-25-04 | Ladder and operations gate | backlog | story-04-ladder-operations-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 23 closes. This phase deliberately
+Scaffolded; starts after Phase 24 closes. This phase deliberately
 front-loads decision records: hosted identity is a posture change for a
 zero-telemetry project and ships only as written.
 
@@ -75,5 +75,5 @@ zero-telemetry project and ships only as written.
 ## Decisions deferred
 
 - Auth mechanism (passkeys vs OAuth vs magic links) — decided in
-  SB-24-02's record.
+  SB-25-02's record.
 - Ranked seasons/resets.

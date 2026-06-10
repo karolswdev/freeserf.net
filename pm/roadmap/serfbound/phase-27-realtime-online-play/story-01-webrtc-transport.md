@@ -1,10 +1,10 @@
-# SB-26-01 — WebRTC Transport with Manual Signaling
+# SB-27-01 — WebRTC Transport with Manual Signaling
 
 - **Project:** serfbound
-- **Phase:** 26
+- **Phase:** 27
 - **Status:** backlog
-- **Depends on:** SB-25-04
-- **Unblocks:** SB-26-02
+- **Depends on:** SB-26-04
+- **Unblocks:** SB-27-02
 - **Owner:** unassigned
 
 ## Problem
@@ -20,7 +20,7 @@ works before any hosted piece exists.
   contract (ordered/reliable configuration recorded), copy-paste
   offer/answer UI, ICE candidate handling, transport-level error
   surfacing, two-browser proof with matching checksums.
-- **Out:** Hosted signaling (SB-26-02), reconnect (SB-26-03).
+- **Out:** Hosted signaling (SB-27-02), reconnect (SB-27-03).
 
 ## Acceptance criteria
 

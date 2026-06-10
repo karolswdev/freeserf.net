@@ -1,10 +1,10 @@
-# SB-24-04 — Ladder and Operations Gate
+# SB-25-04 — Ladder and Operations Gate
 
 - **Project:** serfbound
-- **Phase:** 24
+- **Phase:** 25
 - **Status:** backlog
-- **Depends on:** SB-24-03
-- **Unblocks:** SB-25-01
+- **Depends on:** SB-25-03
+- **Unblocks:** SB-26-01
 - **Owner:** unassigned
 
 ## Problem

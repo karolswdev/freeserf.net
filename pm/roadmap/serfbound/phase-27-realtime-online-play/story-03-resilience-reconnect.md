@@ -1,10 +1,10 @@
-# SB-26-03 — Reconnect, Resync, and Desync Recovery
+# SB-27-03 — Reconnect, Resync, and Desync Recovery
 
 - **Project:** serfbound
-- **Phase:** 26
+- **Phase:** 27
 - **Status:** backlog
-- **Depends on:** SB-26-02
-- **Unblocks:** SB-26-04
+- **Depends on:** SB-27-02
+- **Unblocks:** SB-27-04
 - **Owner:** unassigned
 
 ## Problem

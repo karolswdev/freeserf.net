@@ -1,10 +1,10 @@
-# SB-25-01 — Amiga Corpus Evaluation
+# SB-26-01 — Amiga Corpus Evaluation
 
 - **Project:** serfbound
-- **Phase:** 25
+- **Phase:** 26
 - **Status:** backlog
-- **Depends on:** SB-24-04
-- **Unblocks:** SB-25-02
+- **Depends on:** SB-25-04
+- **Unblocks:** SB-26-02
 - **Owner:** unassigned
 
 ## Problem
@@ -21,7 +21,7 @@ parity standard be met?
   reference Amiga loader inventory (formats, palettes, music: sonic
   arranger vs XMI), oracle-output capture for selected facts, effort/
   risk assessment, the go/no-go decision record.
-- **Out:** Product decode code (SB-25-02, only on go).
+- **Out:** Product decode code (SB-26-02, only on go).
 
 ## Acceptance criteria
 
