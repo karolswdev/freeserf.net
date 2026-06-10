@@ -1,7 +1,7 @@
 # Phase 13 — Serf Engine and Animation
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -38,7 +38,7 @@ construction.
   carrying animations. (SB-13-03; carry-sprite rendering at the phase gate)
 - [x] Diggers level sites and builders construct buildings, replacing the
   interim construction path. (SB-13-04)
-- [ ] Real-data capture shows an animated, working settlement. (SB-13-05)
+- [x] Real-data capture shows an animated, working settlement. (SB-13-05)
 
 ## Story status
 
@@ -48,14 +48,15 @@ construction.
 | SB-13-02 | Port the serf state machine core | done | story-02-serf-state-machine-core.md | evidence-story-02.md |
 | SB-13-03 | Transporters move resources along roads | done | story-03-transporters-on-roads.md | evidence-story-03.md |
 | SB-13-04 | Builders and diggers construct buildings | done | story-04-builders-and-diggers.md | evidence-story-04.md |
-| SB-13-05 | Animated settlement visual gate | in-progress | story-05-animated-settlement-gate.md | — |
+| SB-13-05 | Animated settlement visual gate | done | story-05-animated-settlement-gate.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-13-04 is done: the interim construction model is deleted — buildings now
-complete only through builder labor and transporter-delivered materials at
-reference costs, proven end-to-end in the browser. SB-13-05 (serf rendering
-+ the animated settlement gate) is in progress.
+Phase 13 is complete. Serfs live: they spawn in the castle, walk roads on
+the reference tick/counter/animation formulas, haul resources, and build
+buildings — and they render through the authentic chain (animation table →
+appearance tables → player-color composed torsos + heads), verified with
+real local data and the full browser founding loop.
 
 ## Active risks
 

@@ -322,6 +322,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentDecodedAssets,
       currentLandscapeAssets,
       currentWorld,
+      currentSerfEngine === undefined
+        ? undefined
+        : [...currentSerfEngine.serfs.values()].filter(
+            (serf) => serf.state !== 0 && serf.state !== 1,
+          ),
       currentScroll,
       currentTick,
       currentBuiltStructures,
@@ -377,6 +382,12 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           currentSerfEngine.update(commandRouter.state.tick);
           syncWorldState(root, currentWorld);
         }
+
+        root.dataset.serfboundGameTick = String(commandRouter.state.tick);
+        root.dataset.serfboundSerfCount = String(
+          currentSerfEngine === undefined ? 0 : currentSerfEngine.serfs.size,
+        );
+
       }
 
       renderCurrentScene();
@@ -1199,6 +1210,7 @@ function renderScene(
   decodedAssets: DecodedRenderAssets | undefined,
   landscapeAssets: LandscapeRenderAssets | undefined,
   world: SerfboundLocalGame["world"] extends () => infer W ? W | undefined : never,
+  serfs: readonly { position: number; animation: number; counter: number }[] | undefined,
   scroll: MapScroll,
   tick: number,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
@@ -1218,6 +1230,7 @@ function renderScene(
           tick,
           builtStructures,
           ...(world === undefined ? {} : { world }),
+          ...(serfs === undefined ? {} : { serfs }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
@@ -1237,6 +1250,9 @@ function renderScene(
   root.dataset.serfboundLayerCount = String(scene.layers.length);
   root.dataset.serfboundPrimitiveCount = String(scene.primitives.length);
   root.dataset.serfboundSpriteCount = String(scene.sprites.length);
+  root.dataset.serfboundSerfSpriteCount = String(
+    scene.sprites.filter((sprite) => sprite.key.startsWith("serf")).length,
+  );
   root.dataset.serfboundBuiltStructureCount = String(builtStructures.length);
   root.dataset.serfboundCanvasWidth = String(canvas.width);
   root.dataset.serfboundCanvasHeight = String(canvas.height);

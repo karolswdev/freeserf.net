@@ -171,3 +171,21 @@ test("waves animate on water and mask at shores per the reference rules", () => 
     );
   }
 });
+
+test("serfs render torso sprites from the animation table chain", () => {
+  // The fixture provides torso body 0 + arms + the animation table; heads
+  // live beyond the fixture's entry table and are skipped gracefully.
+  assert.notEqual(landscapeAssets.serfAnimationTable, null);
+  assert.equal(landscapeAssets.serfBodyCount >= 1, true);
+  assert.notEqual(landscapeAssets.atlas.regions["serft:0"], undefined);
+
+  const scene = createLandscapeScene({
+    size: { width: 960, height: 540 },
+    assets: landscapeAssets,
+    scroll: { column: 0, row: 0 },
+    serfs: [{ position: 5 * 64 + 6, animation: 0, counter: 0 }],
+  });
+  const serfSprites = scene.sprites.filter((sprite) => sprite.key.startsWith("serf"));
+  assert.equal(serfSprites.length >= 1, true, "the serf renders its torso");
+  assert.equal(serfSprites[0].layer, "markers");
+});

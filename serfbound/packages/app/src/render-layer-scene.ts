@@ -2,7 +2,11 @@ import {
   DosPaArchive,
   buildSpriteAtlas,
   composeMaskedTile,
+  composeSerfTorso,
   decodeDosResourceSprite,
+  parseSerfAnimationTable,
+  type ComposedSerfTorso,
+  type SerfAnimationTable,
   terrainGroundSpriteIndex,
   triangleMaskCodeDown,
   triangleMaskCodeUp,
@@ -57,6 +61,9 @@ export type DecodedRenderAssets = {
   readonly rawPathGrounds: readonly (DecodedDosSprite | null)[];
   readonly rawPathMasks: readonly (DecodedDosSprite | null)[];
   readonly rawBorders: readonly (DecodedDosSprite | null)[];
+  readonly serfAnimationTable: SerfAnimationTable | null;
+  readonly rawSerfTorsos: ReadonlyMap<number, ComposedSerfTorso>;
+  readonly rawSerfHeads: ReadonlyMap<number, DecodedDosSprite>;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -602,6 +609,35 @@ export function buildDecodedRenderAssets(
     rawBorders.push(decodeSafely(archive, "map_border", borderIndex));
   }
 
+  // Serf rendering data: the animation table, walking torso bodies (0..47),
+  // and head sprites.
+  let serfAnimationTable: SerfAnimationTable | null = null;
+  try {
+    serfAnimationTable = parseSerfAnimationTable(archive);
+  } catch {
+    serfAnimationTable = null;
+  }
+
+  const rawSerfTorsos = new Map<number, ComposedSerfTorso>();
+  for (let body = 0; body < 48; body += 1) {
+    try {
+      const torso = composeSerfTorso(archive, body);
+      if (torso !== null) {
+        rawSerfTorsos.set(body, torso);
+      }
+    } catch {
+      // partial archives skip missing bodies
+    }
+  }
+
+  const rawSerfHeads = new Map<number, DecodedDosSprite>();
+  for (let head = 0; head < 64; head += 1) {
+    const sprite = decodeSafely(archive, "serf_head", head);
+    if (sprite !== null) {
+      rawSerfHeads.set(head, sprite);
+    }
+  }
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
@@ -616,6 +652,9 @@ export function buildDecodedRenderAssets(
     rawPathGrounds,
     rawPathMasks,
     rawBorders,
+    serfAnimationTable,
+    rawSerfTorsos,
+    rawSerfHeads,
   };
 }
 

@@ -1,11 +1,11 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/current-phase-status.md)
-**Status:** Phases 0–12 complete. Browser players found settlements with
-original rules on the generated world: castle and territory, interactive
-roads, staged construction, and save/load via world-action replay. Phase 13
-(the serf engine) is next.
+**Current phase:** [phase-14-working-economy](./phase-14-working-economy/current-phase-status.md)
+**Status:** Phases 0–13 complete. The settlement is alive: serfs walk out of
+the castle on the reference animation formulas, transporters haul materials,
+and builders raise buildings — rendered with player-color composed sprites
+from the player's own data. Phase 14 (the working economy) is next.
 
 ## Vision
 
@@ -98,8 +98,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 10 | Decode real DOS sprites and render authentic game art in the browser | complete | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
 | 11 | Generate the original world and make it scrollable | complete | [phase-11-original-map-world](./phase-11-original-map-world/) |
 | 12 | Found settlements: castle, flags, roads, construction | complete | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
-| 13 | Bring serfs to life: state machine and authentic animation | ready | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
-| 14 | Run every classic production chain | planned | [phase-14-working-economy](./phase-14-working-economy/) |
+| 13 | Bring serfs to life: state machine and authentic animation | complete | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
+| 14 | Run every classic production chain | ready | [phase-14-working-economy](./phase-14-working-economy/) |
 | 15 | Knights, territory, and combat | planned | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
 | 16 | Rebuild the original interface browser-native | planned | [phase-16-original-interface](./phase-16-original-interface/) |
 | 17 | Sound effects and music through WebAudio | planned | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
@@ -240,6 +240,11 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current living-settlement proof:** the serf engine ports the reference
+  state machine core (tick/counter pattern, walking animation formulas,
+  collision waiting), transporters and builders run construction logistics
+  end-to-end in the browser, and serfs render through the authentic
+  animation-table → appearance-table → player-color torso chain.
 - **Current settlement proof:** the engine game world ports the reference
   flag/road graph, build validity, castle/territory (influence tables), and
   A* pathfinding; the app founds settlements end-to-end (castle → roads →

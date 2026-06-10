@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 13
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-13-04
 - **Unblocks:** SB-14-01
 - **Owner:** unassigned
@@ -22,10 +22,10 @@ the whole loop survives save/load.
 
 ## Acceptance criteria
 
-- [ ] Capture shows serfs animating through transport and construction with
+- [x] Capture shows serfs animating through transport and construction with
   player colors, reviewed in evidence.
-- [ ] Tick + frame timing stays within recorded baselines.
-- [ ] Save/load restores serfs mid-task without desync.
+- [x] Tick + frame timing stays within recorded baselines.
+- [x] Save/load restores serfs mid-task without desync.
 
 ## Test plan
 

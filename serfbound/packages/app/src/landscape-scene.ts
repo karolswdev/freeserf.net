@@ -1,10 +1,13 @@
 import {
   buildSpriteAtlas,
   composeMaskedTile,
+  composeSerfTorso,
+  parseSerfAnimationTable,
   terrainGroundSpriteIndex,
   triangleMaskCodeDown,
   triangleMaskCodeUp,
   type DecodedDosSprite,
+  type SerfAnimationTable,
   type SpriteAtlas,
 } from "@serfbound/assets";
 import type {
@@ -47,7 +50,107 @@ export type LandscapeRenderAssets = {
   readonly objectSpriteCount: number;
   readonly waveFrameCount: number;
   readonly pathComboCount: number;
+  readonly serfAnimationTable: SerfAnimationTable | null;
+  readonly serfBodyCount: number;
 };
+
+// RenderSerf.AppearanceIndex1/2 map an animation frame's sprite byte to the
+// torso body and head sprite indices.
+const appearanceIndex1: readonly number[] = [
+  0, 0, 48, 6, 96, -1, 48, 24,
+  240, -1, 48, 30, 248, -1, 48, 12,
+  48, 18, 96, 306, 96, 300, 48, 54,
+  48, 72, 48, 36, 0, 48, 272, -1,
+  48, 60, 264, -1, 48, 42, 280, -1,
+  48, 66, 96, 312, 500, 600, 48, 318,
+  48, 78, 0, 84, 48, 90, 48, 96,
+  48, 102, 48, 108, 48, 114, 96, 324,
+  96, 330, 96, 336, 96, 342, 96, 348,
+  48, 354, 48, 360, 48, 366, 48, 372,
+  48, 378, 48, 384, 504, 604, 509, -1,
+  48, 120, 288, -1, 288, 420, 48, 126,
+  48, 132, 96, 426, 0, 138, 304, -1,
+  48, 390, 48, 144, 96, 432, 48, 198,
+  510, 608, 48, 204, 48, 402, 48, 150,
+  96, 438, 48, 156, 312, -1, 320, -1,
+  48, 162, 48, 168, 96, 444, 0, 174,
+  513, -1, 48, 408, 48, 180, 96, 450,
+  0, 186, 520, -1, 48, 414, 48, 192,
+  96, 456, 328, -1, 48, 210, 344, -1,
+  48, 6, 48, 6, 48, 216, 528, -1,
+  48, 534, 48, 528, 48, 288, 48, 282,
+  48, 222, 533, -1, 48, 540, 48, 546,
+  48, 552, 48, 558, 48, 564, 96, 468,
+  96, 462, 48, 570, 48, 576, 48, 582,
+  48, 396, 48, 228, 48, 234, 48, 240,
+  48, 246, 48, 252, 48, 258, 48, 264,
+  48, 270, 48, 276, 96, 474, 96, 480,
+  96, 486, 96, 492, 96, 498, 96, 504,
+  96, 510, 96, 516, 96, 522, 96, 612,
+  144, 294, 144, 588, 144, 594, 144, 618,
+  144, 624, 401, 294, 352, 297, 401, 588,
+  352, 591, 401, 594, 352, 597, 401, 618,
+  352, 621, 401, 624, 352, 627, 450, -1,
+  192, -1,
+];
+
+const appearanceIndex2: readonly number[] = [
+  0, 0, 1, 0, 2, 0, 3, 0,
+  4, 0, 5, 0, 6, 0, 7, 0,
+  8, 1, 9, 1, 10, 1, 11, 1,
+  12, 1, 13, 1, 14, 1, 15, 1,
+  16, 2, 17, 2, 18, 2, 19, 2,
+  20, 2, 21, 2, 22, 2, 23, 2,
+  24, 3, 25, 3, 26, 3, 27, 3,
+  28, 3, 29, 3, 30, 3, 31, 3,
+  32, 4, 33, 4, 34, 4, 35, 4,
+  36, 4, 37, 4, 38, 4, 39, 4,
+  40, 5, 41, 5, 42, 5, 43, 5,
+  44, 5, 45, 5, 46, 5, 47, 5,
+  0, 0, 1, 0, 2, 0, 3, 0,
+  4, 0, 5, 0, 6, 0, 2, 0,
+  0, 1, 1, 1, 2, 1, 3, 1,
+  4, 1, 5, 1, 6, 1, 2, 1,
+  0, 2, 1, 2, 2, 2, 3, 2,
+  4, 2, 5, 2, 6, 2, 2, 2,
+  0, 3, 1, 3, 2, 3, 3, 3,
+  4, 3, 5, 3, 6, 3, 2, 3,
+  0, 0, 1, 0, 2, 0, 3, 0,
+  4, 0, 5, 0, 6, 0, 7, 0,
+  8, 0, 9, 0, 10, 0, 11, 0,
+  12, 0, 13, 0, 14, 0, 15, 0,
+  16, 0, 17, 0, 18, 0, 19, 0,
+  20, 0, 21, 0, 22, 0, 23, 0,
+  24, 0, 25, 0, 26, 0, 27, 0,
+  28, 0, 29, 0, 30, 0, 31, 0,
+  32, 0, 33, 0, 34, 0, 35, 0,
+  36, 0, 37, 0, 38, 0, 39, 0,
+  40, 0, 41, 0, 42, 0, 43, 0,
+  44, 0, 45, 0, 46, 0, 47, 0,
+  48, 0, 49, 0, 50, 0, 51, 0,
+  52, 0, 53, 0, 54, 0, 55, 0,
+  56, 0, 57, 0, 58, 0, 59, 0,
+  60, 0, 61, 0, 62, 0, 63, 0,
+  64, 0,
+];
+
+// RenderSerf.GetHeadSprite: frame sprite byte -> torso body + head indices.
+export function serfBodyAndHead(frameSprite: number): { body: number; head: number } | null {
+  const hi = ((frameSprite >> 8) & 0xff) * 2;
+  const lo = (frameSprite & 0xff) * 2;
+  let body = appearanceIndex1[hi] ?? -1;
+  let head = appearanceIndex1[hi + 1] ?? -1;
+  if (body < 0) {
+    return null;
+  }
+
+  body += appearanceIndex2[lo] ?? 0;
+  if (head >= 0) {
+    head += appearanceIndex2[lo + 1] ?? 0;
+  }
+
+  return { body, head };
+}
 
 function wrap(value: number, period: number): number {
   return ((value % period) + period) % period;
@@ -225,6 +328,17 @@ export function buildLandscapeRenderAssets(
     }
   }
 
+  // Serf torsos and heads for walking bodies.
+  let serfBodyCount = 0;
+  for (const [body, torso] of decodedAssets.rawSerfTorsos) {
+    sprites[`serft:${body}`] = torso.sprite;
+    serfBodyCount += 1;
+  }
+
+  for (const [head, sprite] of decodedAssets.rawSerfHeads) {
+    sprites[`serfh:${head}`] = sprite;
+  }
+
   // Waves: 16 frames, each in three shore variants per the reference
   // (full, masked by up mask 40, masked by down mask 40; masks widened to the
   // 48px wave width).
@@ -276,6 +390,8 @@ export function buildLandscapeRenderAssets(
     objectSpriteCount,
     waveFrameCount,
     pathComboCount,
+    serfAnimationTable: decodedAssets.serfAnimationTable,
+    serfBodyCount,
   };
 }
 
@@ -319,6 +435,12 @@ export type LandscapeSceneOptions = {
   // Live game world; when present, terrain/objects/roads/flags render from
   // its mutable state instead of the pristine landscape.
   readonly world?: SerfboundGameWorld;
+  // Active serfs to render (position, animation state).
+  readonly serfs?: readonly {
+    readonly position: number;
+    readonly animation: number;
+    readonly counter: number;
+  }[];
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -532,6 +654,50 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         } else if (typeUp <= 3) {
           pushSprite("paths", `wave:${frame}:up`, waveX, waveY, waveY, waveX);
         }
+      }
+    }
+  }
+
+  // Serfs: frame = animationTable[animation][counter >> 3]; the frame's
+  // sprite byte maps through the appearance tables to torso/head sprites.
+  const animationTable = options.assets.serfAnimationTable;
+  if (animationTable !== null && options.serfs !== undefined) {
+    for (const serf of options.serfs) {
+      const screen = mapTileToScreen(
+        landscape,
+        {
+          column: serf.position % landscape.columns,
+          row: Math.trunc(serf.position / landscape.columns),
+        },
+        { column: scrollColumn, row: scrollRow },
+      );
+      if (
+        screen === null ||
+        screen.x < -tileWidth ||
+        screen.x > options.size.width + tileWidth ||
+        screen.y < -2 * tileHeight ||
+        screen.y > options.size.height + 2 * tileHeight
+      ) {
+        continue;
+      }
+
+      const animation = animationTable[serf.animation];
+      if (animation === undefined || animation.length === 0) {
+        continue;
+      }
+
+      const phase = Math.min(Math.max(serf.counter, 0) >> 3, animation.length - 1);
+      const frame = animation[phase]!;
+      const mapping = serfBodyAndHead(frame.sprite);
+      if (mapping === null) {
+        continue;
+      }
+
+      const anchorX = screen.x + frame.x;
+      const anchorY = screen.y + frame.y;
+      pushSprite("markers", `serft:${mapping.body}`, anchorX, anchorY, anchorY + 1, anchorX);
+      if (mapping.head >= 0) {
+        pushSprite("markers", `serfh:${mapping.head}`, anchorX, anchorY, anchorY + 2, anchorX);
       }
     }
   }
