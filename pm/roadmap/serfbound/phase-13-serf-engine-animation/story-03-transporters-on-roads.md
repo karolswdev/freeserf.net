@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 13
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-13-02
 - **Unblocks:** SB-13-04
 - **Owner:** unassigned
@@ -23,10 +23,10 @@ graph. Flag resource queues and transporter states make roads functional.
 
 ## Acceptance criteria
 
-- [ ] Transport scenarios match reference fixtures (which resource moves
+- [x] Transport scenarios match reference fixtures (which resource moves
   when, over which edges).
-- [ ] Carrying serfs render the correct resource-carry animation frames.
-- [ ] Roads visibly carry seeded resources castle → building site.
+- [x] Carrying serfs render the correct resource-carry animation frames.
+- [x] Roads visibly carry seeded resources castle → building site.
 
 ## Test plan
 

@@ -77,6 +77,13 @@ export type FlagPathState = {
   otherEndDirection: Direction | null;
 };
 
+export type FlagResourceSlot = {
+  // Resource type value or -1 for empty (reference Resource.Type.None).
+  resource: number;
+  destinationFlagIndex: number;
+  scheduledDirection: Direction | null;
+};
+
 export type WorldFlag = {
   readonly index: number;
   position: number;
@@ -84,6 +91,8 @@ export type WorldFlag = {
   readonly paths: Record<Direction, FlagPathState>;
   buildingIndex: number | null;
   hasInventory: boolean;
+  // Global.FLAG_MAX_RES_COUNT = 8 resource slots per flag.
+  readonly slots: FlagResourceSlot[];
 };
 
 export type WorldBuilding = {
@@ -98,6 +107,8 @@ export type WorldBuilding = {
   // 1 = frame stage. Completion derives from ticks since startTick.
   progress: number;
   startTick: number;
+  // Resources delivered by transporters, tallied by resource type value.
+  deliveredResources: Record<number, number>;
 };
 
 // Interim time-stepped construction (replaced by serf-driven work in
@@ -435,6 +446,11 @@ export class SerfboundGameWorld {
       paths: emptyFlagPaths(),
       buildingIndex: null,
       hasInventory: false,
+      slots: Array.from({ length: 8 }, () => ({
+        resource: -1,
+        destinationFlagIndex: 0,
+        scheduledDirection: null,
+      })),
     };
     this.#nextFlagIndex += 1;
     this.flags.set(flag.index, flag);
@@ -914,6 +930,7 @@ export class SerfboundGameWorld {
       isDone: false,
       progress: 0,
       startTick: atTick,
+      deliveredResources: {},
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(building.index, building);
@@ -979,6 +996,7 @@ export class SerfboundGameWorld {
       isDone: true,
       progress: 0,
       startTick: 0,
+      deliveredResources: {},
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(castle.index, castle);
@@ -1026,6 +1044,25 @@ export class SerfboundGameWorld {
     }
 
     return changed;
+  }
+
+  // Flag.DropResource: place a resource into the first empty slot.
+  dropResource(flagIndex: number, resource: number, destinationFlagIndex: number): boolean {
+    const flag = this.flags.get(flagIndex);
+    if (flag === undefined) {
+      return false;
+    }
+
+    for (const slot of flag.slots) {
+      if (slot.resource < 0) {
+        slot.resource = resource;
+        slot.destinationFlagIndex = destinationFlagIndex;
+        slot.scheduledDirection = null;
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // --- land ownership (Game.UpdateLandOwnership) -------------------------------------

@@ -18,6 +18,7 @@ export const serfState = {
   readyToLeave: 7,
   digging: 8,
   building: 9,
+  idleOnPath: 10,
 } as const;
 
 export type SerfStateValue = (typeof serfState)[keyof typeof serfState];
@@ -76,6 +77,12 @@ export type WorldSerf = {
   // Entering/leaving slide state.
   slopeLength: number;
   nextState: SerfStateValue;
+  // Transporter assignment: the road is identified by one end flag and the
+  // direction the road leaves it.
+  roadFlagIndex: number;
+  roadDirection: Direction | null;
+  carriedResource: number;
+  carriedDestination: number;
 };
 
 export class SerfboundSerfEngine {
@@ -119,6 +126,10 @@ export class SerfboundSerfEngine {
       walkingWaitCounter: 0,
       slopeLength: 0,
       nextState: serfState.null,
+      roadFlagIndex: 0,
+      roadDirection: null,
+      carriedResource: -1,
+      carriedDestination: 0,
     };
     this.#nextSerfIndex += 1;
     this.serfs.set(serf.index, serf);
@@ -151,12 +162,44 @@ export class SerfboundSerfEngine {
     return true;
   }
 
+  // Assign an idle castle serf as the transporter of a road. The serf walks
+  // out to the road's flag and then serves it (condensed reference
+  // IdleOnPath path; full wake/park behavior follows with congestion work).
+  assignTransporter(
+    serf: WorldSerf,
+    flagIndex: number,
+    direction: Direction,
+    gameTick: number,
+  ): boolean {
+    const flag = this.world.flags.get(flagIndex);
+    if (flag === undefined || !flag.paths[direction].hasPath) {
+      return false;
+    }
+
+    serf.roadFlagIndex = flagIndex;
+    serf.roadDirection = direction;
+    flag.paths[direction].freeTransporters += 1;
+    const otherFlag = this.world.flags.get(flag.paths[direction].otherFlagIndex);
+    const otherDirection = flag.paths[direction].otherEndDirection;
+    if (otherFlag !== undefined && otherDirection !== null) {
+      otherFlag.paths[otherDirection].freeTransporters += 1;
+    }
+
+    return this.callOutSerf(serf, flagIndex, gameTick);
+  }
+
   // Game.UpdateSerfs equivalent.
   update(gameTick: number): void {
     for (const serf of [...this.serfs.values()]) {
       switch (serf.state) {
         case serfState.walking:
           this.#handleWalking(serf, gameTick);
+          break;
+        case serfState.transporting:
+          this.#handleTransporting(serf, gameTick);
+          break;
+        case serfState.idleOnPath:
+          this.#handleIdleOnPath(serf, gameTick);
           break;
         case serfState.leavingBuilding:
           this.#handleLeavingBuilding(serf, gameTick);
@@ -222,6 +265,14 @@ export class SerfboundSerfEngine {
       if (this.world.hasFlag(serf.position)) {
         const flag = this.world.flagAt(serf.position)!;
         if (flag.index === serf.walkingDestination || serf.walkingDestination === 0) {
+          // Assigned transporters take up duty at their road's flag before
+          // any building entry.
+          if (serf.roadDirection !== null && flag.index === serf.roadFlagIndex) {
+            serf.state = serfState.idleOnPath;
+            serf.counter = 0;
+            return;
+          }
+
           // Destination reached: enter the building if the flag has one,
           // otherwise idle here (SB-13-03 turns these into transporters).
           const buildingIndex = flag.buildingIndex;
@@ -287,6 +338,141 @@ export class SerfboundSerfEngine {
         return;
       }
     }
+  }
+
+  // Transporters idle at one end of their road and haul any slot whose route
+  // continues over it (condensed Flag scheduling; priorities and multi-serf
+  // roads follow with the economy).
+  #handleIdleOnPath(serf: WorldSerf, gameTick: number): void {
+    serf.tick = gameTick;
+    if (serf.roadDirection === null) {
+      serf.state = serfState.null;
+      return;
+    }
+
+    const hereFlag = this.world.flags.get(serf.roadFlagIndex);
+    if (hereFlag === undefined) {
+      serf.state = serfState.null;
+      return;
+    }
+
+    const path = hereFlag.paths[serf.roadDirection];
+    const otherFlag = this.world.flags.get(path.otherFlagIndex);
+    if (!path.hasPath || otherFlag === undefined) {
+      serf.state = serfState.null;
+      return;
+    }
+
+    // The serf stands at one of the two end flags; prefer hauling from there.
+    const standsAtHere = serf.position === hereFlag.position;
+    const fromFlag = standsAtHere ? hereFlag : otherFlag;
+    const toFlag = standsAtHere ? otherFlag : hereFlag;
+    const outDirection = standsAtHere
+      ? serf.roadDirection
+      : (path.otherEndDirection ?? serf.roadDirection);
+
+    for (const slot of fromFlag.slots) {
+      if (slot.resource < 0 || slot.destinationFlagIndex === 0) {
+        continue;
+      }
+
+      const routeDirection = this.#directionToward(fromFlag.index, slot.destinationFlagIndex);
+      if (routeDirection !== outDirection) {
+        continue;
+      }
+
+      // Pick up and carry across the road.
+      serf.carriedResource = slot.resource;
+      serf.carriedDestination = slot.destinationFlagIndex;
+      slot.resource = -1;
+      slot.destinationFlagIndex = 0;
+      serf.state = serfState.transporting;
+      serf.walkingDestination = toFlag.index;
+      serf.walkingDirection = 0;
+      serf.counter = 0;
+      this.serfIndexes[serf.position] = serf.index;
+      return;
+    }
+  }
+
+  // Transporting reuses the walking mechanics; on arrival the resource is
+  // delivered into the destination building or dropped for the next road.
+  #handleTransporting(serf: WorldSerf, gameTick: number): void {
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+    serf.counter -= delta;
+
+    while (serf.counter < 0) {
+      if (serf.walkingDirection < 0) {
+        serf.walkingWaitCounter += 1;
+        const direction = directionOrder[serf.walkingDirection + 6]!;
+        this.#changeDirection(serf, direction);
+        continue;
+      }
+
+      if (this.world.hasFlag(serf.position)) {
+        const flag = this.world.flagAt(serf.position)!;
+        if (flag.index === serf.walkingDestination) {
+          this.#deliverCarriedResource(serf, flag);
+          serf.state = serfState.idleOnPath;
+          serf.counter = 0;
+          return;
+        }
+
+        const direction = this.#directionToward(flag.index, serf.walkingDestination);
+        if (direction === null) {
+          serf.state = serfState.idleOnPath;
+          serf.counter = 0;
+          return;
+        }
+
+        this.#changeDirection(serf, direction);
+        continue;
+      }
+
+      const cameFrom = serf.walkingDirection;
+      let nextDirection: Direction | null = null;
+      for (const direction of directionOrder) {
+        if (directionOrder.indexOf(direction) === cameFrom) {
+          continue;
+        }
+
+        if (this.world.hasPath(serf.position, direction)) {
+          nextDirection = direction;
+          break;
+        }
+      }
+
+      if (nextDirection === null) {
+        serf.counter = 0;
+        serf.state = serfState.idleOnPath;
+        return;
+      }
+
+      this.#changeDirection(serf, nextDirection);
+    }
+  }
+
+  #deliverCarriedResource(serf: WorldSerf, flag: import("./game-world.js").WorldFlag): void {
+    if (serf.carriedResource < 0) {
+      return;
+    }
+
+    if (flag.index === serf.carriedDestination && flag.buildingIndex !== null) {
+      const building = this.world.buildings.get(flag.buildingIndex);
+      if (building !== undefined) {
+        building.deliveredResources[serf.carriedResource] =
+          (building.deliveredResources[serf.carriedResource] ?? 0) + 1;
+        serf.carriedResource = -1;
+        serf.carriedDestination = 0;
+        return;
+      }
+    }
+
+    // Hand over to the next road's transporter via the flag slots.
+    this.world.dropResource(flag.index, serf.carriedResource, serf.carriedDestination);
+    serf.carriedResource = -1;
+    serf.carriedDestination = 0;
   }
 
   // Serf.ChangeDirection: move one tile; on collision, wait with the

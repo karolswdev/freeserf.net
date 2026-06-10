@@ -119,3 +119,53 @@ test("colliding serfs wait with the reference waiting animation", () => {
   }
   assert.equal(arrived, true, "the walker resumes after the block clears");
 });
+
+test("a transporter hauls a resource across its road into the destination building", () => {
+  const { world, castlePosition } = flatWorldWithCastle();
+  const castleFlag = world.flagAt(world.move(castlePosition, "DownRight"));
+  world.players[0].hasCastle = true;
+
+  // Build a lumberjack four tiles right of the castle flag and connect it.
+  const sitePosition = world.geometry.positionAdd(castleFlag.position, 3, -1);
+  const building = world.buildBuilding(sitePosition, 2, 0);
+  assert.notEqual(building, null, "lumberjack builds");
+  const buildingFlag = world.flags.get(building.flagIndex);
+  const road = {
+    start: castleFlag.position,
+    directions: ["Right", "Right", "Right", "Right"],
+  };
+  // Route the road to the building flag (4 right lands on its flag tile when
+  // the site is one row up: building flag = site downright).
+  const expectedFlagPosition = world.move(sitePosition, "DownRight");
+  assert.equal(buildingFlag.position, expectedFlagPosition);
+  assert.equal(
+    world.buildRoad(road, 0),
+    true,
+    "road connects the castle flag to the building flag",
+  );
+
+  // Seed a plank (resource 7) at the castle flag, destined for the building
+  // flag.
+  assert.equal(world.dropResource(castleFlag.index, 7, buildingFlag.index), true);
+  assert.equal(castleFlag.slots.filter((slot) => slot.resource >= 0).length, 1);
+
+  const engine = new SerfboundSerfEngine(world);
+  const transporter = engine.spawnGenericSerf(0, 0);
+  assert.equal(engine.assignTransporter(transporter, castleFlag.index, "Right", 0), true);
+  assert.equal(castleFlag.paths.Right.freeTransporters, 1);
+
+  let delivered = false;
+  for (let tick = 0; tick < 40000 && !delivered; tick += 16) {
+    engine.update(tick);
+    delivered = (building.deliveredResources[7] ?? 0) === 1;
+  }
+
+  assert.equal(delivered, true, "the plank reaches the building");
+  assert.equal(
+    castleFlag.slots.every((slot) => slot.resource < 0),
+    true,
+    "the source slot empties",
+  );
+  assert.equal(transporter.carriedResource, -1, "the transporter dropped its load");
+  assert.equal(transporter.state, serfState.idleOnPath, "the transporter returns to duty");
+});
