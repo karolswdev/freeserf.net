@@ -10,6 +10,8 @@ import {
 } from "@serfbound/assets";
 import { PointerGestureTracker } from "./gestures.js";
 import { SerfboundLoopbackMultiplayer } from "./multiplayer.js";
+import { HotseatController } from "./hotseat.js";
+import { digestLines } from "./recap.js";
 import {
   SerfboundAiPlayer,
   buildingType,
@@ -102,6 +104,7 @@ export * from "./audio.js";
 export * from "./gestures.js";
 export * from "./multiplayer.js";
 export * from "./recap.js";
+export * from "./hotseat.js";
 
 export {
   BrowserIndexedDbImportedArchiveStore,
@@ -402,6 +405,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         >Join 2P (this browser)</button>
         <button
           class="secondary-action"
+          data-testid="hotseat-button"
+          type="button"
+        >Hot-seat 2P (pass and play)</button>
+        <button
+          class="secondary-action"
           data-testid="error-report-button"
           type="button"
         >Copy error report</button>
@@ -452,6 +460,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   // player this tab controls.
   let currentMultiplayer: SerfboundLoopbackMultiplayer | undefined;
   let currentLocalPlayer = 0;
+  // Hot-seat correspondence (SB-23-03).
+  let currentHotseat: HotseatController | undefined;
   // Game speed: ticks per frame scale by the reference-style multiplier
   // (0 pauses). Keys: 1/2/4 set speeds, 0 pauses.
   let gameSpeedMultiplier = 1;
@@ -723,7 +733,32 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         root.dataset.serfboundGameState === "running" &&
         gameSpeedMultiplier > 0
       ) {
-        if (
+        if (currentHotseat !== undefined) {
+          // Hot-seat correspondence: the controller owns window play,
+          // hand-over, and the recap; the shell renders whichever match
+          // is current and keeps command authority on the active player.
+          currentHotseat.tick(16);
+          const renderMatch = currentHotseat.renderMatch;
+          currentWorld = renderMatch.world;
+          currentSerfEngine = renderMatch.serfEngine;
+          currentLocalPlayer = currentHotseat.activePlayer;
+          commandRouter.localPlayer = currentHotseat.activePlayer;
+          if (currentHotseat.mode === "handover") {
+            setNotice(
+              `PLAYER ${currentHotseat.activePlayer + 1} PRESS ENTER - ${currentHotseat.countdownSeconds ?? 0}`,
+            );
+          } else if (currentHotseat.mode === "recap") {
+            setNotice(`RECAP - PLAYER ${(currentHotseat.activePlayer + 1)} WATCHES`);
+          } else if (
+            currentHotseat.mode === "your-window" &&
+            root.dataset.serfboundNotification?.startsWith("RECAP") === true
+          ) {
+            setNotice(`PLAYER ${currentHotseat.activePlayer + 1} - YOUR WINDOW`);
+          }
+
+          syncHotseatState();
+          syncWorldState(root, currentWorld);
+        } else if (
           currentMultiplayer !== undefined &&
           currentMultiplayer.status.phase === "running" &&
           currentSerfEngine !== undefined
@@ -1171,6 +1206,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       return;
     }
 
+    // Hot-seat: Enter picks the turn up from the hand-over screen.
+    if (event.key === "Enter" && currentHotseat !== undefined) {
+      event.preventDefault();
+      currentHotseat.pickup();
+      return;
+    }
+
     // Keyboard play: Enter starts the configured game from the title
     // screen (the pointer-free path to the same custom/mission start).
     if (event.key === "Enter" && currentWorld === undefined && initScreenSettings() !== undefined) {
@@ -1490,6 +1532,78 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   root
     .querySelector<HTMLButtonElement>("[data-testid='join-loopback-button']")
     ?.addEventListener("click", () => startMultiplayer("join"));
+  // Hot-seat correspondence (SB-23-03): two players pass one seat;
+  // every window still crosses the trustless verify path, and the
+  // incoming player watches the recap before playing.
+  const syncHotseatState = () => {
+    if (currentHotseat === undefined) {
+      delete root.dataset.serfboundCorMode;
+      return;
+    }
+
+    root.dataset.serfboundCorMode = currentHotseat.mode;
+    root.dataset.serfboundCorWindow = String(currentHotseat.currentWindow);
+    root.dataset.serfboundCorPlayer = String(currentHotseat.activePlayer);
+    const countdown = currentHotseat.countdownSeconds;
+    if (countdown === null) {
+      delete root.dataset.serfboundCorCountdown;
+    } else {
+      root.dataset.serfboundCorCountdown = String(countdown);
+      root.dataset.serfboundCorExpired = String(currentHotseat.pickupExpired);
+    }
+
+    const digest = currentHotseat.lastDigest;
+    if (digest !== null) {
+      root.dataset.serfboundCorDigest = digestLines(digest).join(" / ");
+    }
+
+    if (currentHotseat.failureReason !== null) {
+      root.dataset.serfboundCorFailure = currentHotseat.failureReason;
+    }
+  };
+  const hotseatWindowTicks = (() => {
+    try {
+      const value = new URLSearchParams(globalThis.location?.search ?? "").get("window");
+      const parsed = value === null ? NaN : Number(value);
+      return Number.isInteger(parsed) && parsed >= 64 ? parsed : 4096;
+    } catch {
+      return 4096;
+    }
+  })();
+  const startHotseat = () => {
+    if (currentImportedDataSource === undefined || currentWorld !== undefined) {
+      return;
+    }
+
+    currentHotseat = new HotseatController({
+      game: {
+        data: currentImportedDataSource,
+        seedString: initSeedString,
+        mapSize: 3,
+        playerCount: 2,
+        initialSupplies: initSupplies,
+      },
+      windowTicks: hotseatWindowTicks,
+      pickupSeconds: 60,
+    });
+    currentBuiltStructures = [];
+    const live = currentHotseat.live;
+    startLandscapeRendering({ landscape: () => live.world });
+    commandRouter = new SerfboundCommandRouter(live.state, live.world);
+    commandRouter.onWorldAction = (action) => currentHotseat?.queue(action);
+    currentWorld = live.world;
+    currentSerfEngine = live.serfEngine;
+    currentLocalPlayer = 0;
+    root.dataset.serfboundGameState = "running";
+    getGameStateElement(root).textContent = "Running";
+    setNotice("PLAYER 1 - YOUR WINDOW");
+    syncHotseatState();
+    syncWorldState(root, currentWorld);
+    renderCurrentScene();
+  };
+  root
+    .querySelector<HTMLButtonElement>("[data-testid='hotseat-button']")
+    ?.addEventListener("click", startHotseat);
   startButton.addEventListener("click", () => {
     // With the init screen up (decoded mode), the shell button is the
     // accessible path to the same custom game; the catalog-only fallback

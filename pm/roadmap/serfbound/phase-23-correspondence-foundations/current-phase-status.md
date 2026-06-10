@@ -1,7 +1,7 @@
 # Phase 23 — Correspondence Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-23-01..02 done.
+**Status:** in progress — SB-23-01..03 done.
 
 ## Goal
 
@@ -48,7 +48,7 @@ loopback are the gate.
   fixtures. (SB-23-01)
 - [x] A window produces an accurate digest and the shell replays the
   opponent's window at high speed. (SB-23-02)
-- [ ] The turn flow runs: whose-turn states, pickup countdown,
+- [x] The turn flow runs: whose-turn states, pickup countdown,
   hand-over; hot-seat play works on one machine. (SB-23-03)
 - [ ] The async gate passes: a hot-seat match and a two-tab async match
   play several windows each with verified checksums in e2e. (SB-23-04)
@@ -59,19 +59,19 @@ loopback are the gate.
 |---|---|---|---|---|
 | SB-23-01 | Turn-window match model | done | story-01-turn-window-match-model.md | evidence-story-01.md |
 | SB-23-02 | Window digests and recap replay | done | story-02-window-digests-recap.md | evidence-story-02.md |
-| SB-23-03 | Turn flow and pickup countdown | backlog | story-03-turn-flow-countdown.md | — |
+| SB-23-03 | Turn flow and pickup countdown | done | story-03-turn-flow-countdown.md | evidence-story-03.md |
 | SB-23-04 | Async play gate | backlog | story-04-async-play-gate.md | — |
 
 ## Where we are
 
-SB-23-01..02 shipped: the match model plus window digests and the
-frame-chunked recap replay (the opponent's window watched at ~16x,
-verified at the end). Three latent defects fell out of the
-stabilization work: the uint16 tick wrap (monotonicTick now carries
-window/turn math), hidden tabs freezing the lockstep pump, and
-Math.random e2e worlds (?seed= pins them — also a shareable-worlds
-feature); the browser suite then ran 11/11 four times consecutively.
-Next: SB-23-03 turn flow and pickup countdown.
+SB-23-01..03 shipped: the match model, digests + the recap replay, and
+now the turn flow — hot-seat pass-and-play in the shell, where each
+window crosses the trustless verify path and the incoming player
+watches the recap before playing against the pickup countdown (Enter
+picks up; expiry surfaces, enforcement is Phase 24's). The
+stabilization work along the way fixed the uint16 tick wrap, the
+hidden-tab pump freeze, and the Math.random e2e worlds (?seed= pins
+them). Next: SB-23-04 closes the phase on the async gate.
 
 ## Active risks
 

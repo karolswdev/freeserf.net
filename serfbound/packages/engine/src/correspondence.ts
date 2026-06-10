@@ -132,6 +132,10 @@ export class CorrespondenceMatch {
     return this.#game.world();
   }
 
+  get state(): SerfboundLocalGame["state"] {
+    return this.#game.state;
+  }
+
   get serfEngine(): ReturnType<SerfboundLocalGame["serfEngine"]> {
     return this.#game.serfEngine();
   }

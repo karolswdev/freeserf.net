@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 23
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-23-02
 - **Unblocks:** SB-23-04
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -26,11 +26,11 @@ on one machine (pass the keyboard).
 
 ## Acceptance criteria
 
-- [ ] The shell walks your-window → hand-over → recap → their-window
+- [x] The shell walks your-window → hand-over → recap → their-window
   states with correct command gating (you can only act in your
   window).
-- [ ] The window ends exactly at its tick bound and produces the move.
-- [ ] Hot-seat: two players complete several windows on one machine
+- [x] The window ends exactly at its tick bound and produces the move.
+- [x] Hot-seat: two players complete several windows on one machine
   through the same trustless verify path.
 
 ## Test plan

@@ -13,7 +13,7 @@ BroadcastChannel — zero servers, agreeing state checksums (see
 [phase-22-multiplayer-foundations/final-summary.md](./phase-22-multiplayer-foundations/final-summary.md)).
 The multiplayer track is re-ordered correspondence-first (decision in
 the Phase 23 status doc): async "offline chess" play over the lockstep
-core (23 — match model, digests, and the recap replay shipped), then
+core (23 — match model, digests/recap, and the hot-seat turn flow shipped), then
 identity/challenges/the turn mailbox (24), data breadth and
 localization (25), with realtime WebRTC play as Phase 26.
 

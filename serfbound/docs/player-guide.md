@@ -119,6 +119,13 @@ world and your commands execute on both. It runs entirely in your
 browser (no servers; your game data never leaves the machine). Internet
 play arrives with the online-play phase.
 
+Hot-seat 2P (pass and play): two players share one machine in
+correspondence style — you play a session window, hand the seat over
+(Enter picks the turn up before the countdown runs out), your opponent
+watches a high-speed recap of your window, then plays theirs. Tip:
+`?seed=` in the address bar (16 digits, 1–8) pins the world so you can
+share or replay it.
+
 ## Sound and music
 
 Sound effects and music decode from your own data and start after your
