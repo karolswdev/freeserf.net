@@ -1,7 +1,7 @@
 # Serfbound Phase Gate Verification Matrix
 
 **Last updated:** 2026-06-09.
-**Status:** planning baseline; not product-complete.
+**Status:** complete for the current first Serfbound browser-slice release candidate.
 
 ## Purpose
 
@@ -38,7 +38,7 @@ artifacts, or manual verification notes.
 | 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Complete |
 | 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Complete |
 | 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | Complete |
-| 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | In progress; release CI, static hosting, and docs added |
+| 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | Complete |
 
 ## Evidence Rules By Type
 
@@ -73,7 +73,7 @@ Before marking the whole Serfbound goal complete:
 
 ## Current Gap Summary
 
-As of 2026-06-09, Phases 0 through 8 are complete and documented with paired
-story evidence plus phase final summaries. Phase 9 is in progress with release
-CI, static hosting, and player/developer docs added. The product is not
-complete. The next gap is SB-9-04: run the release readiness review.
+As of 2026-06-09, Phases 0 through 9 are complete for the current first
+Serfbound browser-slice release candidate. Every phase has paired story
+evidence and a final summary. The release readiness report records the scoped
+go decision, known limitations, and stop signals.

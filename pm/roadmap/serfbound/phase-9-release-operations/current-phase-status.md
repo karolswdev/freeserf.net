@@ -1,7 +1,7 @@
 # Phase 9 — Release Operations
 
 **Last updated:** 2026-06-09.
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -31,7 +31,7 @@ Package, document, and operate Serfbound as a maintainable browser product.
 - [x] Player docs explain import, save, reset, troubleshooting, and local asset
   requirements.
 - [x] Developer docs explain oracle fixtures, local asset checks, and PMO flow.
-- [ ] Release checklist records browser matrix, performance snapshot, and known
+- [x] Release checklist records browser matrix, performance snapshot, and known
   limitations.
 
 ## Story status
@@ -41,14 +41,13 @@ Package, document, and operate Serfbound as a maintainable browser product.
 | SB-9-01 | Add release CI checks | done | story-01-release-ci-checks.md | evidence-story-01.md |
 | SB-9-02 | Define static hosting release path | done | story-02-static-hosting-release-path.md | evidence-story-02.md |
 | SB-9-03 | Write player and developer docs | done | story-03-player-developer-docs.md | evidence-story-03.md |
-| SB-9-04 | Run release readiness review | ready | story-04-release-readiness-review.md | — |
+| SB-9-04 | Run release readiness review | done | story-04-release-readiness-review.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 9 is in progress. SB-9-03 adds player and developer guides plus
-`npm run test:docs`, and release CI now checks docs coverage. The next
-responsible move is SB-9-04: run the release readiness review and close Phase 9
-only if the audit evidence passes.
+Phase 9 is complete. SB-9-04 adds the release readiness report, closes the
+release checklist, records known limitations, verifies issue intake boundaries,
+and marks the first Serfbound browser-slice release candidate ready.
 
 ## Active risks
 
@@ -72,8 +71,11 @@ only if the audit evidence passes.
   player docs cover local `SPAU.PA` import, save/load/reset, storage
   troubleshooting, and origin behavior; developer docs cover CI-safe fixtures,
   local/manual asset checks, release commands, and PMO evidence flow — SB-9-03.
+- 2026-06-09 — Release readiness passed for the first Serfbound browser-slice
+  release candidate after checking CI, compatibility, performance,
+  local/manual assets, docs, issue intake, product artifact boundaries, and
+  known limitations — SB-9-04.
 
 ## Decisions deferred
 
-- Release readiness outcome — resolve in SB-9-04 after checking CI, release
-  artifact, docs, browser matrix, performance evidence, and known limitations.
+- none.

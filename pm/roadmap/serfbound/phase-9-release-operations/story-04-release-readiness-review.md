@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 9
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-7-04, SB-8-04, SB-9-01, SB-9-02, SB-9-03
 - **Unblocks:** release candidate
 - **Owner:** unassigned
@@ -23,11 +23,11 @@ and known limitations before calling the browser product shippable.
 
 ## Acceptance criteria
 
-- [ ] Release readiness report exists.
-- [ ] Report links evidence for every phase gate from Phase 1 through Phase 9.
-- [ ] Report confirms no .NET or desktop runtime artifacts are in product build.
-- [ ] Report confirms no original assets are committed or bundled.
-- [ ] Known limitations have explicit release notes or blocking follow-ups.
+- [x] Release readiness report exists.
+- [x] Report links evidence for every phase gate from Phase 1 through Phase 9.
+- [x] Report confirms no .NET or desktop runtime artifacts are in product build.
+- [x] Report confirms no original assets are committed or bundled.
+- [x] Known limitations have explicit release notes or blocking follow-ups.
 
 ## Test plan
 
@@ -39,5 +39,6 @@ and known limitations before calling the browser product shippable.
 
 ## Notes / open questions
 
-This story is the completion audit for the product, not a place to waive missing
-evidence.
+Release readiness passed for the first Serfbound browser-slice release
+candidate. The report records known limitations and stop signals; it does not
+claim full original gameplay parity.

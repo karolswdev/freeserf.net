@@ -24,7 +24,7 @@ bundled original assets.
 | SB-7-01 Start local game from imported data | `88d676d` | [evidence-story-01](./evidence-story-01.md) | Started deterministic local games from imported `SPAU.PA` catalog metadata. |
 | SB-7-02 Implement first visible build action | `801dc0a` | [evidence-story-02](./evidence-story-02.md) | Added `game.build` flag placement, visible WebGL render feedback, and recoverable duplicate/deferred build rejection. |
 | SB-7-03 Add browser save/load loop | `913b05e` | [evidence-story-03](./evidence-story-03.md) | Added versioned browser-local save records, validated snapshot restore, reload/load browser flow, and recoverable save errors. |
-| SB-7-04 Verify playable loop manually | pending | [evidence-story-04](./evidence-story-04.md) | Captured manual import/start/build/save/reload/load proof with local asset metadata and screenshots. |
+| SB-7-04 Verify playable loop manually | `007bb41` | [evidence-story-04](./evidence-story-04.md) | Captured manual import/start/build/save/reload/load proof with local asset metadata and screenshots. |
 
 ## Exit Criteria Audit
 

@@ -22,7 +22,7 @@ or redistributing original data.
 | SB-4-01 Implement browser data import boundary | `675a05e` | [evidence-story-01](./evidence-story-01.md) | Added direct local `.PA` file selection, `SPAU.PA` validation, recoverable missing/invalid states, and generated-file browser coverage. |
 | SB-4-02 Parse DOS PA resource catalog | `2d6af60` | [evidence-story-02](./evidence-story-02.md) | Added browser-native `.PA` header/table parsing, DOS loader fixups, resource availability metadata, and local oracle comparison. |
 | SB-4-03 Persist imported data locally | `0e394c3` | [evidence-story-03](./evidence-story-03.md) | Added IndexedDB persistence, reload restore, reset, generated CI tests, and local browser proof with ignored `SPAU.PA`. |
-| SB-4-04 Expose typed asset catalog | pending | [evidence-story-04](./evidence-story-04.md) | Added semantic terrain/object/serf/UI/audio catalog groups and renderer/UI/audio request handles without exposing raw archive offsets. |
+| SB-4-04 Expose typed asset catalog | `3b6576a` | [evidence-story-04](./evidence-story-04.md) | Added semantic terrain/object/serf/UI/audio catalog groups and renderer/UI/audio request handles without exposing raw archive offsets. |
 
 ## Protected Asset Surface
 

@@ -23,7 +23,7 @@ blockers.
 | SB-8-01 Establish performance budgets | `2553502` | [evidence-story-01](./evidence-story-01.md) | Added repeatable performance measurement and first-slice budgets. |
 | SB-8-02 Decide worker and threading model | `1fe641a` | [evidence-story-02](./evidence-story-02.md) | Chose main-thread-first and deferred Workers until stop signals trip. |
 | SB-8-03 Harden persistence recovery | `9e60f29` | [evidence-story-03](./evidence-story-03.md) | Added corrupt/version-mismatch reset paths and quota/write failure feedback. |
-| SB-8-04 Verify browser compatibility | pending | [evidence-story-04](./evidence-story-04.md) | Added five-position compatibility smoke, matrix, accessibility basics, and final Phase 8 closure. |
+| SB-8-04 Verify browser compatibility | `9c62106` | [evidence-story-04](./evidence-story-04.md) | Added five-position compatibility smoke, matrix, accessibility basics, and final Phase 8 closure. |
 
 ## Exit Criteria Audit
 

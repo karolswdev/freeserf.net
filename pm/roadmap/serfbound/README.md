@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-9-release-operations](./phase-9-release-operations/current-phase-status.md)
-**Status:** Phase 0 through Phase 8 complete; Phase 9 in progress.
+**Status:** Phase 0 through Phase 9 complete for the first browser-slice release candidate.
 
 ## Vision
 
@@ -91,7 +91,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 6 | Build browser input, UI shell, and game interaction loops | complete | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | complete | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | complete | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
-| 9 | Package, document, and operate Serfbound as a browser product | in-progress | [phase-9-release-operations](./phase-9-release-operations/) |
+| 9 | Package, document, and operate Serfbound as a browser product | complete | [phase-9-release-operations](./phase-9-release-operations/) |
 
 ## Delivery Gates
 
@@ -176,6 +176,10 @@ For Serfbound specifically, every implementation story must identify:
   origin storage behavior; `serfbound/docs/developer-guide.md` documents setup,
   CI-safe vs local/manual tests, oracle fixtures, PMO flow, and release
   commands. `npm run test:docs` verifies required release documentation topics.
+- **Current release readiness:** `pm/roadmap/serfbound/phase-9-release-operations/release-readiness-report.md`
+  records the final Phase 9 checklist, phase gate audit, browser matrix,
+  performance snapshot, asset-boundary audit, issue intake, known limitations,
+  and go decision for the first browser-slice release candidate.
 - **Current runtime boundary baseline:**
   `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
 - **Current static shell proof:**

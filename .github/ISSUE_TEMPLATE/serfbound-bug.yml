@@ -1,0 +1,67 @@
+name: Serfbound browser bug
+description: Report a problem with the Serfbound browser rewrite track.
+title: "[Serfbound] "
+labels:
+  - serfbound
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not attach original DOS/Amiga data files, extracted game assets, executables, disk images, or save files containing original asset payloads. Use filenames, checksums, browser versions, screenshots of Serfbound UI, and short descriptions instead.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: Example: Chrome 148, Firefox 150, Safari/WebKit 26.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Import/local data
+        - Start/play/build
+        - Save/load/reset
+        - Rendering/input
+        - Static hosting/release
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include only user actions and Serfbound UI states.
+      placeholder: |
+        1. Open Serfbound at ...
+        2. Click Import data and choose local SPAU.PA.
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: local-data-metadata
+    attributes:
+      label: Local data metadata only
+      description: Optional. Include filename, file size, checksum, and source label only. Do not upload the file.
+      placeholder: |
+        File: SPAU.PA
+        Size:
+        SHA-256:
+        Source label:
+    validations:
+      required: false

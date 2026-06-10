@@ -24,7 +24,7 @@ original assets.
 | SB-6-01 Implement pointer-to-map interaction | `deec8ce` | [evidence-story-01](./evidence-story-01.md) | Added canvas pointer hover/selection mapped through Phase 5 projection math. |
 | SB-6-02 Add command routing shell | `a6a69dd` | [evidence-story-02](./evidence-story-02.md) | Added `SerfboundCommandRouter`, debug inspect command, structured rejections, and deferred `game.build` route. |
 | SB-6-03 Build basic panels and states | `a03c7c8` | [evidence-story-03](./evidence-story-03.md) | Added first-playable panels, start-game state, selected tile panel, recoverable import states, and desktop/mobile screenshots. |
-| SB-6-04 Verify interaction ergonomics | pending | [evidence-story-04](./evidence-story-04.md) | Added manual script, shortcut conflict review, browser/device audit, and Phase 7 go/no-go decision. |
+| SB-6-04 Verify interaction ergonomics | `4921b47` | [evidence-story-04](./evidence-story-04.md) | Added manual script, shortcut conflict review, browser/device audit, and Phase 7 go/no-go decision. |
 
 ## Protected Input Surface
 

@@ -24,7 +24,7 @@ process, or committed original asset payloads.
 | SB-5-01 Choose browser renderer API | `2b65e33` | [evidence-story-01](./evidence-story-01.md) | Chose first-party WebGL2, rejected desktop/native renderer reuse, kept Canvas2D as debug/test-only, and deferred WebGPU. |
 | SB-5-02 Implement map projection transform | `64b44db` | [evidence-story-02](./evidence-story-02.md) | Added browser-neutral map/tile/view/screen conversion and virtual-screen resize support in `@serfbound/engine`. |
 | SB-5-03 Build first render-layer scene | `c848374` | [evidence-story-03](./evidence-story-03.md) | Added ordered WebGL2 triangle layers, generated CI-safe rendering, typed catalog-backed scene metadata, local real-asset scene proof, and a desktop screenshot. |
-| SB-5-04 Verify viewport framing | pending | [evidence-story-04](./evidence-story-04.md) | Added desktop/mobile viewport checks, canvas backing resize, nonblank pixel proof, layout overlap assertions, and framing screenshots. |
+| SB-5-04 Verify viewport framing | `cd90c46` | [evidence-story-04](./evidence-story-04.md) | Added desktop/mobile viewport checks, canvas backing resize, nonblank pixel proof, layout overlap assertions, and framing screenshots. |
 
 ## Protected Renderer Surface
 

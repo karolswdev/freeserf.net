@@ -23,7 +23,7 @@ concrete engine boundary to build on.
 | SB-3-01 Port deterministic numeric/random rules | `805c4f5` | [evidence-story-01](./evidence-story-01.md) | Added fixed-width numeric helpers and `FreeserfRandom`, matched against `rng-fixed-seed-sequence.json`. |
 | SB-3-02 Port map geometry primitive | `361a7da` | [evidence-story-02](./evidence-story-02.md) | Added direction, wrapped map position, movement, distance, and projection helpers, matched against `map-geometry-facts.json`. |
 | SB-3-03 Add state and tick skeleton | `51605d0` | [evidence-story-03](./evidence-story-03.md) | Added `SerfboundGameState`, source-derived tick/time/counter behavior, and stable snapshot/restore tests. |
-| SB-3-04 Prove first simulation parity | pending | [evidence-story-04](./evidence-story-04.md) | Added the combined engine parity proof over RNG, map movement, and tick advancement, then closed Phase 3. |
+| SB-3-04 Prove first simulation parity | `5bbd097` | [evidence-story-04](./evidence-story-04.md) | Added the combined engine parity proof over RNG, map movement, and tick advancement, then closed Phase 3. |
 
 ## Protected Engine Surface
 
