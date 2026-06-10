@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 **Current phase:** [phase-6-ui-input-shell](./phase-6-ui-input-shell/current-phase-status.md)
-**Status:** Phase 0 through Phase 5 complete; Phase 6 ready.
+**Status:** Phase 0 through Phase 5 complete; Phase 6 in progress.
 
 ## Vision
 
@@ -64,6 +64,9 @@ not contain .NET runtime code, desktop-shell code, or a desktop deliverable.
 - `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md` - Phase 2
   boundary baseline for engine, assets, renderer, UI/input, audio, persistence,
   worker/threading, oracle fixtures/tests, and app shell.
+- `pm/roadmap/serfbound/adoption/pointer-input-model.md` - Phase 6 pointer
+  input boundary for map hover/selection, mouse/trackpad/touch viability, and
+  projection reuse.
 - `pm/roadmap/serfbound/reference-tools/` - isolated Phase 1 reference capture
   tooling that may inspect source behavior but is not Serfbound product code.
 - `pm/roadmap/serfbound/reference-fixtures/ci/` - committed CI-safe oracle
@@ -85,7 +88,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 3 | Port deterministic simulation primitives with parity evidence | complete | [phase-3-core-simulation](./phase-3-core-simulation/) |
 | 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
 | 5 | Build the map renderer, projection model, and visual asset path | complete | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
-| 6 | Build browser input, UI shell, and game interaction loops | ready | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
+| 6 | Build browser input, UI shell, and game interaction loops | in-progress | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | planning | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | planning | [phase-9-release-operations](./phase-9-release-operations/) |
@@ -194,6 +197,10 @@ For Serfbound specifically, every implementation story must identify:
   `SPAU.PA` catalog requests after import/restore, resizes the canvas backing
   buffer to the displayed CSS size, and has desktop/mobile Playwright framing
   screenshots under `phase-5-renderer-projection/artifacts/`.
+- **Current pointer interaction proof:** `@serfbound/app` resolves canvas
+  pointer positions to view, map, and tile coordinates through
+  `resolveFirstRenderLayerPointer()` and the shared Phase 5 projection math,
+  then exposes hover/selection debug state in the browser shell.
 
 ## Glossary
 

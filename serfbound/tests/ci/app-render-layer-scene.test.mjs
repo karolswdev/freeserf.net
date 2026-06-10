@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildTypedAssetCatalog, parseDosPaCatalog } from "@serfbound/assets";
-import { createFirstRenderLayerScene, renderLayerOrder } from "@serfbound/app";
+import {
+  createFirstRenderLayerScene,
+  renderLayerOrder,
+  resolveFirstRenderLayerPointer,
+} from "@serfbound/app";
 
 function createGeneratedPaArchive(entryCount, entryFacts) {
   const tableStart = 8;
@@ -74,4 +78,34 @@ test("first render-layer scene records typed DOS catalog renderer asset status",
   assert.equal(scene.assetSummary.pathGroundStatus, "partial:1/10");
   assert.equal(scene.assetSummary.mapObjectsStatus, "partial:1/194");
   assert.equal(scene.assetSummary.mapShadowsStatus, "partial:1/194");
+});
+
+test("first render-layer pointer mapping resolves screen points through scene projection", () => {
+  assert.deepEqual(
+    resolveFirstRenderLayerPointer({ x: 480, y: 270 }, { width: 960, height: 540 }),
+    {
+      screen: { x: 480, y: 270 },
+      view: { x: 480, y: 270 },
+      map: { x: 576, y: 310 },
+      tile: { column: 26, row: 16, position: 1050 },
+    },
+  );
+  assert.deepEqual(
+    resolveFirstRenderLayerPointer({ x: 240, y: 180 }, { width: 960, height: 540 }),
+    {
+      screen: { x: 240, y: 180 },
+      view: { x: 240, y: 180 },
+      map: { x: 336, y: 220 },
+      tile: { column: 17, row: 13, position: 849 },
+    },
+  );
+  assert.deepEqual(
+    resolveFirstRenderLayerPointer({ x: -100, y: -100 }, { width: 960, height: 540 }),
+    {
+      screen: { x: -100, y: -100 },
+      view: { x: 0, y: 0 },
+      map: { x: 96, y: 40 },
+      tile: { column: 5, row: 4, position: 261 },
+    },
+  );
 });

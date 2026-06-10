@@ -4,6 +4,7 @@ import {
   MapProjectionTransform,
   type MapHeightProvider,
   type MapPoint,
+  type MapTile,
   type RenderSize,
 } from "@serfbound/engine";
 
@@ -44,6 +45,13 @@ export type FirstRenderLayerSceneOptions = {
   readonly typedAssetCatalog?: TypedAssetCatalog;
 };
 
+export type PointerMapInteraction = {
+  readonly screen: MapPoint;
+  readonly view: MapPoint;
+  readonly map: MapPoint;
+  readonly tile: MapTile;
+};
+
 export type FirstRenderLayerScene = {
   readonly renderer: "webgl2";
   readonly mapSize: number;
@@ -55,6 +63,13 @@ export type FirstRenderLayerScene = {
 };
 
 const defaultSceneSize = { width: 960, height: 540 } as const;
+const sceneProjectionOptions = {
+  mapSize: 3,
+  scrollX: 3,
+  scrollY: 2,
+  tileWidth: 32,
+  tileHeight: 20,
+} as const;
 const terrainColors = [
   [0.2, 0.42, 0.3, 1],
   [0.3, 0.5, 0.33, 1],
@@ -67,17 +82,7 @@ export function createFirstRenderLayerScene(
   options: FirstRenderLayerSceneOptions = {},
 ): FirstRenderLayerScene {
   const virtualSize = options.size ?? defaultSceneSize;
-  const geometry = new MapGeometry(3);
-  const transform = MapProjectionTransform.create({
-    geometry,
-    virtualSize,
-    screenSize: virtualSize,
-    scrollX: 3,
-    scrollY: 2,
-    tileWidth: 32,
-    tileHeight: 20,
-  });
-  const heightProvider = syntheticSceneHeight(geometry.size);
+  const { geometry, transform, heightProvider } = createSceneProjection(virtualSize);
   const primitives: RenderScenePrimitive[] = [];
 
   for (let row = 0; row < 25; row += 1) {
@@ -129,6 +134,18 @@ export function createFirstRenderLayerScene(
     tilePrimitiveCount: sortedPrimitives.filter((primitive) => primitive.layer === "terrain").length,
     assetSummary: summarizeSceneAssets(options.typedAssetCatalog),
   };
+}
+
+export function resolveFirstRenderLayerPointer(
+  screen: MapPoint,
+  size: RenderSize = defaultSceneSize,
+): PointerMapInteraction {
+  const { geometry, transform, heightProvider } = createSceneProjection(size);
+  const view = transform.screenToView(screen);
+  const map = transform.viewToMap(view);
+  const tile = geometry.tileFromPosition(transform.viewToTile(view, heightProvider));
+
+  return { screen, view, map, tile };
 }
 
 export function renderFirstRenderLayerScene(
@@ -191,8 +208,29 @@ export function renderFirstRenderLayerScene(
   gl.deleteBuffer(buffer);
 }
 
-function syntheticSceneHeight(size: number): MapHeightProvider {
-  return (tile) => (tile.column * 3 + tile.row * 5 + size) % 8;
+function createSceneProjection(size: RenderSize): {
+  readonly geometry: MapGeometry;
+  readonly transform: MapProjectionTransform;
+  readonly heightProvider: MapHeightProvider;
+} {
+  const geometry = new MapGeometry(sceneProjectionOptions.mapSize);
+  return {
+    geometry,
+    transform: MapProjectionTransform.create({
+      geometry,
+      virtualSize: size,
+      screenSize: size,
+      scrollX: sceneProjectionOptions.scrollX,
+      scrollY: sceneProjectionOptions.scrollY,
+      tileWidth: sceneProjectionOptions.tileWidth,
+      tileHeight: sceneProjectionOptions.tileHeight,
+    }),
+    heightProvider: syntheticSceneHeight(geometry.size),
+  };
+}
+
+function syntheticSceneHeight(mapSize: number): MapHeightProvider {
+  return (tile) => (tile.column * 3 + tile.row * 5 + mapSize) % 8;
 }
 
 function diamondTriangles(input: {

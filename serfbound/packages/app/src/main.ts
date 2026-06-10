@@ -20,6 +20,8 @@ import {
 import {
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
+  resolveFirstRenderLayerPointer,
+  type PointerMapInteraction,
 } from "./render-layer-scene.js";
 
 export {
@@ -39,8 +41,10 @@ export {
 export {
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
+  resolveFirstRenderLayerPointer,
   renderLayerOrder,
   type FirstRenderLayerScene,
+  type PointerMapInteraction,
   type RenderLayerKey,
   type RenderSceneAssetSummary,
   type RenderSceneLayer,
@@ -118,6 +122,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           <p class="status-panel__value" data-testid="scene-state">Generated layers</p>
         </div>
         <p class="status-panel__detail" data-testid="scene-detail">WebGL2, generated fixture assets</p>
+        <div>
+          <p class="status-panel__label">Pointer</p>
+          <p class="status-panel__value" data-testid="pointer-state">No map target</p>
+        </div>
+        <p class="status-panel__detail" data-testid="pointer-detail">Move over the map scene.</p>
         <input
           id="data-import"
           class="import-input"
@@ -156,6 +165,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   renderGeneratedScene();
   observeSceneResize(canvas, renderCurrentScene);
+  attachPointerMapInteraction(root, canvas);
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -413,6 +423,79 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
     scene.assetSummary.source === "dos-pa-catalog"
       ? `WebGL2, ${scene.assetSummary.definedArchiveEntries ?? 0} defined archive entries`
       : "WebGL2, generated fixture assets";
+}
+
+function attachPointerMapInteraction(root: HTMLElement, canvas: HTMLCanvasElement): void {
+  canvas.addEventListener("pointermove", (event) => {
+    const interaction = resolveCanvasPointer(canvas, event);
+    applyPointerHoverState(root, interaction, event.pointerType);
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    const interaction = resolveCanvasPointer(canvas, event);
+    applyPointerHoverState(root, interaction, event.pointerType);
+    applyPointerSelectionState(root, interaction);
+  });
+
+  canvas.addEventListener("pointerleave", () => {
+    root.dataset.serfboundPointerState = "idle";
+    getPointerStateElement(root).textContent = "No map target";
+    getPointerDetailElement(root).textContent = "Move over the map scene.";
+  });
+}
+
+function resolveCanvasPointer(
+  canvas: HTMLCanvasElement,
+  event: Pick<PointerEvent, "clientX" | "clientY">,
+): PointerMapInteraction {
+  const rect = canvas.getBoundingClientRect();
+  return resolveFirstRenderLayerPointer(
+    {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    },
+    { width: canvas.width, height: canvas.height },
+  );
+}
+
+function applyPointerHoverState(
+  root: HTMLElement,
+  interaction: PointerMapInteraction,
+  pointerType: string,
+): void {
+  root.dataset.serfboundPointerState = "hover";
+  root.dataset.serfboundPointerType = pointerType;
+  root.dataset.serfboundHoverTile = `${interaction.tile.column},${interaction.tile.row}`;
+  root.dataset.serfboundHoverPosition = String(interaction.tile.position);
+  root.dataset.serfboundHoverMap = `${Math.round(interaction.map.x)},${Math.round(interaction.map.y)}`;
+  getPointerStateElement(root).textContent = `Hover ${interaction.tile.column},${interaction.tile.row}`;
+  getPointerDetailElement(root).textContent =
+    `Map ${Math.round(interaction.map.x)},${Math.round(interaction.map.y)} via ${pointerType || "pointer"}`;
+}
+
+function applyPointerSelectionState(root: HTMLElement, interaction: PointerMapInteraction): void {
+  root.dataset.serfboundPointerState = "selected";
+  root.dataset.serfboundSelectedTile = `${interaction.tile.column},${interaction.tile.row}`;
+  root.dataset.serfboundSelectedPosition = String(interaction.tile.position);
+  getPointerStateElement(root).textContent = `Selected ${interaction.tile.column},${interaction.tile.row}`;
+}
+
+function getPointerStateElement(root: HTMLElement): HTMLElement {
+  const state = root.querySelector<HTMLElement>("[data-testid='pointer-state']");
+  if (state === null) {
+    throw new Error("Serfbound shell pointer state did not mount.");
+  }
+
+  return state;
+}
+
+function getPointerDetailElement(root: HTMLElement): HTMLElement {
+  const detail = root.querySelector<HTMLElement>("[data-testid='pointer-detail']");
+  if (detail === null) {
+    throw new Error("Serfbound shell pointer detail did not mount.");
+  }
+
+  return detail;
 }
 
 function observeSceneResize(canvas: HTMLCanvasElement, renderCurrentScene: () => void): void {

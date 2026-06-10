@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** ready.
+**Status:** in progress.
 
 ## Goal
 
@@ -27,7 +27,7 @@ shell that is ergonomic enough for the first playable slice.
 
 ## Exit criteria (evidence required)
 
-- [ ] Pointer input maps to map positions through tested conversion logic.
+- [x] Pointer input maps to map positions through tested conversion logic.
 - [ ] Keyboard shortcuts are chosen or deferred with explicit browser conflicts.
 - [ ] Basic game command routing exists from UI to engine state.
 - [ ] Missing/invalid data and import flows are user-recoverable.
@@ -38,17 +38,16 @@ shell that is ergonomic enough for the first playable slice.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-6-01 | Implement pointer-to-map interaction | ready | story-01-pointer-map-interaction.md | — |
-| SB-6-02 | Add command routing shell | backlog | story-02-command-routing-shell.md | — |
+| SB-6-01 | Implement pointer-to-map interaction | done | story-01-pointer-map-interaction.md | evidence-story-01.md |
+| SB-6-02 | Add command routing shell | ready | story-02-command-routing-shell.md | — |
 | SB-6-03 | Build basic panels and states | backlog | story-03-basic-panels-states.md | — |
 | SB-6-04 | Verify interaction ergonomics | backlog | story-04-interaction-ergonomics.md | — |
 
 ## Where we are
 
-Phase 6 is ready to start. Phase 5 completed the WebGL2 scene, canvas resize
-behavior, viewport framing checks, and shared projection transform required for
-pointer-to-map interaction. The next responsible move is SB-6-01: implement
-pointer-to-map interaction.
+Phase 6 is in progress. SB-6-01 added pointer-to-map hover and selection debug
+state over the WebGL2 scene using the Phase 5 projection transform. The next
+responsible move is SB-6-02: add the command routing shell.
 
 ## Active risks
 
@@ -60,7 +59,10 @@ pointer-to-map interaction.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Use browser Pointer Events for first map interaction; resolve
+  canvas-relative positions through `resolveFirstRenderLayerPointer()` and the
+  shared Phase 5 `MapProjectionTransform`; keep physical-device ergonomics for
+  SB-6-04 — SB-6-01.
 
 ## Decisions deferred
 

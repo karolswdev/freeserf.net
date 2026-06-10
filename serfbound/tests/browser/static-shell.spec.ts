@@ -137,6 +137,17 @@ test("static app shell renders without original data or a desktop companion", as
     "data-serfbound-storage-state",
     "empty",
   );
+  await movePointerToCanvasFraction(page, 0.5, 0.5);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-state", "hover");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-type", "mouse");
+  await expect(page.getByTestId("pointer-state")).toContainText(/Hover \d+,\d+/);
+  await expect(page.getByTestId("pointer-detail")).toContainText(/Map \d+,\d+ via mouse/);
+  await clickCanvasFraction(page, 0.5, 0.5);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-state", "selected");
+  await expect(page.getByTestId("pointer-state")).toContainText(/Selected \d+,\d+/);
+  await dispatchCanvasPointer(page, "pointermove", 0.25, 0.35, "touch");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-type", "touch");
+  await expect(page.getByTestId("pointer-detail")).toContainText(/via touch/);
 
   const nonBlankPixels = await countWebglNonBlankPixels(page);
 
@@ -188,6 +199,46 @@ async function waitForCanvasResize(page) {
       canvas.height === Math.max(1, Math.round(rect.height))
     );
   });
+}
+
+async function movePointerToCanvasFraction(page, fractionX, fractionY) {
+  const box = await page.getByTestId("terrain-preview").boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(
+    box.x + box.width * fractionX,
+    box.y + box.height * fractionY,
+  );
+}
+
+async function clickCanvasFraction(page, fractionX, fractionY) {
+  const box = await page.getByTestId("terrain-preview").boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(
+    box.x + box.width * fractionX,
+    box.y + box.height * fractionY,
+  );
+}
+
+async function dispatchCanvasPointer(page, type, fractionX, fractionY, pointerType) {
+  await page.getByTestId("terrain-preview").evaluate(
+    (canvas, eventInit) => {
+      if (!(canvas instanceof HTMLCanvasElement)) {
+        throw new Error("terrain preview canvas is missing");
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.dispatchEvent(
+        new PointerEvent(eventInit.type, {
+          bubbles: true,
+          clientX: rect.left + rect.width * eventInit.fractionX,
+          clientY: rect.top + rect.height * eventInit.fractionY,
+          pointerId: 11,
+          pointerType: eventInit.pointerType,
+        }),
+      );
+    },
+    { fractionX, fractionY, pointerType, type },
+  );
 }
 
 async function assertSceneLayoutIsFramed(page, viewportName) {

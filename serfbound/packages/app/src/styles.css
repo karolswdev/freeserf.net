@@ -91,6 +91,8 @@ h1 {
   border-radius: 8px;
   background: #18211d;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+  cursor: crosshair;
+  touch-action: none;
 }
 
 .status-panel {
