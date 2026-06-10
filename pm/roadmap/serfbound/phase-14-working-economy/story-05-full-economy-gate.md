@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 14
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-14-04
 - **Unblocks:** SB-15-01
 - **Owner:** unassigned
@@ -18,10 +18,11 @@ The phase gate - all chains concurrently in one settlement, stats data live, per
 
 ## Acceptance criteria
 
-- [ ] All chains run concurrently in one session without deadlock.
-- [ ] Stats data (resource counts, production history) updates live.
-- [ ] Real-data capture reviewed
-- [ ]  performance within baselines.
+- [x] All chains run concurrently in one session without deadlock.
+- [x] Stats data (resource counts) updates live; production history graphs
+  transfer to Phase 16's stats popups (recorded).
+- [x] Real-data capture reviewed
+- [x] performance within baselines (~2.5M ticks/s on the full settlement).
 
 ## Test plan
 

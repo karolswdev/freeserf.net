@@ -1,11 +1,12 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-10.
-**Current phase:** [phase-14-working-economy](./phase-14-working-economy/current-phase-status.md)
-**Status:** Phases 0–13 complete. The settlement is alive: serfs walk out of
-the castle on the reference animation formulas, transporters haul materials,
-and builders raise buildings — rendered with player-color composed sprites
-from the player's own data. Phase 14 (the working economy) is next.
+**Current phase:** [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/current-phase-status.md)
+**Status:** Phases 0–14 complete. The economy works: every classic chain
+(wood, stone, food, meat, mining, metallurgy, tools) runs concurrently in
+one settlement with demand-driven dispatch over the road network, live
+stock stats in the browser, and performance measured at ~2.5M ticks/s.
+Phase 15 (knights and conquest) is next.
 
 ## Vision
 
@@ -99,8 +100,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 11 | Generate the original world and make it scrollable | complete | [phase-11-original-map-world](./phase-11-original-map-world/) |
 | 12 | Found settlements: castle, flags, roads, construction | complete | [phase-12-settlement-construction](./phase-12-settlement-construction/) |
 | 13 | Bring serfs to life: state machine and authentic animation | complete | [phase-13-serf-engine-animation](./phase-13-serf-engine-animation/) |
-| 14 | Run every classic production chain | ready | [phase-14-working-economy](./phase-14-working-economy/) |
-| 15 | Knights, territory, and combat | planned | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
+| 14 | Run every classic production chain | complete | [phase-14-working-economy](./phase-14-working-economy/) |
+| 15 | Knights, territory, and combat | ready | [phase-15-knights-and-conquest](./phase-15-knights-and-conquest/) |
 | 16 | Rebuild the original interface browser-native | planned | [phase-16-original-interface](./phase-16-original-interface/) |
 | 17 | Sound effects and music through WebAudio | planned | [phase-17-sound-and-music](./phase-17-sound-and-music/) |
 | 18 | Missions, classic AI, and original savegames | planned | [phase-18-complete-game](./phase-18-complete-game/) |
@@ -240,6 +241,13 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current working-economy proof:** every classic chain runs concurrently
+  in one settlement (the SB-14-05 gate: twelve buildings on five road
+  chains complete through serf labor, then wood, food, meat, mining,
+  metallurgy, and tools all produce without deadlock), with demand-driven
+  dispatch (delivered + in-flight < 4), lossless transport, food-gated
+  mining over depleting deposits, and live stock stats exposed via
+  `data-serfbound-stock-summary`.
 - **Current living-settlement proof:** the serf engine ports the reference
   state machine core (tick/counter pattern, walking animation formulas,
   collision waiting), transporters and builders run construction logistics

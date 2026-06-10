@@ -110,6 +110,10 @@ export type WorldBuilding = {
   startTick: number;
   // Resources delivered by transporters, tallied by resource type value.
   deliveredResources: Record<number, number>;
+  // Resources dispatched but still in flight (the reference building stock
+  // "requested" count; producers stop sending once delivered + requested
+  // reaches the stock cap).
+  requestedResources: Record<number, number>;
   // Serf-driven construction state.
   builderTicks: number;
   consumedMaterials: number;
@@ -946,6 +950,7 @@ export class SerfboundGameWorld {
       progress: 0,
       startTick: atTick,
       deliveredResources: {},
+      requestedResources: {},
       builderTicks: 0,
       consumedMaterials: 0,
     };
@@ -1014,6 +1019,7 @@ export class SerfboundGameWorld {
       progress: 0,
       startTick: 0,
       deliveredResources: {},
+      requestedResources: {},
       builderTicks: 0,
       consumedMaterials: 0,
     };

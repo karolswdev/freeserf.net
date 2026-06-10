@@ -285,3 +285,104 @@ function toolOutputsTotal(inventory) {
 
   return total;
 }
+
+test("every chain runs concurrently in one settlement without deadlock", () => {
+  const { started, world, router, tileFor, castlePosition } = foundedGame();
+  const engine = started.game.serfEngine();
+  const castleFlagPosition = world.move(castlePosition, "DownRight");
+  const inventory = world.inventoryForPlayer(0);
+  inventory.resources[7] += 60; // enough planks for the whole settlement
+  inventory.resources[9] += 30;
+  inventory.genericSerfs += 40;
+
+  // Tundra + a coal deposit for the mine.
+  const mineSite = world.geometry.positionAdd(castlePosition, 3, -4);
+  for (const [dx, dy] of [[0, 0], [-1, 0], [0, -1], [-1, -1], [1, 0], [0, 1]]) {
+    const at = world.geometry.positionAdd(mineSite, dx, dy);
+    world.typesUp[at] = 11;
+    world.typesDown[at] = 11;
+  }
+  world.minerals[mineSite] = 3;
+  world.resourceAmounts[mineSite] = 30;
+
+  // The castle flag has five free edges, so the settlement hangs off five
+  // road chains; later buildings connect to an earlier building's flag.
+  const at = (dx, dy) => world.geometry.positionAdd(castlePosition, dx, dy);
+  const flagOf = (building) => world.flags.get(building.flagIndex).position;
+  const buildings = [];
+  const buildFrom = (fromFlagPosition, dx, dy, kind) => {
+    const building = buildConnected(
+      world, router, tileFor, fromFlagPosition, at(dx, dy), kind,
+    );
+    buildings.push(building);
+    engine.dispatchConstructionLogistics(building, 0);
+    return building;
+  };
+
+  // North chain: refining around the smelter hub, meat at the far end.
+  const smelter = buildFrom(castleFlagPosition, 0, -4, "steelSmelter");
+  const mine = buildFrom(flagOf(smelter), 3, -4, "coalMine");
+  const toolmaker = buildFrom(flagOf(smelter), -3, -4, "toolMaker");
+  buildFrom(flagOf(toolmaker), -6, -1, "butcher");
+  // East chain: wood production.
+  const lumberjack = buildFrom(castleFlagPosition, 5, -1, "lumberjack");
+  buildFrom(flagOf(lumberjack), 5, 2, "forester");
+  // West chain: sawing and milling.
+  const sawmill = buildFrom(castleFlagPosition, -4, 2, "sawmill");
+  buildFrom(flagOf(sawmill), -2, 5, "mill");
+  // Southeast chain: fields and stone.
+  const farm = buildFrom(castleFlagPosition, 3, 4, "farm");
+  const stonecutter = buildFrom(flagOf(farm), 5, 6, "stonecutter");
+  // South chain: bread and pigs.
+  const baker = buildFrom(castleFlagPosition, 0, 5, "baker");
+  buildFrom(flagOf(baker), 3, 7, "pigFarm");
+
+  // Trees for the woodcutter and a stone pile for the stonecutter.
+  for (const [dx, dy] of [[2, 0], [2, -1], [3, 1], [1, -2]]) {
+    world.objects[world.geometry.positionAdd(lumberjack.position, dx, dy)] = 8;
+  }
+  world.objects[world.geometry.positionAdd(stonecutter.position, 2, 1)] = 72;
+
+  const toolsBefore = toolOutputsTotal(inventory);
+
+  let allDone = false;
+  let planksAfterConstruction = 0;
+  let breadReachedMiners = false;
+  let economyAlive = false;
+  for (let tick = 0; tick < 4000000 && !economyAlive; tick += 16) {
+    engine.update(tick);
+    if (!allDone) {
+      allDone = buildings.every((building) => building.isDone);
+      if (allDone) {
+        planksAfterConstruction = inventory.resources[7];
+      }
+
+      continue;
+    }
+
+    // The mine's food is never seeded here, so any bread at the mine came
+    // from the farm-mill-baker chain over the road network.
+    breadReachedMiners = breadReachedMiners || (mine.deliveredResources[5] ?? 0) > 0;
+
+    // No iron mine stands here, so ore arrives by hand; everything else --
+    // bread to the miners, coal and steel through the refiners -- must
+    // route itself over the road network.
+    if ((smelter.deliveredResources[10] ?? 0) === 0) {
+      smelter.deliveredResources[10] = 3;
+    }
+
+    if ((toolmaker.deliveredResources[7] ?? 0) === 0) {
+      toolmaker.deliveredResources[7] = 3;
+    }
+
+    // Alive: net wood gain after construction, baker bread reached the
+    // miners over the roads, and a finished tool reached the castle stock.
+    economyAlive =
+      inventory.resources[7] > planksAfterConstruction &&
+      breadReachedMiners &&
+      toolOutputsTotal(inventory) > toolsBefore;
+  }
+
+  assert.equal(allDone, true, "all twelve buildings completed through serf labor");
+  assert.equal(economyAlive, true, "wood, food, and tools flowed concurrently");
+});

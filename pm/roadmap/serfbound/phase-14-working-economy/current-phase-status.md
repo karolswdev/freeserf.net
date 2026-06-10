@@ -1,7 +1,7 @@
 # Phase 14 — A Working Economy
 
 **Last updated:** 2026-06-10.
-**Status:** in progress.
+**Status:** complete — see final-summary.md.
 
 ## Goal
 
@@ -35,7 +35,7 @@ serfs that work them, so a settlement sustains and grows on its own.
   mine gating lands with SB-14-04)
 - [x] Mining and metallurgy produce steel and tools that re-enter the
   economy. (SB-14-04)
-- [ ] A settlement runs all chains concurrently with live stats data and
+- [x] A settlement runs all chains concurrently with live stats data and
   real-data capture evidence. (SB-14-05)
 
 ## Story status
@@ -46,13 +46,15 @@ serfs that work them, so a settlement sustains and grows on its own.
 | SB-14-02 | Wood and stone production chains | done | story-02-wood-stone-chains.md | evidence-story-02.md |
 | SB-14-03 | Food production chains | done | story-03-food-chains.md | evidence-story-03.md |
 | SB-14-04 | Mining, metallurgy, and tools | done | story-04-mining-metallurgy-tools.md | evidence-story-04.md |
-| SB-14-05 | Full-economy gate with live stats | in-progress | story-05-full-economy-gate.md | — |
+| SB-14-05 | Full-economy gate with live stats | done | story-05-full-economy-gate.md | evidence-story-05.md |
 
 ## Where we are
 
-SB-14-04 is done: mines dig food-gated ore from real deposits, smelters
-refine it, and the toolmaker turns steel and planks into the reference tool
-list. SB-14-05 (the full-economy gate) is in progress.
+The phase is closed. The full-economy gate passed: twelve buildings on five
+road chains run wood, stone, food, meat, mining, metallurgy, and tools
+concurrently with demand-driven dispatch and lossless transport, live stock
+stats in the browser, real-data captures reviewed, and performance measured
+(~2.5M ticks/s). See final-summary.md.
 
 ## Active risks
 
@@ -64,7 +66,12 @@ list. SB-14-05 (the full-economy gate) is in progress.
 
 ## Decisions made (this phase)
 
-- none yet.
+- Demand-driven dispatch (delivered + in-flight requested < 4) replaces
+  eager product pushing; the reference building stock requested/available
+  split, condensed (SB-14-05).
+- Transport is lossless: carriers wait and retry instead of destroying
+  cargo at full flags, and never pick up unless the next hop can accept
+  (SB-14-05).
 
 ## Decisions deferred
 

@@ -137,6 +137,14 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "2",
   );
 
+  // Live economy stats are exposed before construction logistics start.
+  const stockBeforeConstruction = await page
+    .locator("#app")
+    .getAttribute("data-serfbound-stock-summary");
+  expect(stockBeforeConstruction).toMatch(
+    /^plank:\d+,stone:\d+,lumber:\d+,bread:\d+,steel:\d+$/,
+  );
+
   // Connect the lumberjack's flag so builders and materials can reach it;
   // construction is serf-driven and completes only over a connected road.
   let lumberjackRoadBuilt = false;
@@ -160,6 +168,16 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "2",
     { timeout: 150_000 },
   );
+
+  // The stats updated live: construction logistics drew planks from the
+  // castle stock while the settlement built itself.
+  const stockAfterConstruction = await page
+    .locator("#app")
+    .getAttribute("data-serfbound-stock-summary");
+  expect(stockAfterConstruction).toMatch(
+    /^plank:\d+,stone:\d+,lumber:\d+,bread:\d+,steel:\d+$/,
+  );
+  expect(stockAfterConstruction).not.toBe(stockBeforeConstruction);
 
   // The founded settlement survives save -> reload -> load.
   await page.getByTestId("save-game-button").click();

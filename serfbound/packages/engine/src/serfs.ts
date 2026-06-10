@@ -487,6 +487,16 @@ export class SerfboundSerfEngine {
         continue;
       }
 
+      // Only haul when the far end can take the hand-over: it is the final
+      // destination (buildings and inventories always accept) or it has a
+      // free slot. This keeps full hub flags from wedging their own carrier.
+      if (
+        toFlag.index !== slot.destinationFlagIndex &&
+        !toFlag.slots.some((other) => other.resource < 0)
+      ) {
+        continue;
+      }
+
       // Pick up and carry across the road.
       serf.carriedResource = slot.resource;
       serf.carriedDestination = slot.destinationFlagIndex;
@@ -541,7 +551,12 @@ export class SerfboundSerfEngine {
       if (this.world.hasFlag(serf.position)) {
         const flag = this.world.flagAt(serf.position)!;
         if (flag.index === serf.walkingDestination) {
-          this.#deliverCarriedResource(serf, flag);
+          if (!this.#deliverCarriedResource(serf, flag)) {
+            // No free slot to hand over: wait at the flag and retry.
+            serf.counter += 200;
+            return;
+          }
+
           serf.state = serfState.idleOnPath;
           serf.counter = 0;
           this.serfIndexes[serf.position] = 0;
@@ -583,9 +598,11 @@ export class SerfboundSerfEngine {
     }
   }
 
-  #deliverCarriedResource(serf: WorldSerf, flag: import("./game-world.js").WorldFlag): void {
+  // Returns false when the flag has no room for a hand-over; the carrier
+  // keeps the resource and retries (the reference never destroys cargo).
+  #deliverCarriedResource(serf: WorldSerf, flag: import("./game-world.js").WorldFlag): boolean {
     if (serf.carriedResource < 0) {
-      return;
+      return true;
     }
 
     if (flag.index === serf.carriedDestination && flag.buildingIndex !== null) {
@@ -597,7 +614,7 @@ export class SerfboundSerfEngine {
             (inventory.resources[serf.carriedResource] ?? 0) + 1;
           serf.carriedResource = -1;
           serf.carriedDestination = 0;
-          return;
+          return true;
         }
       }
 
@@ -605,16 +622,25 @@ export class SerfboundSerfEngine {
       if (building !== undefined) {
         building.deliveredResources[serf.carriedResource] =
           (building.deliveredResources[serf.carriedResource] ?? 0) + 1;
+        if ((building.requestedResources[serf.carriedResource] ?? 0) > 0) {
+          building.requestedResources[serf.carriedResource] =
+            building.requestedResources[serf.carriedResource]! - 1;
+        }
+
         serf.carriedResource = -1;
         serf.carriedDestination = 0;
-        return;
+        return true;
       }
     }
 
     // Hand over to the next road's transporter via the flag slots.
-    this.world.dropResource(flag.index, serf.carriedResource, serf.carriedDestination);
+    if (!this.world.dropResource(flag.index, serf.carriedResource, serf.carriedDestination)) {
+      return false;
+    }
+
     serf.carriedResource = -1;
     serf.carriedDestination = 0;
+    return true;
   }
 
   readonly #staffedBuildings = new Set<number>();
@@ -922,7 +948,10 @@ export class SerfboundSerfEngine {
   }
 
   // Route a product to demand: a connected consumer building wanting this
-  // resource first, otherwise the player's inventory flag.
+  // resource first, otherwise the player's inventory flag. Demand counts
+  // both delivered stock and in-flight requests (the reference building
+  // stock requested/available split), so producers stop pushing once a
+  // consumer's pipeline is full instead of flooding the road network.
   #emitProduct(building: WorldBuilding, product: number): void {
     const sourceFlag = this.world.flags.get(building.flagIndex);
     if (sourceFlag === undefined) {
@@ -936,10 +965,13 @@ export class SerfboundSerfEngine {
         if (
           consumer.isDone &&
           consumerTypes.includes(consumer.type) &&
-          (consumer.deliveredResources[product] ?? 0) < 4 &&
+          (consumer.deliveredResources[product] ?? 0) +
+            (consumer.requestedResources[product] ?? 0) < 4 &&
           this.#directionToward(building.flagIndex, consumer.flagIndex) !== null
         ) {
           destination = consumer.flagIndex;
+          consumer.requestedResources[product] =
+            (consumer.requestedResources[product] ?? 0) + 1;
           break;
         }
       }
@@ -953,7 +985,18 @@ export class SerfboundSerfEngine {
     }
 
     if (destination !== 0 && destination !== building.flagIndex) {
-      this.world.dropResource(building.flagIndex, product, destination);
+      if (!this.world.dropResource(building.flagIndex, product, destination)) {
+        // The producer's own flag is full; release the in-flight request so
+        // the consumer's pipeline does not stay blocked by a phantom.
+        const consumerFlag = this.world.flags.get(destination);
+        const consumer =
+          consumerFlag?.buildingIndex !== null && consumerFlag !== undefined
+            ? this.world.buildings.get(consumerFlag.buildingIndex)
+            : undefined;
+        if (consumer !== undefined && (consumer.requestedResources[product] ?? 0) > 0) {
+          consumer.requestedResources[product] = consumer.requestedResources[product]! - 1;
+        }
+      }
     } else if (destination === building.flagIndex) {
       // Producing straight onto the inventory flag (rare) stores directly.
       const inventory = this.world.inventoryForPlayer(building.player);

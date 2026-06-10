@@ -1418,6 +1418,19 @@ function syncWorldState(
   root.dataset.serfboundWorldBuildingDoneCount = String(
     [...world.buildings.values()].filter((building) => building.isDone).length,
   );
+  // Live economy stats: the castle stock's key lines (Phase 16's stats
+  // popups render the full table from the same source).
+  const inventory = (world as { inventoryForPlayer?: (p: number) => { resources: Uint32Array } | null })
+    .inventoryForPlayer?.(0);
+  if (inventory !== undefined && inventory !== null) {
+    root.dataset.serfboundStockSummary = [
+      `plank:${inventory.resources[7]}`,
+      `stone:${inventory.resources[9]}`,
+      `lumber:${inventory.resources[6]}`,
+      `bread:${inventory.resources[5]}`,
+      `steel:${inventory.resources[11]}`,
+    ].join(",");
+  }
 
   if (!hasCastle && root.dataset.serfboundGameState === "running") {
     const state = root.querySelector<HTMLElement>("[data-testid='command-state']");
