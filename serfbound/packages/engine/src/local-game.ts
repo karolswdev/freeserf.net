@@ -1,5 +1,6 @@
 import { FreeserfRandom, uint16 } from "./index.js";
 import { SerfboundGameWorld } from "./game-world.js";
+import { SerfboundSerfEngine } from "./serfs.js";
 import { generateClassicMap, type ClassicMapLandscape } from "./map-generator.js";
 import { SerfboundGameState, type SerfboundGameSnapshot } from "./simulation.js";
 import { isSerfboundWorldAction, replayWorldActions } from "./world-commands.js";
@@ -78,6 +79,7 @@ export class SerfboundLocalGame {
   readonly state: SerfboundGameState;
   #landscape: ClassicMapLandscape | undefined;
   #world: SerfboundGameWorld | undefined;
+  #serfEngine: SerfboundSerfEngine | undefined;
 
   constructor(
     data: SerfboundLocalGameDataSource,
@@ -105,10 +107,25 @@ export class SerfboundLocalGame {
         this.#world,
         this.state.worldActions.filter(isSerfboundWorldAction),
       );
-      this.#world.advanceConstruction(this.state.tick);
     }
 
     return this.#world;
+  }
+
+  // The serf engine lives on the same world. In-flight serf state is not yet
+  // serialized (recorded Phase 13 limitation): restored games re-dispatch
+  // construction logistics for unfinished buildings.
+  serfEngine(): SerfboundSerfEngine {
+    if (this.#serfEngine === undefined) {
+      this.#serfEngine = new SerfboundSerfEngine(this.world());
+      for (const building of this.world().buildings.values()) {
+        if (!building.isDone) {
+          this.#serfEngine.dispatchConstructionLogistics(building, this.state.tick);
+        }
+      }
+    }
+
+    return this.#serfEngine;
   }
 
   snapshot(): SerfboundLocalGameSnapshot {

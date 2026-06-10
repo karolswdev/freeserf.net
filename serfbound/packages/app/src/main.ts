@@ -308,6 +308,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   let currentDecodedAssets: DecodedRenderAssets | undefined;
   let currentLandscapeAssets: LandscapeRenderAssets | undefined;
   let currentWorld: ReturnType<SerfboundLocalGame["world"]> | undefined;
+  let currentSerfEngine: ReturnType<SerfboundLocalGame["serfEngine"]> | undefined;
   let currentScroll: MapScroll = { column: 0, row: 0 };
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
@@ -372,7 +373,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           commandRouter.state.advanceTick();
         }
 
-        if (currentWorld.advanceConstruction(commandRouter.state.tick)) {
+        if (currentSerfEngine !== undefined) {
+          currentSerfEngine.update(commandRouter.state.tick);
           syncWorldState(root, currentWorld);
         }
       }
@@ -401,6 +403,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     currentTick = 0;
     stopWaveAnimation();
     currentWorld = undefined;
+    currentSerfEngine = undefined;
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
     currentLocalGameSnapshot = undefined;
@@ -470,6 +473,15 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         tile: from.tile,
         toTile: interaction.tile,
       });
+      if (result.status === "accepted" && currentSerfEngine !== undefined && currentWorld !== undefined) {
+        // Newly connected sites get their builders and materials.
+        for (const building of currentWorld.buildings.values()) {
+          if (!building.isDone) {
+            currentSerfEngine.dispatchConstructionLogistics(building, commandRouter.state.tick);
+          }
+        }
+      }
+
       currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
       applyCommandResultState(root, result);
       syncWorldState(root, currentWorld);
@@ -609,6 +621,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         currentLandscapeAssets === undefined ? undefined : result.game.world(),
       );
       currentWorld = currentLandscapeAssets === undefined ? undefined : result.game.world();
+      currentSerfEngine =
+        currentLandscapeAssets === undefined ? undefined : result.game.serfEngine();
       renderCurrentScene();
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
@@ -663,6 +677,14 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       tile: interaction.tile,
       buildingKind: "lumberjack",
     });
+    if (result.status === "accepted" && currentSerfEngine !== undefined) {
+      // Send out the builder and the construction materials.
+      const newest = [...currentWorld!.buildings.values()].reduce((a, b) =>
+        a.index > b.index ? a : b,
+      );
+      currentSerfEngine.dispatchConstructionLogistics(newest, commandRouter.state.tick);
+    }
+
     currentLocalGameSnapshot = refreshLocalGameSnapshot(currentLocalGameSnapshot, commandRouter);
     applyCommandResultState(root, result);
     syncWorldState(root, currentWorld);
@@ -756,6 +778,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           currentLandscapeAssets === undefined ? undefined : restored.game.world(),
         );
         currentWorld = currentLandscapeAssets === undefined ? undefined : restored.game.world();
+        currentSerfEngine =
+          currentLandscapeAssets === undefined ? undefined : restored.game.serfEngine();
         applyRunningLocalGameSnapshot(root, restored.snapshot);
         syncWorldState(root, currentWorld);
         renderCurrentScene();

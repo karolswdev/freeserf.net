@@ -8,6 +8,7 @@ const decodedSceneScreenshotPath =
   "../pm/roadmap/serfbound/phase-10-authentic-asset-rendering/artifacts/story-03-decoded-scene-generated-desktop.png";
 
 test("importing a decodable archive renders the decoded sprite scene", async ({ page }) => {
+  test.setTimeout(300_000);
   await mkdir(dirname(decodedSceneScreenshotPath), { recursive: true });
   await page.goto("/");
 
@@ -115,26 +116,49 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   }
   expect(roadBuilt).toBe(true);
 
-  // Build a lumberjack inside territory and let it finish on the game clock.
+  // Build a lumberjack inside territory.
   await expect(page.getByTestId("build-lumberjack-button")).toBeEnabled();
   let lumberjackBuilt = false;
+  let lumberjackClick = { x: 0, y: 0 };
   for (let attempt = 0; attempt < 60 && !lumberjackBuilt; attempt += 1) {
     const x = castleClick.x - 90 + (attempt % 10) * 22;
     const y = castleClick.y + 80 + Math.floor(attempt / 10) * 24;
     await canvas.click({ position: { x, y } });
     await page.getByTestId("build-lumberjack-button").click();
     const effect = await page.locator("#app").getAttribute("data-serfbound-last-effect");
-    lumberjackBuilt = effect === "building-built";
+    if (effect === "building-built") {
+      lumberjackBuilt = true;
+      lumberjackClick = { x, y };
+    }
   }
   expect(lumberjackBuilt).toBe(true);
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-world-building-count",
     "2",
   );
+
+  // Connect the lumberjack's flag so builders and materials can reach it;
+  // construction is serf-driven and completes only over a connected road.
+  let lumberjackRoadBuilt = false;
+  for (let attempt = 0; attempt < 81 && !lumberjackRoadBuilt; attempt += 1) {
+    const fromJitter = attempt % 9;
+    const toJitter = Math.floor(attempt / 9);
+    const fromX = castleClick.x + 16 + ((fromJitter % 3) - 1) * 14;
+    const fromY = castleClick.y + 10 + (Math.floor(fromJitter / 3) - 1) * 10;
+    const toX = lumberjackClick.x + 16 + ((toJitter % 3) - 1) * 14;
+    const toY = lumberjackClick.y + 10 + (Math.floor(toJitter / 3) - 1) * 10;
+    await page.getByTestId("build-road-button").click();
+    await canvas.click({ position: { x: fromX, y: fromY }, force: true });
+    await canvas.click({ position: { x: toX, y: toY }, force: true });
+    const effect = await page.locator("#app").getAttribute("data-serfbound-last-effect");
+    lumberjackRoadBuilt = effect === "road-built";
+  }
+  expect(lumberjackRoadBuilt).toBe(true);
+
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-world-building-done-count",
     "2",
-    { timeout: 15_000 },
+    { timeout: 150_000 },
   );
 
   // The founded settlement survives save -> reload -> load.

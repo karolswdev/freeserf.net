@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import * as engineModule from "@serfbound/engine";
 import {
   SerfboundCommandRouter,
   restoreSerfboundLocalGame,
@@ -177,61 +178,57 @@ test("saved games replay world actions to identical world state", () => {
   assert.equal(replayedWorld.players[0].hasCastle, true);
 });
 
-test("interim construction progresses by ticks and survives save/restore mid-build", () => {
+test("construction is serf-driven: builder + materials complete the building", () => {
   const { started, world, router, castlePosition } = startedGameWithCastle();
+  const castleFlagPosition = world.move(castlePosition, "DownRight");
 
-  let sitePosition = -1;
-  for (let offset = 0; offset < 250; offset += 1) {
+  // Find a lumberjack site whose flag can be road-connected to the castle.
+  let building = null;
+  for (let offset = 0; offset < 250 && building === null; offset += 1) {
     const candidate = world.positionAddSpirally(castlePosition, offset);
-    if (world.canBuildBuilding(candidate, 2, 0)) {
-      sitePosition = candidate;
-      break;
+    if (!world.canBuildBuilding(candidate, 2, 0)) {
+      continue;
+    }
+
+    const result = router.dispatch({
+      type: "game.build-building",
+      source: "pointer",
+      tile: tileFor(world, candidate),
+      buildingKind: "lumberjack",
+    });
+    if (result.status !== "accepted") {
+      continue;
+    }
+
+    building = [...world.buildings.values()].reduce((a, b) => (a.index > b.index ? a : b));
+    const roadResult = router.dispatch({
+      type: "game.build-road",
+      source: "pointer",
+      tile: tileFor(world, castleFlagPosition),
+      toTile: tileFor(world, world.flags.get(building.flagIndex).position),
+    });
+    if (roadResult.status !== "accepted") {
+      building = null; // unroutable site; try another
     }
   }
-  assert.notEqual(sitePosition, -1, "a lumberjack site exists");
+  assert.notEqual(building, null, "a road-connected lumberjack site exists");
 
-  // Advance the clock before building so startTick is non-zero.
-  for (let step = 0; step < 10; step += 1) {
-    started.game.state.advanceTick();
+  const { SerfboundSerfEngine } = engineModule;
+  const engine = new SerfboundSerfEngine(world);
+  assert.equal(engine.dispatchConstructionLogistics(building, started.game.state.tick), true);
+
+  let sawFrame = false;
+  let done = false;
+  for (let tick = 0; tick < 200000 && !done; tick += 16) {
+    engine.update(tick);
+    if (building.progress >= 1) {
+      sawFrame = true;
+    }
+
+    done = building.isDone;
   }
-  const startTick = started.game.state.tick;
 
-  const buildResult = router.dispatch({
-    type: "game.build-building",
-    source: "pointer",
-    tile: tileFor(world, sitePosition),
-    buildingKind: "lumberjack",
-  });
-  assert.equal(buildResult.status, "accepted");
-
-  const building = [...world.buildings.values()].find((candidate) => candidate.type === 2);
-  assert.equal(building.startTick, startTick);
-  assert.equal(building.progress, 0, "site starts leveling");
-
-  // Frame stage after 40 ticks.
-  world.advanceConstruction(startTick + 40);
-  assert.equal(building.progress, 1, "frame stands");
-  assert.equal(building.isDone, false);
-
-  // Done after 120 ticks.
-  world.advanceConstruction(startTick + 120);
-  assert.equal(building.isDone, true);
-
-  // Save mid-build (rewind a fresh game to mid-state): replaying the action
-  // log with the saved tick restores identical construction state.
-  const saved = started.game.snapshot();
-  const restored = restoreSerfboundLocalGame(saved);
-  assert.equal(restored.status, "started");
-  const replayed = restored.game.world();
-  const replayedBuilding = [...replayed.buildings.values()].find(
-    (candidate) => candidate.type === 2,
-  );
-  assert.equal(replayedBuilding.startTick, startTick);
-  // The saved clock had not advanced past startTick + 10 steps' worth, so the
-  // replayed world reflects the clock, not our manual advance calls.
-  assert.equal(
-    replayedBuilding.isDone,
-    saved.state.clock.tick - startTick >= 120,
-    "completion derives from the saved clock",
-  );
+  assert.equal(sawFrame, true, "the site passed through the frame stage");
+  assert.equal(done, true, "the building completes through builder work + materials");
+  assert.equal(building.consumedMaterials, 2, "the lumberjack consumed its two planks");
 });

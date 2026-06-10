@@ -36,7 +36,7 @@ construction.
   reference-matching pathing on fixture maps. (SB-13-02)
 - [x] Transporters pick up and deliver resources along roads with correct
   carrying animations. (SB-13-03; carry-sprite rendering at the phase gate)
-- [ ] Diggers level sites and builders construct buildings, replacing the
+- [x] Diggers level sites and builders construct buildings, replacing the
   interim construction path. (SB-13-04)
 - [ ] Real-data capture shows an animated, working settlement. (SB-13-05)
 
@@ -47,15 +47,15 @@ construction.
 | SB-13-01 | Decode serf animation and player-color sprites | done | story-01-serf-animation-sprites.md | evidence-story-01.md |
 | SB-13-02 | Port the serf state machine core | done | story-02-serf-state-machine-core.md | evidence-story-02.md |
 | SB-13-03 | Transporters move resources along roads | done | story-03-transporters-on-roads.md | evidence-story-03.md |
-| SB-13-04 | Builders and diggers construct buildings | in-progress | story-04-builders-and-diggers.md | — |
-| SB-13-05 | Animated settlement visual gate | backlog | story-05-animated-settlement-gate.md | — |
+| SB-13-04 | Builders and diggers construct buildings | done | story-04-builders-and-diggers.md | evidence-story-04.md |
+| SB-13-05 | Animated settlement visual gate | in-progress | story-05-animated-settlement-gate.md | — |
 
 ## Where we are
 
-SB-13-03 is done: transporters serve roads — picking up flagged resources
-whose route crosses their road, carrying them with walking mechanics, and
-delivering into buildings or handing over at junction flags. SB-13-04
-(serf-driven construction) is in progress.
+SB-13-04 is done: the interim construction model is deleted — buildings now
+complete only through builder labor and transporter-delivered materials at
+reference costs, proven end-to-end in the browser. SB-13-05 (serf rendering
++ the animated settlement gate) is in progress.
 
 ## Active risks
 

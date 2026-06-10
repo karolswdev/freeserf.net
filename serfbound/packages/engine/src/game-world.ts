@@ -109,12 +109,25 @@ export type WorldBuilding = {
   startTick: number;
   // Resources delivered by transporters, tallied by resource type value.
   deliveredResources: Record<number, number>;
+  // Serf-driven construction state.
+  builderTicks: number;
+  consumedMaterials: number;
 };
 
-// Interim time-stepped construction (replaced by serf-driven work in
-// Phase 13): frame appears after 40 ticks, the building completes after 120.
-export const interimConstructionFrameTicks = 40;
-export const interimConstructionDoneTicks = 120;
+// Building.ConstructionInfos material costs: [planks, stones] per type.
+export const buildingConstructionCosts: readonly (readonly [number, number])[] = [
+  [0, 0], [2, 0], [2, 0], [3, 0], [2, 0],
+  [4, 1], [5, 0], [5, 0], [5, 0],
+  [2, 0], [4, 3], [1, 1], [4, 1], [2, 1], [4, 1], [3, 1],
+  [2, 1], [3, 2], [3, 2], [3, 3], [2, 1], [2, 3], [5, 5], [4, 1],
+  [0, 0],
+];
+
+// Serf-driven construction pacing (SB-13-04): the builder levels the site
+// for 40 work ticks, then consumes one delivered material per 30 work ticks;
+// the building completes when every material is consumed.
+export const constructionLevelingTicks = 40;
+export const constructionTicksPerMaterial = 30;
 
 export type WorldPlayer = {
   readonly index: number;
@@ -931,6 +944,8 @@ export class SerfboundGameWorld {
       progress: 0,
       startTick: atTick,
       deliveredResources: {},
+      builderTicks: 0,
+      consumedMaterials: 0,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(building.index, building);
@@ -997,6 +1012,8 @@ export class SerfboundGameWorld {
       progress: 0,
       startTick: 0,
       deliveredResources: {},
+      builderTicks: 0,
+      consumedMaterials: 0,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(castle.index, castle);
@@ -1022,22 +1039,41 @@ export class SerfboundGameWorld {
     return castle;
   }
 
-  // Interim construction progression (Phase 13 replaces with serf labor).
-  advanceConstruction(currentTick: number): boolean {
-    let changed = false;
-    for (const building of this.buildings.values()) {
-      if (building.isDone) {
-        continue;
-      }
+  // Serf-driven construction (SB-13-04): the builder's work advances the
+  // site through leveling, then consumes delivered materials until done.
+  applyBuilderWork(building: WorldBuilding, workTicks: number): boolean {
+    if (building.isDone) {
+      return false;
+    }
 
-      const elapsed = currentTick - building.startTick;
-      const progress = elapsed >= interimConstructionFrameTicks ? 1 : 0;
-      if (progress !== building.progress) {
-        building.progress = progress;
+    building.builderTicks += workTicks;
+    let changed = false;
+
+    const [planks, stones] = buildingConstructionCosts[building.type] ?? [0, 0];
+    const totalMaterials = planks + stones;
+    const delivered = Object.values(building.deliveredResources).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+
+    if (building.builderTicks >= constructionLevelingTicks && building.progress === 0) {
+      building.progress = 1;
+      changed = true;
+    }
+
+    if (building.progress >= 1) {
+      const buildableTicks = building.builderTicks - constructionLevelingTicks;
+      const consumable = Math.min(
+        Math.trunc(buildableTicks / constructionTicksPerMaterial),
+        delivered,
+        totalMaterials,
+      );
+      if (consumable > building.consumedMaterials) {
+        building.consumedMaterials = consumable;
         changed = true;
       }
 
-      if (elapsed >= interimConstructionDoneTicks) {
+      if (building.consumedMaterials >= totalMaterials) {
         building.isDone = true;
         changed = true;
       }

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 13
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-13-03
 - **Unblocks:** SB-13-05
 - **Owner:** unassigned
@@ -22,10 +22,10 @@ through its frame stages. This story deletes the interim path.
 
 ## Acceptance criteria
 
-- [ ] Construction only progresses with delivered materials and builder work,
+- [x] Construction only progresses with delivered materials and builder work,
   matching reference fixtures.
-- [ ] Digger/builder animations render at sites.
-- [ ] The interim construction path is removed (greenfield discipline).
+- [x] Digger/builder animations render at sites.
+- [x] The interim construction path is removed (greenfield discipline).
 
 ## Test plan
 

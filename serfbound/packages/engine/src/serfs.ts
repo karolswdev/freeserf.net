@@ -1,5 +1,9 @@
 import type { Direction } from "./index.js";
-import type { SerfboundGameWorld } from "./game-world.js";
+import {
+  buildingConstructionCosts,
+  type SerfboundGameWorld,
+  type WorldBuilding,
+} from "./game-world.js";
 
 // Serf state machine core ported from Freeserf.Core/Serf.cs (spawning,
 // walking, entering/leaving buildings). Professions, transport, and combat
@@ -83,6 +87,8 @@ export type WorldSerf = {
   roadDirection: Direction | null;
   carriedResource: number;
   carriedDestination: number;
+  // Builder assignment: the building this serf constructs.
+  buildTargetIndex: number;
 };
 
 export class SerfboundSerfEngine {
@@ -91,6 +97,7 @@ export class SerfboundSerfEngine {
   // Map position -> serf index (Map.SetSerfIndex equivalent; 0 = none).
   readonly serfIndexes: Uint32Array;
   #nextSerfIndex = 1;
+  readonly #dispatchedBuildings = new Set<number>();
 
   constructor(world: SerfboundGameWorld) {
     this.world = world;
@@ -130,6 +137,7 @@ export class SerfboundSerfEngine {
       roadDirection: null,
       carriedResource: -1,
       carriedDestination: 0,
+      buildTargetIndex: 0,
     };
     this.#nextSerfIndex += 1;
     this.serfs.set(serf.index, serf);
@@ -201,6 +209,9 @@ export class SerfboundSerfEngine {
         case serfState.idleOnPath:
           this.#handleIdleOnPath(serf, gameTick);
           break;
+        case serfState.building:
+          this.#handleBuilding(serf, gameTick);
+          break;
         case serfState.leavingBuilding:
           this.#handleLeavingBuilding(serf, gameTick);
           break;
@@ -271,6 +282,18 @@ export class SerfboundSerfEngine {
             serf.state = serfState.idleOnPath;
             serf.counter = 0;
             return;
+          }
+
+          // Builders move onto their construction site and start working.
+          if (serf.buildTargetIndex !== 0 && flag.buildingIndex === serf.buildTargetIndex) {
+            const site = this.world.buildings.get(serf.buildTargetIndex);
+            if (site !== undefined && !site.isDone) {
+              this.serfIndexes[serf.position] = 0;
+              serf.position = site.position;
+              serf.state = serfState.building;
+              serf.counter = 0;
+              return;
+            }
           }
 
           // Destination reached: enter the building if the flag has one,
@@ -393,6 +416,28 @@ export class SerfboundSerfEngine {
       this.serfIndexes[serf.position] = serf.index;
       return;
     }
+
+    // Nothing on this side: if the opposite end has work routed over this
+    // road, walk back empty to fetch it.
+    const returnDirection = standsAtHere
+      ? (path.otherEndDirection ?? serf.roadDirection)
+      : serf.roadDirection;
+    for (const slot of toFlag.slots) {
+      if (slot.resource < 0 || slot.destinationFlagIndex === 0) {
+        continue;
+      }
+
+      if (this.#directionToward(toFlag.index, slot.destinationFlagIndex) !== returnDirection) {
+        continue;
+      }
+
+      serf.state = serfState.transporting;
+      serf.walkingDestination = toFlag.index;
+      serf.walkingDirection = 0;
+      serf.counter = 0;
+      this.serfIndexes[serf.position] = serf.index;
+      return;
+    }
   }
 
   // Transporting reuses the walking mechanics; on arrival the resource is
@@ -473,6 +518,99 @@ export class SerfboundSerfEngine {
     this.world.dropResource(flag.index, serf.carriedResource, serf.carriedDestination);
     serf.carriedResource = -1;
     serf.carriedDestination = 0;
+  }
+
+  // Builders work their site on the game clock; the world's construction
+  // model (leveling, then material consumption) decides progress.
+  #handleBuilding(serf: WorldSerf, gameTick: number): void {
+    const delta = (gameTick - serf.tick) & 0xffff;
+    serf.tick = gameTick;
+
+    const building = this.world.buildings.get(serf.buildTargetIndex);
+    if (building === undefined || building.isDone) {
+      serf.buildTargetIndex = 0;
+      serf.state = serfState.null;
+      return;
+    }
+
+    this.world.applyBuilderWork(building, delta);
+    if (building.isDone) {
+      serf.buildTargetIndex = 0;
+      serf.state = serfState.null;
+    }
+  }
+
+  // Construction logistics for a queued building: drop the required
+  // materials at the player's inventory flag destined for the site, ensure
+  // every road on the route has a transporter, and send out a builder.
+  dispatchConstructionLogistics(building: WorldBuilding, gameTick: number): boolean {
+    if (this.#dispatchedBuildings.has(building.index) || building.isDone) {
+      return false;
+    }
+
+    const player = this.world.players[building.player];
+    if (player === undefined || player.castlePosition === null) {
+      return false;
+    }
+
+    const castleFlag = this.world.flagAt(this.world.move(player.castlePosition, "DownRight"));
+    const buildingFlag = this.world.flags.get(building.flagIndex);
+    if (castleFlag === null || buildingFlag === undefined) {
+      return false;
+    }
+
+    // No side effects until the site is actually reachable over roads.
+    if (
+      castleFlag.index !== buildingFlag.index &&
+      this.#directionToward(castleFlag.index, buildingFlag.index) === null
+    ) {
+      return false;
+    }
+
+    this.#dispatchedBuildings.add(building.index);
+
+    // Materials: planks are resource 7, stones resource 9 (reference order).
+    const [planks, stones] = buildingConstructionCosts[building.type] ?? [0, 0];
+    for (let count = 0; count < planks; count += 1) {
+      this.world.dropResource(castleFlag.index, 7, buildingFlag.index);
+    }
+
+    for (let count = 0; count < stones; count += 1) {
+      this.world.dropResource(castleFlag.index, 9, buildingFlag.index);
+    }
+
+    // Walk the flag route and staff each unmanned road with a transporter.
+    let cursorFlag = castleFlag;
+    for (let hop = 0; hop < 64 && cursorFlag.index !== buildingFlag.index; hop += 1) {
+      const direction = this.#directionToward(cursorFlag.index, buildingFlag.index);
+      if (direction === null) {
+        break;
+      }
+
+      const path = cursorFlag.paths[direction];
+      if (path.freeTransporters === 0) {
+        const transporter = this.spawnGenericSerf(building.player, gameTick);
+        if (transporter !== null) {
+          this.assignTransporter(transporter, cursorFlag.index, direction, gameTick);
+        }
+      }
+
+      const nextFlag = this.world.flags.get(path.otherFlagIndex);
+      if (nextFlag === undefined) {
+        break;
+      }
+
+      cursorFlag = nextFlag;
+    }
+
+    // Send the builder.
+    const builder = this.spawnGenericSerf(building.player, gameTick);
+    if (builder === null) {
+      return false;
+    }
+
+    builder.buildTargetIndex = building.index;
+    return this.callOutSerf(builder, buildingFlag.index, gameTick);
   }
 
   // Serf.ChangeDirection: move one tile; on collision, wait with the
