@@ -36,7 +36,7 @@ borders.
   exactly. (SB-11-01, SB-11-02)
 - [x] Generated maps place trees, stones, deserts, water bodies, and mineral
   deposits per the reference rules. (SB-11-03)
-- [ ] The browser viewport scrolls and wraps over the full generated map with
+- [x] The browser viewport scrolls and wraps over the full generated map with
   decoded art, replacing the fixed synthetic field. (SB-11-04)
 - [ ] Water animates with wave sprites and map edges render border sprites,
   with real-data screenshot evidence. (SB-11-05)
@@ -48,14 +48,14 @@ borders.
 | SB-11-01 | Capture map generator oracle fixtures | done | story-01-map-generator-oracle.md | evidence-story-01.md |
 | SB-11-02 | Port the classic map generator | done | story-02-port-classic-map-generator.md | evidence-story-02.md |
 | SB-11-03 | Place map objects and minerals | done | story-03-map-objects-and-minerals.md | evidence-story-03.md |
-| SB-11-04 | Scroll the generated world in the viewport | in-progress | story-04-scrolling-wrapping-viewport.md | — |
-| SB-11-05 | Render waves and map borders | backlog | story-05-waves-and-map-borders.md | — |
+| SB-11-04 | Scroll the generated world in the viewport | done | story-04-scrolling-wrapping-viewport.md | evidence-story-04.md |
+| SB-11-05 | Render waves and map borders | in-progress | story-05-waves-and-map-borders.md | — |
 
 ## Where we are
 
-SB-11-03 is done: local games expose their generated landscape
-deterministically from the saved seed (fish/tree/mineral placement facts
-proven in CI). SB-11-04 (scrolling viewport over the generated world) is in
+SB-11-04 is done: running games render the classic generator's world with
+real art in a scrolling, wrapping viewport (arrow keys + drag), with real-data
+screenshot evidence under artifacts/. SB-11-05 (waves and borders) is in
 progress.
 
 ## Active risks

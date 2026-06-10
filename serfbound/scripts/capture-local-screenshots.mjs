@@ -13,8 +13,10 @@ const enabled = process.env["SERFBOUND_RUN_LOCAL_ASSET_TESTS"] === "1";
 const configuredPath = process.env["SERFBOUND_SPAU_PA"];
 const previewPort = 4189;
 const previewUrl = `http://127.0.0.1:${previewPort}/`;
-const artifactsDir =
-  "../pm/roadmap/serfbound/phase-10-authentic-asset-rendering/artifacts";
+// Captures default to an uncommitted scratch directory; evidence captures pass
+// the phase artifacts folder explicitly via SERFBOUND_CAPTURE_DIR.
+const artifactsDir = process.env["SERFBOUND_CAPTURE_DIR"] ?? "../.tmp/browser-screenshots";
+const namePrefix = process.env["SERFBOUND_CAPTURE_PREFIX"] ?? "capture";
 
 if (!enabled || configuredPath === undefined || configuredPath.trim() === "") {
   console.log(
@@ -68,9 +70,9 @@ try {
     .locator("#app[data-serfbound-scene-source='dos-pa-decoded']")
     .waitFor({ timeout: 15_000 });
 
-  const terrainShot = `${artifactsDir}/story-04-decoded-real-terrain-desktop.png`;
+  const terrainShot = `${artifactsDir}/${namePrefix}-import-preview-desktop.png`;
   await page.screenshot({ fullPage: true, path: terrainShot });
-  const canvasShot = `${artifactsDir}/story-04-decoded-real-terrain-canvas.png`;
+  const canvasShot = `${artifactsDir}/${namePrefix}-import-preview-canvas.png`;
   await page.getByTestId("terrain-preview").screenshot({ path: canvasShot });
 
   await page.getByTestId("start-game-button").click();
@@ -81,7 +83,7 @@ try {
     .locator("#app[data-serfbound-built-structure-count='1']")
     .waitFor({ timeout: 5_000 });
 
-  const flagShot = `${artifactsDir}/story-04-decoded-real-flag-desktop.png`;
+  const flagShot = `${artifactsDir}/${namePrefix}-running-game-desktop.png`;
   await page.screenshot({ fullPage: true, path: flagShot });
 
   const spriteCount = await page.locator("#app").getAttribute("data-serfbound-sprite-count");

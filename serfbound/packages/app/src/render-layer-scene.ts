@@ -37,12 +37,22 @@ export type RenderSpritePrimitive = {
   readonly sortX: number;
 };
 
+export type DecodedMapObjectSprite = {
+  readonly sprite: DecodedDosSprite;
+  readonly shadow: DecodedDosSprite | null;
+};
+
 export type DecodedRenderAssets = {
   readonly source: "dos-pa-decoded";
   readonly atlas: SpriteAtlas;
   readonly terrainTriangleCount: number;
   readonly objectKeys: readonly string[];
   readonly definedArchiveEntries: number;
+  // Raw decoded sprites for landscape-specific composition (SB-11-04).
+  readonly rawGrounds: readonly (DecodedDosSprite | null)[];
+  readonly rawMasksUp: readonly (DecodedDosSprite | null)[];
+  readonly rawMasksDown: readonly (DecodedDosSprite | null)[];
+  readonly rawMapObjects: ReadonlyMap<number, DecodedMapObjectSprite>;
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -540,12 +550,44 @@ export function buildDecodedRenderAssets(
     }
   }
 
+  // Raw sprite collections for landscape-specific atlas composition.
+  const rawGrounds: (DecodedDosSprite | null)[] = [];
+  for (let groundIndex = 0; groundIndex < 33; groundIndex += 1) {
+    rawGrounds.push(decodeGround(groundIndex));
+  }
+
+  const rawMasksUp: (DecodedDosSprite | null)[] = [];
+  const rawMasksDown: (DecodedDosSprite | null)[] = [];
+  for (let maskCode = 0; maskCode < 81; maskCode += 1) {
+    rawMasksUp.push(decodeMask("up", maskCode));
+    rawMasksDown.push(decodeMask("down", maskCode));
+  }
+
+  // Map object sprites 0..84 cover everything the classic generator places
+  // (trees through dead trees); 128 is the flag.
+  const rawMapObjects = new Map<number, DecodedMapObjectSprite>();
+  for (const spriteIndex of [...Array.from({ length: 85 }, (_, index) => index), 128]) {
+    const sprite = decodeSafely(archive, "map_object", spriteIndex);
+    if (sprite === null) {
+      continue;
+    }
+
+    rawMapObjects.set(spriteIndex, {
+      sprite,
+      shadow: decodeSafely(archive, "map_shadow", spriteIndex),
+    });
+  }
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
     terrainTriangleCount,
     objectKeys,
     definedArchiveEntries: archive.catalog.entrySummary.defined,
+    rawGrounds,
+    rawMasksUp,
+    rawMasksDown,
+    rawMapObjects,
   };
 }
 

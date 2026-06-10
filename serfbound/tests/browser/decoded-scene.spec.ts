@@ -43,9 +43,15 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "dos-pa-decoded",
   );
 
-  // Starting a game and building a flag draws the real flag sprite path.
+  // Starting a game switches to the generated-landscape scene.
   await page.getByTestId("start-game-button").click();
   await expect(page.getByTestId("game-state")).toHaveText("Running");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-scene-mode",
+    "landscape",
+  );
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-scroll", "0,0");
+
   await page.getByTestId("terrain-preview").click({ position: { x: 480, y: 270 } });
   await page.getByTestId("build-flag-button").click();
   await expect(page.locator("#app")).toHaveAttribute(
@@ -56,6 +62,15 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "data-serfbound-scene-source",
     "dos-pa-decoded",
   );
+
+  // Arrow keys scroll the landscape by whole tiles and wrap at map edges.
+  await page.locator("#app").focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-scroll", "1,1");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-scroll", "63,1");
 
   await page.screenshot({ fullPage: true, path: decodedSceneScreenshotPath });
 });

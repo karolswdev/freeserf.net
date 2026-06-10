@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 11
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-11-03
 - **Unblocks:** SB-11-05
 - **Owner:** unassigned
@@ -24,12 +24,12 @@ authentic triangle placement math.
 
 ## Acceptance criteria
 
-- [ ] The decoded scene renders the generated map (terrain, objects) instead
+- [x] The decoded scene renders the generated map (terrain, objects) instead
   of the synthetic field; built flags stay anchored to map positions.
-- [ ] Dragging and arrow keys scroll smoothly; crossing the map edge wraps
+- [x] Dragging and arrow keys scroll smoothly; crossing the map edge wraps
   seamlessly.
-- [ ] Pointer hover/selection reports correct map positions while scrolled.
-- [ ] Frame cadence stays within Phase 8 performance baselines.
+- [x] Pointer hover/selection reports correct map positions while scrolled.
+- [x] Frame cadence stays within Phase 8 performance baselines.
 
 ## Test plan
 

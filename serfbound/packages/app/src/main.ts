@@ -39,6 +39,13 @@ import {
   type StoredLocalGameSaveRecord,
 } from "./local-game-save-store.js";
 import {
+  buildLandscapeRenderAssets,
+  createLandscapeScene,
+  screenToMapTile,
+  type LandscapeRenderAssets,
+  type MapScroll,
+} from "./landscape-scene.js";
+import {
   buildDecodedRenderAssets,
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
@@ -78,6 +85,15 @@ export {
   type StoredLocalGameSaveMetadata,
   type StoredLocalGameSaveRecord,
 } from "./local-game-save-store.js";
+export {
+  buildLandscapeRenderAssets,
+  createLandscapeScene,
+  mapTileToScreen,
+  screenToMapTile,
+  type LandscapeRenderAssets,
+  type LandscapeSceneOptions,
+  type MapScroll,
+} from "./landscape-scene.js";
 export {
   buildDecodedRenderAssets,
   createFirstRenderLayerScene,
@@ -125,8 +141,14 @@ type SceneRenderCatalog = (
   archiveName: string,
   archiveBytes: ArrayBuffer | ArrayBufferView,
 ) => void;
+type PointerLandscapeContext = {
+  readonly landscape: LandscapeRenderAssets["landscape"];
+  readonly scroll: MapScroll;
+};
+
 type PointerMapInteractionHandlers = {
   readonly commandRouter: () => SerfboundCommandRouter;
+  readonly landscapeContext: () => PointerLandscapeContext | undefined;
   readonly onSelection: (interaction: PointerMapInteraction) => void;
 };
 
@@ -268,17 +290,51 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
   let currentDecodedAssets: DecodedRenderAssets | undefined;
+  let currentLandscapeAssets: LandscapeRenderAssets | undefined;
+  let currentScroll: MapScroll = { column: 0, row: 0 };
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
   let currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined;
   let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
   const renderCurrentScene = () => {
-    renderScene(root, currentTypedAssetCatalog, currentDecodedAssets, currentBuiltStructures);
+    renderScene(
+      root,
+      currentTypedAssetCatalog,
+      currentDecodedAssets,
+      currentLandscapeAssets,
+      currentScroll,
+      currentBuiltStructures,
+    );
+  };
+  const applyScroll = (columnDelta: number, rowDelta: number) => {
+    if (currentLandscapeAssets === undefined) {
+      return;
+    }
+
+    const landscape = currentLandscapeAssets.landscape;
+    currentScroll = {
+      column:
+        (((currentScroll.column + columnDelta) % landscape.columns) + landscape.columns) %
+        landscape.columns,
+      row: (((currentScroll.row + rowDelta) % landscape.rows) + landscape.rows) % landscape.rows,
+    };
+    renderCurrentScene();
+  };
+  const startLandscapeRendering = (game: { landscape(): Parameters<typeof buildLandscapeRenderAssets>[1] }) => {
+    if (currentDecodedAssets === undefined) {
+      currentLandscapeAssets = undefined;
+      return;
+    }
+
+    currentLandscapeAssets = buildLandscapeRenderAssets(currentDecodedAssets, game.landscape()) ?? undefined;
+    currentScroll = { column: 0, row: 0 };
   };
   const renderGeneratedScene = () => {
     currentTypedAssetCatalog = undefined;
     currentDecodedAssets = undefined;
+    currentLandscapeAssets = undefined;
+    currentScroll = { column: 0, row: 0 };
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
     currentLocalGameSnapshot = undefined;
@@ -314,11 +370,74 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   observeSceneResize(canvas, renderCurrentScene);
   attachPointerMapInteraction(root, canvas, {
     commandRouter: () => commandRouter,
+    landscapeContext: () =>
+      currentLandscapeAssets === undefined
+        ? undefined
+        : { landscape: currentLandscapeAssets.landscape, scroll: currentScroll },
     onSelection(interaction) {
       selectedInteraction = interaction;
       syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
     },
   });
+
+  // Landscape scrolling: arrow keys step by whole tiles; dragging the canvas
+  // pans by accumulated tile steps (the original scrolls in full columns/rows).
+  root.ownerDocument.addEventListener("keydown", (event) => {
+    if (currentLandscapeAssets === undefined) {
+      return;
+    }
+
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    const scrollKeys: Record<string, readonly [number, number]> = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const delta = scrollKeys[event.key];
+    if (delta === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    applyScroll(delta[0], delta[1]);
+  });
+
+  let dragState: { x: number; y: number } | undefined;
+  canvas.addEventListener("pointerdown", (event) => {
+    if (currentLandscapeAssets !== undefined) {
+      dragState = { x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture(event.pointerId);
+    }
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (dragState === undefined || currentLandscapeAssets === undefined) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.x;
+    const deltaY = event.clientY - dragState.y;
+    const columnSteps = Math.trunc(deltaX / 32);
+    const rowSteps = Math.trunc(deltaY / 20);
+    if (columnSteps !== 0 || rowSteps !== 0) {
+      dragState = {
+        x: dragState.x + columnSteps * 32,
+        y: dragState.y + rowSteps * 20,
+      };
+      applyScroll(-columnSteps, -rowSteps);
+    }
+  });
+  const endDrag = (event: PointerEvent) => {
+    dragState = undefined;
+    if (canvas.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -378,6 +497,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       commandRouter = new SerfboundCommandRouter(result.game.state);
       currentBuiltStructures = [];
       currentLocalGameSnapshot = result.snapshot;
+      startLandscapeRendering(result.game);
+      renderCurrentScene();
     }
     applyLocalGameStartResult(root, result, currentTypedAssetCatalog);
     syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
@@ -451,6 +572,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         currentBuiltStructures = restored.snapshot.state.builtStructures;
         selectedInteraction = undefined;
         commandRouter = new SerfboundCommandRouter(restored.game.state);
+        startLandscapeRendering(restored.game);
         applyRunningLocalGameSnapshot(root, restored.snapshot);
         renderCurrentScene();
         syncBuildFlagEnabled(root, selectedInteraction, currentBuiltStructures);
@@ -867,6 +989,8 @@ function renderScene(
   root: HTMLElement,
   typedAssetCatalog: TypedAssetCatalog | undefined,
   decodedAssets: DecodedRenderAssets | undefined,
+  landscapeAssets: LandscapeRenderAssets | undefined,
+  scroll: MapScroll,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
@@ -875,12 +999,25 @@ function renderScene(
   }
 
   const size = resizeCanvasToDisplayedSize(canvas);
-  const scene = createFirstRenderLayerScene({
-    size,
-    builtStructures,
-    ...(typedAssetCatalog === undefined ? {} : { typedAssetCatalog }),
-    ...(decodedAssets === undefined ? {} : { decodedAssets }),
-  });
+  const scene =
+    landscapeAssets !== undefined
+      ? createLandscapeScene({
+          size,
+          assets: landscapeAssets,
+          scroll,
+          builtStructures,
+          ...(decodedAssets === undefined
+            ? {}
+            : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),
+        })
+      : createFirstRenderLayerScene({
+          size,
+          builtStructures,
+          ...(typedAssetCatalog === undefined ? {} : { typedAssetCatalog }),
+          ...(decodedAssets === undefined ? {} : { decodedAssets }),
+        });
+  root.dataset.serfboundScroll = `${scroll.column},${scroll.row}`;
+  root.dataset.serfboundSceneMode = landscapeAssets !== undefined ? "landscape" : "preview";
 
   renderFirstRenderLayerScene(canvas, scene);
   root.dataset.serfboundRenderer = scene.renderer;
@@ -919,12 +1056,12 @@ function attachPointerMapInteraction(
   handlers: PointerMapInteractionHandlers,
 ): void {
   canvas.addEventListener("pointermove", (event) => {
-    const interaction = resolveCanvasPointer(canvas, event);
+    const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
     applyPointerHoverState(root, interaction, event.pointerType);
   });
 
   canvas.addEventListener("pointerdown", (event) => {
-    const interaction = resolveCanvasPointer(canvas, event);
+    const interaction = resolveCanvasPointer(canvas, event, handlers.landscapeContext());
     applyPointerHoverState(root, interaction, event.pointerType);
     applyPointerSelectionState(root, interaction);
     applyCommandResultState(
@@ -949,15 +1086,25 @@ function attachPointerMapInteraction(
 function resolveCanvasPointer(
   canvas: HTMLCanvasElement,
   event: Pick<PointerEvent, "clientX" | "clientY">,
+  landscapeContext?: PointerLandscapeContext,
 ): PointerMapInteraction {
   const rect = canvas.getBoundingClientRect();
-  return resolveFirstRenderLayerPointer(
-    {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    },
-    { width: canvas.width, height: canvas.height },
-  );
+  const screen = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+
+  if (landscapeContext !== undefined) {
+    const tile = screenToMapTile(landscapeContext.landscape, screen, landscapeContext.scroll);
+    return {
+      screen,
+      view: screen,
+      map: screen,
+      tile,
+    };
+  }
+
+  return resolveFirstRenderLayerPointer(screen, { width: canvas.width, height: canvas.height });
 }
 
 function applyPointerHoverState(
