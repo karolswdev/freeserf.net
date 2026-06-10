@@ -25,7 +25,7 @@ Package, document, and operate Serfbound as a maintainable browser product.
 
 ## Exit criteria (evidence required)
 
-- [ ] CI runs build, lint, unit tests, browser tests, and data-free parity tests.
+- [x] CI runs build/type checks, unit tests, browser tests, and data-free parity tests.
 - [ ] Release packaging is browser/static-web oriented and contains no .NET or
   desktop runtime artifacts.
 - [ ] Player docs explain import, save, reset, troubleshooting, and local asset
@@ -38,17 +38,17 @@ Package, document, and operate Serfbound as a maintainable browser product.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-9-01 | Add release CI checks | ready | story-01-release-ci-checks.md | — |
-| SB-9-02 | Define static hosting release path | backlog | story-02-static-hosting-release-path.md | — |
+| SB-9-01 | Add release CI checks | done | story-01-release-ci-checks.md | evidence-story-01.md |
+| SB-9-02 | Define static hosting release path | ready | story-02-static-hosting-release-path.md | — |
 | SB-9-03 | Write player and developer docs | backlog | story-03-player-developer-docs.md | — |
 | SB-9-04 | Run release readiness review | backlog | story-04-release-readiness-review.md | — |
 
 ## Where we are
 
-Phase 9 is in progress. Phase 8 is complete with performance budgets,
-worker/threading decision, persistence recovery, browser compatibility matrix,
-and accessibility-basics evidence. The next responsible move is SB-9-01: add
-release CI checks that run without local original assets.
+Phase 9 is in progress. SB-9-01 adds a browser-native release CI workflow and
+local `npm run ci:release` command that run without local original assets. The
+next responsible move is SB-9-02: define the static hosting release path and
+inspect the static build artifact.
 
 ## Active risks
 
@@ -60,7 +60,10 @@ release CI checks that run without local original assets.
 
 ## Decisions made (this phase)
 
-- none yet.
+- 2026-06-09 — Release CI runs the Serfbound browser workspace only: npm
+  data-free unit/parity tests, Chromium browser smoke tests, boundary checks,
+  static artifact inspection, and the local asset skip path. It does not build
+  .NET/desktop deliverables or require `serfbound-local-data/` — SB-9-01.
 
 ## Decisions deferred
 

@@ -11,8 +11,10 @@
   "scripts": {
     "build": "tsc -b packages/engine packages/assets packages/test-support packages/app",
     "build:web": "npm run build && vite build",
+    "ci:release": "npm test && npm run check:boundaries && npm run check:release-artifact && npm run test:local:assets",
     "clean": "tsc -b --clean packages/engine packages/assets packages/test-support packages/app",
     "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:release-artifact": "node scripts/check-release-artifact.mjs",
     "measure:performance": "node scripts/measure-performance.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "npm run test:ci",

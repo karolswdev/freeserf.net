@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 9
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-2-02, SB-8-04
 - **Unblocks:** SB-9-04
 - **Owner:** unassigned
@@ -22,11 +22,11 @@ boundary.
 
 ## Acceptance criteria
 
-- [ ] CI runs on the Serfbound branch/fork.
-- [ ] CI passes without `serfbound-local-data/`.
-- [ ] CI includes data-free oracle/parity checks.
-- [ ] CI includes browser smoke or equivalent app-shell check.
-- [ ] Failure output links to the relevant command or log.
+- [x] CI runs on the Serfbound branch/fork.
+- [x] CI passes without `serfbound-local-data/`.
+- [x] CI includes data-free oracle/parity checks.
+- [x] CI includes browser smoke or equivalent app-shell check.
+- [x] Failure output links to the relevant command or log.
 
 ## Test plan
 
@@ -37,4 +37,5 @@ boundary.
 
 ## Notes / open questions
 
-CI can grow in layers. The first release gate must be strict about local assets.
+Release CI is scoped to data-free browser checks. Local `SPAU.PA` validation
+remains opt-in and is intentionally skipped in CI.

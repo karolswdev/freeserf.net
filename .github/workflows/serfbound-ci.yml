@@ -1,0 +1,71 @@
+name: Serfbound CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+      - 'serfbound/**'
+    paths:
+      - '.github/workflows/serfbound-ci.yml'
+      - 'serfbound/**'
+      - 'pm/roadmap/serfbound/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - 'serfbound/**'
+    paths:
+      - '.github/workflows/serfbound-ci.yml'
+      - 'serfbound/**'
+      - 'pm/roadmap/serfbound/**'
+
+permissions:
+  contents: read
+
+jobs:
+  release-checks:
+    name: Browser release checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: serfbound
+
+    env:
+      SERFBOUND_RUN_LOCAL_ASSET_TESTS: ''
+      SERFBOUND_LOCAL_DATA: ''
+      SERFBOUND_SPAU_PA: ''
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node from serfbound/.nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: serfbound/.nvmrc
+          cache: npm
+          cache-dependency-path: serfbound/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Serfbound release CI
+        run: npm run ci:release
+
+      - name: Summarize release CI command
+        if: always()
+        run: |
+          {
+            echo "## Serfbound CI"
+            echo ""
+            echo "- Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "- Local reproduction: \`cd serfbound && npm ci && npx playwright install chromium && npm run ci:release\`"
+            echo "- Local original assets are intentionally unset in this job."
+            echo "- Expand the failed step above for command output if this run fails."
+          } >> "$GITHUB_STEP_SUMMARY"

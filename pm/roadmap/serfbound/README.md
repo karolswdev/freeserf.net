@@ -253,6 +253,9 @@ For Serfbound specifically, every implementation story must identify:
   storage, pointer/touch-style input, keyboard focus, contrast, and
   reduced-motion state. See
   `phase-8-browser-hardening/browser-compatibility-matrix.md`.
+- **Current release CI proof:** Phase 9 adds `.github/workflows/serfbound-ci.yml`
+  and `npm run ci:release` for data-free browser release checks without
+  `serfbound-local-data/`, .NET product builds, or desktop packaging.
 
 ## Glossary
 
