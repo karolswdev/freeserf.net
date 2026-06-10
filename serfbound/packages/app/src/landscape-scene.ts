@@ -119,6 +119,14 @@ export const mapBuildingSprite: readonly number[] = [
   0xa2, 0xa0, 0xa1, 0x99, 0x9d, 0x9e, 0x98, 0x9f, 0xb2,
 ];
 
+// RenderBuilding.MapBuildingFrameSprite: under-construction frame sprites.
+export const mapBuildingFrameSprite: readonly number[] = [
+  0, 0xba, 0xba, 0xba, 0xba,
+  0xb9, 0xb9, 0xb9, 0xb9,
+  0xba, 0xc1, 0xba, 0xb1, 0xb8, 0xb1, 0xbb,
+  0xb7, 0xb5, 0xb6, 0xb0, 0xb8, 0xb3, 0xaf, 0xb4,
+];
+
 export function buildLandscapeRenderAssets(
   decodedAssets: DecodedRenderAssets,
   landscape: ClassicMapLandscape,
@@ -191,8 +199,9 @@ export function buildLandscapeRenderAssets(
     }
   }
 
-  // All building sprites precompose so construction at any time resolves.
-  for (const spriteIndex of mapBuildingSprite) {
+  // All building sprites (done + frame stages) precompose so construction at
+  // any time resolves.
+  for (const spriteIndex of [...mapBuildingSprite, ...mapBuildingFrameSprite]) {
     if (spriteIndex === 0) {
       continue;
     }
@@ -395,7 +404,13 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         // Buildings render their reference map_object sprite by type.
         const building = options.world.buildingAt(position);
         if (building !== null) {
-          const spriteIndex = mapBuildingSprite[building.type] ?? 0;
+          // Leveling sites show no sprite yet; framed sites show the frame;
+          // completed buildings show the finished sprite.
+          const spriteIndex = building.isDone
+            ? (mapBuildingSprite[building.type] ?? 0)
+            : building.progress >= 1
+              ? (mapBuildingFrameSprite[building.type] ?? 0)
+              : 0;
           if (spriteIndex !== 0) {
             pushSprite("shadows", `mos:${spriteIndex}`, apexX, apexY, apexY, apexX);
             pushSprite("objects", `mo:${spriteIndex}`, apexX, apexY, apexY, apexX);

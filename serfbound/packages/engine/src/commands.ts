@@ -317,6 +317,7 @@ export class SerfboundCommandRouter {
           position: command.tile.position,
           building,
           player: 0,
+          atTick: this.state.tick,
         };
         break;
       }

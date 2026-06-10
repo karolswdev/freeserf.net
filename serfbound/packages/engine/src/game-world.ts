@@ -94,8 +94,16 @@ export type WorldBuilding = {
   flagIndex: number;
   levelHeight: number;
   isDone: boolean;
+  // Interim construction model until Phase 13 serf labor: 0 = site leveling,
+  // 1 = frame stage. Completion derives from ticks since startTick.
   progress: number;
+  startTick: number;
 };
+
+// Interim time-stepped construction (replaced by serf-driven work in
+// Phase 13): frame appears after 40 ticks, the building completes after 120.
+export const interimConstructionFrameTicks = 40;
+export const interimConstructionDoneTicks = 120;
 
 export type WorldPlayer = {
   readonly index: number;
@@ -877,7 +885,12 @@ export class SerfboundGameWorld {
     return true;
   }
 
-  buildBuilding(position: number, type: BuildingTypeValue, player: number): WorldBuilding | null {
+  buildBuilding(
+    position: number,
+    type: BuildingTypeValue,
+    player: number,
+    atTick = 0,
+  ): WorldBuilding | null {
     if (!this.canBuildBuilding(position, type, player)) {
       return null;
     }
@@ -900,6 +913,7 @@ export class SerfboundGameWorld {
       levelHeight: this.levelingHeight(position),
       isDone: false,
       progress: 0,
+      startTick: atTick,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(building.index, building);
@@ -964,6 +978,7 @@ export class SerfboundGameWorld {
       levelHeight: this.levelingHeight(position),
       isDone: true,
       progress: 0,
+      startTick: 0,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(castle.index, castle);
@@ -987,6 +1002,30 @@ export class SerfboundGameWorld {
     this.updateLandOwnership(position);
 
     return castle;
+  }
+
+  // Interim construction progression (Phase 13 replaces with serf labor).
+  advanceConstruction(currentTick: number): boolean {
+    let changed = false;
+    for (const building of this.buildings.values()) {
+      if (building.isDone) {
+        continue;
+      }
+
+      const elapsed = currentTick - building.startTick;
+      const progress = elapsed >= interimConstructionFrameTicks ? 1 : 0;
+      if (progress !== building.progress) {
+        building.progress = progress;
+        changed = true;
+      }
+
+      if (elapsed >= interimConstructionDoneTicks) {
+        building.isDone = true;
+        changed = true;
+      }
+    }
+
+    return changed;
   }
 
   // --- land ownership (Game.UpdateLandOwnership) -------------------------------------

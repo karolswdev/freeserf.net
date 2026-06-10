@@ -350,9 +350,20 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     }
 
     // Wave frames advance every 8 ticks in the reference; ticking by 8 every
-    // 175ms reproduces the original cadence without per-frame rebuilds.
+    // 175ms reproduces the original cadence without per-frame rebuilds. The
+    // same driver advances the simulation clock and interim construction.
     waveTimer ??= setInterval(() => {
       currentTick = (currentTick + 8) % 1024;
+      if (currentWorld !== undefined && root.dataset.serfboundGameState === "running") {
+        for (let step = 0; step < 8; step += 1) {
+          commandRouter.state.advanceTick();
+        }
+
+        if (currentWorld.advanceConstruction(commandRouter.state.tick)) {
+          syncWorldState(root, currentWorld);
+        }
+      }
+
       renderCurrentScene();
     }, 175);
   };
@@ -1230,12 +1241,19 @@ function applyPointerSelectionState(root: HTMLElement, interaction: PointerMapIn
 
 function syncWorldState(
   root: HTMLElement,
-  world: { players: readonly { hasCastle: boolean }[]; flags: ReadonlyMap<number, unknown>; buildings: ReadonlyMap<number, unknown> } | undefined,
+  world:
+    | {
+        players: readonly { hasCastle: boolean }[];
+        flags: ReadonlyMap<number, unknown>;
+        buildings: ReadonlyMap<number, { isDone: boolean }>;
+      }
+    | undefined,
 ): void {
   if (world === undefined) {
     delete root.dataset.serfboundWorldHasCastle;
     delete root.dataset.serfboundWorldFlagCount;
     delete root.dataset.serfboundWorldBuildingCount;
+    delete root.dataset.serfboundWorldBuildingDoneCount;
     return;
   }
 
@@ -1243,6 +1261,9 @@ function syncWorldState(
   root.dataset.serfboundWorldHasCastle = String(hasCastle);
   root.dataset.serfboundWorldFlagCount = String(world.flags.size);
   root.dataset.serfboundWorldBuildingCount = String(world.buildings.size);
+  root.dataset.serfboundWorldBuildingDoneCount = String(
+    [...world.buildings.values()].filter((building) => building.isDone).length,
+  );
 
   if (!hasCastle && root.dataset.serfboundGameState === "running") {
     const state = root.querySelector<HTMLElement>("[data-testid='command-state']");

@@ -105,6 +105,7 @@ export class SerfboundLocalGame {
         this.#world,
         this.state.worldActions.filter(isSerfboundWorldAction),
       );
+      this.#world.advanceConstruction(this.state.tick);
     }
 
     return this.#world;

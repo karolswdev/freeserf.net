@@ -33,7 +33,7 @@ with authentic construction sprites.
   semantics and path costs. (SB-12-01, SB-12-02)
 - [x] The castle places under original validity rules and claims territory
   with rendered borders. (SB-12-03)
-- [ ] Buildings progress visually from cleared ground to frame to finished
+- [x] Buildings progress visually from cleared ground to frame to finished
   building using authentic construction sprites. (SB-12-04)
 - [ ] A browser user can found a small settlement end-to-end (castle → road →
   hut) with screenshot evidence from real local data. (SB-12-05)
@@ -45,15 +45,14 @@ with authentic construction sprites.
 | SB-12-01 | Port the flag and road graph | done | story-01-flag-and-road-graph.md | evidence-story-01.md |
 | SB-12-02 | Port road pathfinding and road-building mode | done | story-02-road-pathfinding-mode.md | evidence-story-02.md |
 | SB-12-03 | Place the castle and claim territory | done | story-03-castle-and-territory.md | evidence-story-03.md |
-| SB-12-04 | Construct buildings with progress sprites | in-progress | story-04-building-construction.md | — |
-| SB-12-05 | Found a settlement end-to-end | backlog | story-05-settlement-end-to-end.md | — |
+| SB-12-04 | Construct buildings with progress sprites | done | story-04-building-construction.md | evidence-story-04.md |
+| SB-12-05 | Found a settlement end-to-end | in-progress | story-05-settlement-end-to-end.md | — |
 
 ## Where we are
 
-SB-12-03 is done: the founding act works end-to-end — castle placement
-claims territory via the ported influence tables, the authentic castle sprite
-renders with border stakes, and saved games replay the world-action log to
-identical state. SB-12-04 (construction stages) is in progress.
+SB-12-04 is done: buildings level, frame, and complete on the game clock with
+authentic stage sprites, and construction timing survives save/restore.
+SB-12-05 (build UI + end-to-end founding) is in progress.
 
 ## Active risks
 

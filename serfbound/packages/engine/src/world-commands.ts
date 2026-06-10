@@ -18,6 +18,7 @@ export type SerfboundWorldAction =
       readonly position: number;
       readonly building: BuildingTypeValue;
       readonly player: number;
+      readonly atTick: number;
     }
   | { readonly kind: "demolish-flag"; readonly position: number; readonly player: number };
 
@@ -61,7 +62,9 @@ export function applyWorldAction(
 
       return { ok: true, effect: "road-built" };
     case "build-building":
-      if (world.buildBuilding(action.position, action.building, action.player) === null) {
+      if (
+        world.buildBuilding(action.position, action.building, action.player, action.atTick) === null
+      ) {
         return {
           ok: false,
           reason: "invalid-build-position",

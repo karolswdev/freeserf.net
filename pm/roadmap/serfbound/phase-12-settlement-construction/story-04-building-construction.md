@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 12
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-12-03
 - **Unblocks:** SB-12-05
 - **Owner:** unassigned
@@ -25,10 +25,10 @@ arrives in Phase 13.
 
 ## Acceptance criteria
 
-- [ ] Building placement validity (terrain/space per size) matches fixtures.
-- [ ] Construction progresses through reference stages with the correct
+- [x] Building placement validity (terrain/space per size) matches fixtures.
+- [x] Construction progresses through reference stages with the correct
   sprite at each stage.
-- [ ] Completed buildings persist through save/load.
+- [x] Completed buildings persist through save/load.
 
 ## Test plan
 
