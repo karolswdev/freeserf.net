@@ -8,9 +8,10 @@ and Phase 21 closed the launch-review punch list: authentic frame
 chrome, font-shadow readability, native-resolution rendering with
 1x/2x/3x view scales, and touch gestures (see
 [phase-21-presentation-fidelity/final-summary.md](./phase-21-presentation-fidelity/final-summary.md)).
-The remaining post-launch track: multiplayer foundations (determinism
-checksums and the lockstep session core shipped), online play,
-community/identity, and data breadth/localization.
+The remaining post-launch track: multiplayer foundations (checksums,
+lockstep core, and the session wire protocol shipped; the loopback gate
+closes the phase), online play, community/identity, and data
+breadth/localization.
 
 ## Vision
 

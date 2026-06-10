@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 22
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-22-02
 - **Unblocks:** SB-22-04
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,9 +24,9 @@ transport carries it (loopback now, WebRTC in Phase 23).
 
 ## Acceptance criteria
 
-- [ ] All session message kinds round-trip byte-exactly.
-- [ ] Version and settings mismatches reject with actionable errors.
-- [ ] Malformed messages never crash the engine loop.
+- [x] All session message kinds round-trip byte-exactly.
+- [x] Version and settings mismatches reject with actionable errors.
+- [x] Malformed messages never crash the engine loop.
 
 ## Test plan
 
