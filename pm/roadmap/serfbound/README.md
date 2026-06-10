@@ -1,8 +1,8 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-09.
-**Current phase:** [phase-7-playable-slice](./phase-7-playable-slice/current-phase-status.md)
-**Status:** Phase 0 through Phase 6 complete; Phase 7 in progress.
+**Current phase:** [phase-8-browser-hardening](./phase-8-browser-hardening/current-phase-status.md)
+**Status:** Phase 0 through Phase 7 complete; Phase 8 ready.
 
 ## Vision
 
@@ -89,8 +89,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 4 | Import local user-owned DOS data and expose typed assets | complete | [phase-4-data-assets](./phase-4-data-assets/) |
 | 5 | Build the map renderer, projection model, and visual asset path | complete | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
 | 6 | Build browser input, UI shell, and game interaction loops | complete | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
-| 7 | Ship the first local playable vertical slice | in-progress | [phase-7-playable-slice](./phase-7-playable-slice/) |
-| 8 | Harden persistence, performance, workers, and browser constraints | planning | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
+| 7 | Ship the first local playable vertical slice | complete | [phase-7-playable-slice](./phase-7-playable-slice/) |
+| 8 | Harden persistence, performance, workers, and browser constraints | ready | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | planning | [phase-9-release-operations](./phase-9-release-operations/) |
 
 ## Delivery Gates
@@ -229,6 +229,10 @@ For Serfbound specifically, every implementation story must identify:
   records with imported-data source metadata in a dedicated IndexedDB store,
   reloads saved state after browser reload, and keeps missing/corrupt save
   paths recoverable.
+- **Current playable-loop proof:** Phase 7 manual evidence proves a browser
+  user can import local `SPAU.PA`, start a local game, build a flag, save,
+  reload, load, and see the restored built flag with no .NET runtime, desktop
+  shell, native launcher, or bundled original data.
 
 ## Glossary
 

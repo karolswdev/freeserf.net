@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** in progress.
+**Status:** complete; Phase 8 ready.
 
 ## Goal
 
@@ -33,10 +33,10 @@ saves/loads state.
   see the settlement map.
 - [x] One visible build/road/flag interaction mutates engine state and rendered
   output.
-- [ ] The playable path runs in the browser with no desktop companion process.
+- [x] The playable path runs in the browser with no desktop companion process.
 - [x] Save/load works in browser persistence and passes at least one round-trip
   test.
-- [ ] Manual verification steps and screenshots/video are stored as evidence.
+- [x] Manual verification steps and screenshots/video are stored as evidence.
 
 ## Story status
 
@@ -45,15 +45,14 @@ saves/loads state.
 | SB-7-01 | Start local game from imported data | done | story-01-start-local-game.md | evidence-story-01.md |
 | SB-7-02 | Implement first visible build action | done | story-02-first-visible-build-action.md | evidence-story-02.md |
 | SB-7-03 | Add browser save/load loop | done | story-03-browser-save-load-loop.md | evidence-story-03.md |
-| SB-7-04 | Verify playable loop manually | ready | story-04-playable-loop-verification.md | — |
+| SB-7-04 | Verify playable loop manually | done | story-04-playable-loop-verification.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 7 is in progress. SB-7-03 added browser-local save/load for the first
-playable slice: save the running local game snapshot, reload the browser, load
-the saved state after imported data restores, recover the built flag state, and
-clear missing/corrupt save paths without crashing. The next responsible move is
-SB-7-04: execute and record the manual end-to-end playable-loop verification.
+Phase 7 is complete. SB-7-04 executed the browser manual playable-loop script
+with local user-provided `SPAU.PA`: import, start, build flag, save, reload,
+load, and visual confirmation that the built flag persisted. The phase now
+hands off to Phase 8 browser hardening.
 
 ## Active risks
 
@@ -79,9 +78,14 @@ SB-7-04: execute and record the manual end-to-end playable-loop verification.
   data. Save records carry `schemaVersion: 1`, imported-data source metadata,
   and a `serfbound.local-game` snapshot; original savegame compatibility stays
   out of scope — SB-7-03.
+- 2026-06-09 — Phase 7 manual verification uses a static Vite preview server
+  only to serve browser assets during local evidence capture. The playable app
+  path remains browser-native and does not use a .NET runtime, desktop shell,
+  native launcher, or local companion process — SB-7-04.
 
 ## Decisions deferred
 
 - Original placement rules, roads, huts, worker logistics, and economy effects.
 - Original savegame import/export compatibility.
-- Manual end-to-end proof with browser/device metadata — SB-7-04.
+- Phase 8 browser hardening: performance budgets, worker strategy, persistence
+  recovery, browser compatibility, and accessibility basics.

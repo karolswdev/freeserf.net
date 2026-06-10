@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 7
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-7-01, SB-7-02, SB-7-03, SB-6-04
 - **Unblocks:** SB-8-01, SB-8-03, SB-9-04
 - **Owner:** unassigned
@@ -22,12 +22,12 @@ evidence.
 
 ## Acceptance criteria
 
-- [ ] Manual script covers import, start game, visible action, save, reload, and
+- [x] Manual script covers import, start game, visible action, save, reload, and
   load.
-- [ ] Evidence includes browser, OS, viewport, and local asset source metadata.
-- [ ] Screenshots/video prove the visible loop.
-- [ ] Known limitations are recorded with phase/story follow-ups.
-- [ ] Phase 7 can close only if this evidence is complete.
+- [x] Evidence includes browser, OS, viewport, and local asset source metadata.
+- [x] Screenshots/video prove the visible loop.
+- [x] Known limitations are recorded with phase/story follow-ups.
+- [x] Phase 7 can close only if this evidence is complete.
 
 ## Test plan
 
@@ -40,3 +40,11 @@ evidence.
 
 This is the first end-to-end proof gate. Do not downgrade it to a checklist
 without artifacts.
+
+Manual verification artifacts:
+
+- `manual-playable-loop-script.md`
+- `manual-playable-loop-report.md`
+- `artifacts/story-04-manual-started-desktop.png`
+- `artifacts/story-04-manual-flag-saved-desktop.png`
+- `artifacts/story-04-manual-loaded-save-desktop.png`

@@ -2,6 +2,8 @@
 
 **Last updated:** 2026-06-09.
 
+**Status:** ready.
+
 ## Goal
 
 Make the playable slice resilient under real browser constraints: persistence
@@ -39,14 +41,16 @@ recovery.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-8-01 | Establish performance budgets | backlog | story-01-performance-budgets.md | — |
+| SB-8-01 | Establish performance budgets | ready | story-01-performance-budgets.md | — |
 | SB-8-02 | Decide worker and threading model | backlog | story-02-worker-threading-model.md | — |
 | SB-8-03 | Harden persistence recovery | backlog | story-03-persistence-recovery.md | — |
 | SB-8-04 | Verify browser compatibility | backlog | story-04-browser-compatibility.md | — |
 
 ## Where we are
 
-Phase 8 is not started. It depends on Phase 7 playable behavior.
+Phase 8 is ready. Phase 7 has produced the first browser-playable loop with
+manual evidence, so the next responsible move is SB-8-01: measure tick/render
+budgets on the playable slice before adding hardening work.
 
 ## Active risks
 

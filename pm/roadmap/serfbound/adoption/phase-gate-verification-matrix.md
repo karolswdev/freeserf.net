@@ -33,10 +33,10 @@ artifacts, or manual verification notes.
 | 1 | Reference oracle is trustworthy | Data-free and local-asset oracle outputs captured, documented, and isolated from product code | Complete |
 | 2 | Browser foundation is real | Pure-browser workspace builds, tests, and renders a static shell without original assets | Complete |
 | 3 | Simulation parity starts | First deterministic engine tests pass against CI-safe oracle fixtures | Complete |
-| 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | In progress; import boundary passes |
-| 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Not started |
-| 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Not started |
-| 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Not started |
+| 4 | Local data import works | Browser imports local `SPAU.PA`, parses catalog metadata, and keeps CI asset-free | Complete |
+| 5 | Map rendering is proven | Browser renders a nonblank map scene with tested projection and viewport checks | Complete |
+| 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Complete |
+| 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Complete |
 | 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | Not started |
 | 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | Not started |
 
@@ -73,14 +73,7 @@ Before marking the whole Serfbound goal complete:
 
 ## Current Gap Summary
 
-As of 2026-06-09, the PMO scaffold is materially stronger than the initial plan:
-all phases have status files and all referenced Phase 1 through Phase 9 story
-files exist. Phase 0 is complete and documented in
-`pm/roadmap/serfbound/phase-0-setup/final-summary.md`. Phase 1 is complete and
-documented in `pm/roadmap/serfbound/phase-1-reference-oracle/final-summary.md`.
-The product is not complete. Phase 2 is complete and documented in
-`pm/roadmap/serfbound/phase-2-browser-foundation/final-summary.md`. Phase 3 is
-complete and documented in
-`pm/roadmap/serfbound/phase-3-core-simulation/final-summary.md`. The next gap
-is SB-4-02: DOS `.PA` catalog metadata parsing through the browser import
-boundary, still with no tracked original assets.
+As of 2026-06-09, Phases 0 through 7 are complete and documented with paired
+story evidence plus phase final summaries. The product is not complete. The
+next gap is Phase 8 browser hardening: performance budgets, worker strategy,
+persistence recovery, browser compatibility, and accessibility basics.
