@@ -33,7 +33,7 @@ synthetic triangle scene with decoded game art.
 
 - [x] Palettes 3, 3997, and 3998 and all four DOS sprite payload types decode
   from real local `SPAU.PA` through opt-in local checks. (SB-10-01)
-- [ ] Terrain triangles compose from decoded `map_ground` sprites and
+- [x] Terrain triangles compose from decoded `map_ground` sprites and
   `map_mask_up`/`map_mask_down` masks using the reference mask tables, packed
   into a runtime texture atlas. (SB-10-02)
 - [ ] The browser scene renders decoded terrain, at least one authentic map
@@ -47,16 +47,15 @@ synthetic triangle scene with decoded game art.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-10-01 | Port DOS palette and sprite decoders | done | story-01-dos-sprite-decoders.md | evidence-story-01.md |
-| SB-10-02 | Compose terrain triangles into a texture atlas | in-progress | story-02-terrain-composition-atlas.md | — |
-| SB-10-03 | Render decoded sprites in the browser scene | ready | story-03-decoded-webgl-scene.md | — |
+| SB-10-02 | Compose terrain triangles into a texture atlas | done | story-02-terrain-composition-atlas.md | evidence-story-02.md |
+| SB-10-03 | Render decoded sprites in the browser scene | in-progress | story-03-decoded-webgl-scene.md | — |
 | SB-10-04 | Prove authentic visuals with real local data | ready | story-04-real-data-visual-proof.md | — |
 
 ## Where we are
 
-SB-10-01 is done: real `SPAU.PA` palettes and sprite payloads decode in
-browser-native TypeScript, cross-validated by the 61+61 mask counts from the
-reference renderer. SB-10-02 (terrain composition + texture atlas) is in
-progress.
+SB-10-01 and SB-10-02 are done: real `SPAU.PA` sprites decode and compose
+into terrain triangles packed in a runtime atlas, verified against real data.
+SB-10-03 (decoded WebGL2 scene) is in progress.
 
 ## Active risks
 
@@ -76,6 +75,10 @@ progress.
   palette application, flag frame fixup), emitting RGBA for browser textures
   instead of the reference BGRA and returning `null` for undefined entries so
   partial demo archives stay importable — SB-10-01.
+- 2026-06-10 — Terrain composition ports the `RenderMap.cs` mask tables and the
+  atlas rule that ground tiles repeat vertically to the 41px max mask height;
+  atlas regions are keyed by name instead of the reference's fixed slot
+  indirection — SB-10-02.
 
 ## Decisions deferred
 

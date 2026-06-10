@@ -13,6 +13,26 @@ export {
   type DosPalette,
 } from "./dos-sprites.js";
 
+export {
+  composeMaskedTile,
+  terrainGroundSpriteIndex,
+  terrainTypeCount,
+  tileHeight,
+  tileMaskDown,
+  tileMaskUp,
+  tileRenderMaxHeight,
+  tileTerrainSprites,
+  tileWidth,
+  triangleMaskCodeDown,
+  triangleMaskCodeUp,
+} from "./terrain-tiles.js";
+
+export {
+  buildSpriteAtlas,
+  type SpriteAtlas,
+  type SpriteAtlasRegion,
+} from "./sprite-atlas.js";
+
 export type AssetImportBoundary = {
   readonly source: "user-provided-local-file";
   readonly storesOriginalPayloadInGit: false;

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 10
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-10-01
 - **Unblocks:** SB-10-03
 - **Owner:** unassigned
@@ -27,15 +27,15 @@ rules live in `Freeserf.Core/Render/RenderMap.cs` and
 
 ## Acceptance criteria
 
-- [ ] Mask tables match the reference arrays (spot-checked values and lengths
+- [x] Mask tables match the reference arrays (spot-checked values and lengths
   in CI).
-- [ ] Composition produces a mask-sized RGBA image that samples the ground
+- [x] Composition produces a mask-sized RGBA image that samples the ground
   sprite with vertical repetition and zeroes pixels where the mask is
   transparent (exact-pixel CI test on synthetic sprites).
-- [ ] The atlas packs sprites without overlap, preserves each sprite's
+- [x] The atlas packs sprites without overlap, preserves each sprite's
   offset/delta header fields in its region, and round-trips pixels exactly
   (CI test).
-- [ ] CI stays green without `serfbound-local-data/`.
+- [x] CI stays green without `serfbound-local-data/`.
 
 ## Test plan
 

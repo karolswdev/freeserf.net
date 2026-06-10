@@ -197,6 +197,37 @@ assert.equal(
   "tree shadow uses overlay alpha",
 );
 
+// SB-10-02: real ground + mask sprites must compose into terrain triangles
+// and pack into the runtime atlas.
+const { buildSpriteAtlas, composeMaskedTile } = await import(
+  "../packages/assets/dist/index.js"
+);
+
+const flatUpMask = decodeDosResourceSprite(spriteArchive, "map_mask_up", 40);
+const grassGround = decodeDosResourceSprite(spriteArchive, "map_ground", 0);
+const composedTriangle = composeMaskedTile(grassGround, flatUpMask);
+assert.equal(composedTriangle.width, flatUpMask.width, "composed triangle keeps mask width");
+assert.equal(composedTriangle.height, flatUpMask.height, "composed triangle keeps mask height");
+const composedOpaque = composedTriangle.rgba.filter(
+  (value, index) => index % 4 === 3 && value === 0xff,
+).length;
+assert.equal(composedOpaque > 100, true, "composed triangle has substantial opaque coverage");
+assert.equal(
+  composedOpaque < composedTriangle.width * composedTriangle.height,
+  true,
+  "composed triangle is mask-shaped, not a full quad",
+);
+
+const realAtlas = buildSpriteAtlas({
+  "tile:up:5:40": composedTriangle,
+  "obj:flag": flagSprite,
+  "obj:tree": treeSprite,
+});
+for (const key of ["tile:up:5:40", "obj:flag", "obj:tree"]) {
+  assert.notEqual(realAtlas.regions[key], undefined, `atlas region ${key} exists`);
+}
+assert.equal(realAtlas.rgba.length, realAtlas.width * realAtlas.height * 4);
+
 console.log(
-  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, and decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites.`,
+  `serfbound-local-asset-tests-ok: parsed ${fileName} catalog, matched Phase 1 oracle metadata, decoded real palettes, terrain sprites, ${decodedUpMasks + decodedDownMasks} masks, and object sprites, and composed real terrain triangles into a ${realAtlas.width}x${realAtlas.height} atlas.`,
 );
