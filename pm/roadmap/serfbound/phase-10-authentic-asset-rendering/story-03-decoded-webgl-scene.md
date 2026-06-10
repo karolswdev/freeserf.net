@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 10
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-10-02
 - **Unblocks:** SB-10-04
 - **Owner:** unassigned
@@ -28,16 +28,16 @@ shadows, and the real flag sprite for built structures.
 
 ## Acceptance criteria
 
-- [ ] Importing an archive whose sprites decode renders the decoded scene
+- [x] Importing an archive whose sprites decode renders the decoded scene
   (`data-serfbound-scene-source="dos-pa-decoded"`); non-decodable archives
   (like the CI-generated fixture) keep the current catalog scene and all
   existing browser tests pass unchanged.
-- [ ] Terrain sprite primitives use composed atlas regions with reference
+- [x] Terrain sprite primitives use composed atlas regions with reference
   placement math (CI unit test on scene structure).
-- [ ] Built flags render the real `map_object` flag sprite in the decoded
+- [x] Built flags render the real `map_object` flag sprite in the decoded
   scene.
-- [ ] Decoded scene survives reload via the existing IndexedDB restore path.
-- [ ] `npm test` (data-free) passes; decoded path is exercised in CI through a
+- [x] Decoded scene survives reload via the existing IndexedDB restore path.
+- [x] `npm test` (data-free) passes; decoded path is exercised in CI through a
   synthetic decodable fixture archive.
 
 ## Test plan

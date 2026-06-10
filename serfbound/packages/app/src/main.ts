@@ -39,9 +39,11 @@ import {
   type StoredLocalGameSaveRecord,
 } from "./local-game-save-store.js";
 import {
+  buildDecodedRenderAssets,
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
   resolveFirstRenderLayerPointer,
+  type DecodedRenderAssets,
   type PointerMapInteraction,
 } from "./render-layer-scene.js";
 
@@ -77,10 +79,12 @@ export {
   type StoredLocalGameSaveRecord,
 } from "./local-game-save-store.js";
 export {
+  buildDecodedRenderAssets,
   createFirstRenderLayerScene,
   renderFirstRenderLayerScene,
   resolveFirstRenderLayerPointer,
   renderLayerOrder,
+  type DecodedRenderAssets,
   type FirstRenderLayerScene,
   type PointerMapInteraction,
   type RenderLayerKey,
@@ -88,6 +92,7 @@ export {
   type RenderSceneLayer,
   type RenderScenePrimitive,
   type RenderSceneSource,
+  type RenderSpritePrimitive,
 } from "./render-layer-scene.js";
 
 export type AppBootstrapSummary = {
@@ -118,6 +123,7 @@ type SceneRenderCatalog = (
   typedAssetCatalog: TypedAssetCatalog,
   catalog: DosPaCatalog,
   archiveName: string,
+  archiveBytes: ArrayBuffer | ArrayBufferView,
 ) => void;
 type PointerMapInteractionHandlers = {
   readonly commandRouter: () => SerfboundCommandRouter;
@@ -261,16 +267,18 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   root.dataset.serfboundEnginePackage = summary.enginePackage;
 
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
+  let currentDecodedAssets: DecodedRenderAssets | undefined;
   let currentImportedDataSource: SerfboundLocalGameDataSource | undefined;
   let currentBuiltStructures: readonly SerfboundBuiltStructure[] = [];
   let currentLocalGameSnapshot: SerfboundLocalGameSnapshot | undefined;
   let currentSavedLocalGame: StoredLocalGameSaveRecord | undefined;
   let selectedInteraction: PointerMapInteraction | undefined;
   const renderCurrentScene = () => {
-    renderScene(root, currentTypedAssetCatalog, currentBuiltStructures);
+    renderScene(root, currentTypedAssetCatalog, currentDecodedAssets, currentBuiltStructures);
   };
   const renderGeneratedScene = () => {
     currentTypedAssetCatalog = undefined;
+    currentDecodedAssets = undefined;
     currentImportedDataSource = undefined;
     currentBuiltStructures = [];
     currentLocalGameSnapshot = undefined;
@@ -293,8 +301,10 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     typedAssetCatalog: TypedAssetCatalog,
     catalog: DosPaCatalog,
     archiveName: string,
+    archiveBytes: ArrayBuffer | ArrayBufferView,
   ) => {
     currentTypedAssetCatalog = typedAssetCatalog;
+    currentDecodedAssets = buildDecodedRenderAssets(archiveBytes, catalog) ?? undefined;
     currentImportedDataSource = localGameDataSourceFromCatalog(catalog, archiveName);
     syncLocalGameSaveControls(root, currentLocalGameSnapshot, currentSavedLocalGame, currentImportedDataSource);
     renderCurrentScene();
@@ -696,7 +706,7 @@ async function importSelectedArchive(
   try {
     const bytes = await file.arrayBuffer();
     const catalog = parseDosPaCatalog(bytes);
-    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, validation.normalizedName);
+    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, validation.normalizedName, bytes);
     const record = createStoredImportedArchiveRecord({
       fileName: validation.fileName,
       normalizedName: validation.normalizedName,
@@ -771,7 +781,7 @@ function applyStoredArchiveRecord(
 ): void {
   try {
     const catalog = parseDosPaCatalog(record.bytes);
-    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, record.normalizedName);
+    renderCatalogScene(buildTypedAssetCatalog(catalog), catalog, record.normalizedName, record.bytes);
     applyParsedCatalogState(root, catalog, "restored", record);
   } catch (error) {
     root.dataset.serfboundDataState = "unsupported";
@@ -856,6 +866,7 @@ function applyStorageErrorState(
 function renderScene(
   root: HTMLElement,
   typedAssetCatalog: TypedAssetCatalog | undefined,
+  decodedAssets: DecodedRenderAssets | undefined,
   builtStructures: readonly SerfboundBuiltStructure[] = [],
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
@@ -864,16 +875,19 @@ function renderScene(
   }
 
   const size = resizeCanvasToDisplayedSize(canvas);
-  const scene =
-    typedAssetCatalog === undefined
-      ? createFirstRenderLayerScene({ size, builtStructures })
-      : createFirstRenderLayerScene({ size, typedAssetCatalog, builtStructures });
+  const scene = createFirstRenderLayerScene({
+    size,
+    builtStructures,
+    ...(typedAssetCatalog === undefined ? {} : { typedAssetCatalog }),
+    ...(decodedAssets === undefined ? {} : { decodedAssets }),
+  });
 
   renderFirstRenderLayerScene(canvas, scene);
   root.dataset.serfboundRenderer = scene.renderer;
   root.dataset.serfboundSceneSource = scene.assetSummary.source;
   root.dataset.serfboundLayerCount = String(scene.layers.length);
   root.dataset.serfboundPrimitiveCount = String(scene.primitives.length);
+  root.dataset.serfboundSpriteCount = String(scene.sprites.length);
   root.dataset.serfboundBuiltStructureCount = String(builtStructures.length);
   root.dataset.serfboundCanvasWidth = String(canvas.width);
   root.dataset.serfboundCanvasHeight = String(canvas.height);
@@ -882,6 +896,13 @@ function renderScene(
   const sceneDetail = root.querySelector<HTMLElement>("[data-testid='scene-detail']");
   if (sceneState === null || sceneDetail === null) {
     throw new Error("Serfbound shell scene status did not mount.");
+  }
+
+  if (scene.assetSummary.source === "dos-pa-decoded") {
+    sceneState.textContent = "Imported terrain";
+    sceneDetail.textContent =
+      `Authentic terrain decoded: ${scene.sprites.length} sprites on screen.`;
+    return;
   }
 
   sceneState.textContent =

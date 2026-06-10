@@ -103,3 +103,5 @@ export function assertOracleFixtureHeader(
     generation,
   };
 }
+
+export { createDecodableGeneratedPaArchive } from "./decodable-pa-fixture.js";

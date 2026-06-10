@@ -1,4 +1,17 @@
-import type { TypedAssetCatalog, TypedAssetResource } from "@serfbound/assets";
+import {
+  DosPaArchive,
+  buildSpriteAtlas,
+  composeMaskedTile,
+  decodeDosResourceSprite,
+  terrainGroundSpriteIndex,
+  triangleMaskCodeDown,
+  triangleMaskCodeUp,
+  type DecodedDosSprite,
+  type DosPaCatalog,
+  type SpriteAtlas,
+  type TypedAssetCatalog,
+  type TypedAssetResource,
+} from "@serfbound/assets";
 import {
   MapGeometry,
   MapProjectionTransform,
@@ -13,7 +26,24 @@ export const renderLayerOrder = ["terrain", "paths", "shadows", "objects", "mark
 
 export type RenderLayerKey = (typeof renderLayerOrder)[number];
 
-export type RenderSceneSource = "generated-fixture" | "dos-pa-catalog";
+export type RenderSceneSource = "generated-fixture" | "dos-pa-catalog" | "dos-pa-decoded";
+
+export type RenderSpritePrimitive = {
+  readonly layer: RenderLayerKey;
+  readonly key: string;
+  readonly x: number;
+  readonly y: number;
+  readonly sortY: number;
+  readonly sortX: number;
+};
+
+export type DecodedRenderAssets = {
+  readonly source: "dos-pa-decoded";
+  readonly atlas: SpriteAtlas;
+  readonly terrainTriangleCount: number;
+  readonly objectKeys: readonly string[];
+  readonly definedArchiveEntries: number;
+};
 
 export type RenderColor = readonly [number, number, number, number];
 
@@ -44,6 +74,7 @@ export type RenderSceneAssetSummary = {
 export type FirstRenderLayerSceneOptions = {
   readonly size?: RenderSize;
   readonly typedAssetCatalog?: TypedAssetCatalog;
+  readonly decodedAssets?: DecodedRenderAssets;
   readonly builtStructures?: readonly SerfboundBuiltStructure[];
 };
 
@@ -60,6 +91,8 @@ export type FirstRenderLayerScene = {
   readonly virtualSize: RenderSize;
   readonly layers: readonly RenderSceneLayer[];
   readonly primitives: readonly RenderScenePrimitive[];
+  readonly sprites: readonly RenderSpritePrimitive[];
+  readonly atlas: SpriteAtlas | null;
   readonly tilePrimitiveCount: number;
   readonly assetSummary: RenderSceneAssetSummary;
 };
@@ -84,6 +117,14 @@ export function createFirstRenderLayerScene(
   options: FirstRenderLayerSceneOptions = {},
 ): FirstRenderLayerScene {
   const virtualSize = options.size ?? defaultSceneSize;
+  if (options.decodedAssets !== undefined) {
+    return createDecodedRenderScene(
+      virtualSize,
+      options.decodedAssets,
+      options.builtStructures ?? [],
+    );
+  }
+
   const { geometry, transform, heightProvider } = createSceneProjection(virtualSize);
   const primitives: RenderScenePrimitive[] = [];
 
@@ -142,6 +183,8 @@ export function createFirstRenderLayerScene(
       primitiveCount: sortedPrimitives.filter((primitive) => primitive.layer === key).length,
     })),
     primitives: sortedPrimitives,
+    sprites: [],
+    atlas: null,
     tilePrimitiveCount: sortedPrimitives.filter((primitive) => primitive.layer === "terrain").length,
     assetSummary: summarizeSceneAssets(options.typedAssetCatalog),
   };
@@ -173,6 +216,11 @@ export function renderFirstRenderLayerScene(
 
   if (gl === null) {
     throw new Error("Serfbound first render-layer scene requires WebGL2.");
+  }
+
+  if (scene.atlas !== null && scene.sprites.length > 0) {
+    renderDecodedSpriteScene(gl, canvas, scene, scene.atlas);
+    return;
   }
 
   const program = createProgram(gl);
@@ -217,6 +265,386 @@ export function renderFirstRenderLayerScene(
   gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 24, 8);
   gl.drawArrays(gl.TRIANGLES, 0, scene.primitives.length * 3);
   gl.deleteBuffer(buffer);
+}
+
+// ---------------------------------------------------------------------------
+// Decoded-asset scene: authentic terrain triangles, objects, and flags from
+// imported DOS sprite data. Placement follows Freeserf.Core/Render/RenderMap:
+// every triangle draws at X = apexX - 16, Y = 20*apexRow - 4*apexHeight plus
+// the mask sprite's header offset.
+// ---------------------------------------------------------------------------
+
+const decodedTileWidth = 32;
+const decodedTileHeight = 20;
+const decodedHeightStep = 4;
+// Atlas combos are collected over a fixed lattice large enough for any
+// realistic canvas; scenes beyond it skip unknown combos gracefully.
+const decodedFieldColumns = 84;
+const decodedFieldRows = 104;
+const fieldWavePeriod = 12;
+const fieldHeightSteps = [0, 0, 1, 2, 3, 3, 3] as const;
+
+const decodedObjectSprites = [
+  { kind: "tree", spriteIndex: 0 },
+  { kind: "pine", spriteIndex: 8 },
+  { kind: "stone", spriteIndex: 64 },
+] as const;
+const decodedFlagSpriteIndex = 128;
+
+type LatticeVertex = { readonly column: number; readonly row: number };
+
+function wrapValue(value: number, period: number): number {
+  return ((value % period) + period) % period;
+}
+
+function fieldWave(value: number): number {
+  const phase = wrapValue(value, fieldWavePeriod);
+  return Math.min(phase, fieldWavePeriod - phase);
+}
+
+function fieldHeight(column: number, row: number): number {
+  return fieldHeightSteps[fieldWave(column + (row >> 1))] ?? 0;
+}
+
+function vertexScreenX(column: number, row: number): number {
+  return column * decodedTileWidth + (row & 1) * (decodedTileWidth / 2);
+}
+
+function downLeft(column: number, row: number): LatticeVertex {
+  return { column: (row & 1) === 0 ? column - 1 : column, row: row + 1 };
+}
+
+function downRight(column: number, row: number): LatticeVertex {
+  return { column: (row & 1) === 0 ? column : column + 1, row: row + 1 };
+}
+
+function upLeft(column: number, row: number): LatticeVertex {
+  return { column: (row & 1) === 0 ? column - 1 : column, row: row - 1 };
+}
+
+function upRight(column: number, row: number): LatticeVertex {
+  return { column: (row & 1) === 0 ? column : column + 1, row: row - 1 };
+}
+
+function fieldTerrain(column: number, row: number, heights: readonly number[]): number {
+  const min = Math.min(...heights);
+  const max = Math.max(...heights);
+  if (max === 0) {
+    return 0; // water
+  }
+
+  if (min >= 3) {
+    return 14; // snow
+  }
+
+  if (max >= 3) {
+    return 11; // tundra
+  }
+
+  if (min >= 1 && wrapValue(column + row * 2, 37) < 5) {
+    return 8; // desert patch
+  }
+
+  return 5; // grass
+}
+
+function fieldObjectKind(
+  column: number,
+  row: number,
+  terrain: number,
+  apexHeight: number,
+): string | null {
+  if (terrain !== 5 || apexHeight === 0) {
+    return null;
+  }
+
+  const hash = wrapValue(column * 13 + row * 7, 41);
+  if (hash === 0) {
+    return "tree";
+  }
+
+  if (hash === 11) {
+    return "pine";
+  }
+
+  if (hash === 23) {
+    return "stone";
+  }
+
+  return null;
+}
+
+type DecodedTriangle = {
+  readonly orientation: "up" | "down";
+  readonly terrain: number;
+  readonly maskCode: number;
+};
+
+function decodedTriangleUp(column: number, row: number): DecodedTriangle | null {
+  const apexHeight = fieldHeight(column, row);
+  const left = downLeft(column, row);
+  const right = downRight(column, row);
+  const leftHeight = fieldHeight(left.column, left.row);
+  const rightHeight = fieldHeight(right.column, right.row);
+  const maskCode = triangleMaskCodeUp(apexHeight, leftHeight, rightHeight);
+  if (maskCode === null) {
+    return null;
+  }
+
+  return {
+    orientation: "up",
+    terrain: fieldTerrain(column, row, [apexHeight, leftHeight, rightHeight]),
+    maskCode,
+  };
+}
+
+function decodedTriangleDown(column: number, row: number): DecodedTriangle | null {
+  const apexHeight = fieldHeight(column, row);
+  const left = upLeft(column, row);
+  const right = upRight(column, row);
+  const leftHeight = fieldHeight(left.column, left.row);
+  const rightHeight = fieldHeight(right.column, right.row);
+  const maskCode = triangleMaskCodeDown(apexHeight, leftHeight, rightHeight);
+  if (maskCode === null) {
+    return null;
+  }
+
+  return {
+    orientation: "down",
+    terrain: fieldTerrain(column, row, [apexHeight, leftHeight, rightHeight]),
+    maskCode,
+  };
+}
+
+function terrainComboKey(triangle: DecodedTriangle): string {
+  return `t${triangle.orientation === "up" ? "u" : "d"}:${triangle.terrain}:${triangle.maskCode}`;
+}
+
+export function buildDecodedRenderAssets(
+  bytes: ArrayBuffer | ArrayBufferView,
+  catalog?: DosPaCatalog,
+): DecodedRenderAssets | null {
+  let archive: DosPaArchive;
+  try {
+    archive = catalog === undefined ? new DosPaArchive(bytes) : new DosPaArchive(bytes, catalog);
+  } catch {
+    return null;
+  }
+
+  if (archive.getPalette(3) === null) {
+    return null;
+  }
+
+  const groundCache = new Map<number, DecodedDosSprite | null>();
+  const maskCache = new Map<string, DecodedDosSprite | null>();
+  const decodeGround = (groundIndex: number): DecodedDosSprite | null => {
+    let ground = groundCache.get(groundIndex);
+    if (ground === undefined) {
+      ground = decodeSafely(archive, "map_ground", groundIndex);
+      groundCache.set(groundIndex, ground);
+    }
+
+    return ground;
+  };
+  const decodeMask = (orientation: "up" | "down", maskCode: number): DecodedDosSprite | null => {
+    const cacheKey = `${orientation}:${maskCode}`;
+    let mask = maskCache.get(cacheKey);
+    if (mask === undefined) {
+      mask = decodeSafely(
+        archive,
+        orientation === "up" ? "map_mask_up" : "map_mask_down",
+        maskCode,
+      );
+      maskCache.set(cacheKey, mask);
+    }
+
+    return mask;
+  };
+
+  const sprites: Record<string, DecodedDosSprite> = {};
+  let terrainTriangleCount = 0;
+
+  for (let row = -4; row <= decodedFieldRows; row += 1) {
+    for (let column = -2; column <= decodedFieldColumns; column += 1) {
+      for (const triangle of [decodedTriangleUp(column, row), decodedTriangleDown(column, row)]) {
+        if (triangle === null) {
+          continue;
+        }
+
+        const key = terrainComboKey(triangle);
+        if (sprites[key] !== undefined) {
+          continue;
+        }
+
+        const groundIndex = terrainGroundSpriteIndex(
+          triangle.terrain,
+          triangle.maskCode,
+          triangle.orientation,
+        );
+        const ground = decodeGround(groundIndex);
+        const mask = decodeMask(triangle.orientation, triangle.maskCode);
+        if (ground === null || mask === null) {
+          continue;
+        }
+
+        sprites[key] = composeMaskedTile(ground, mask);
+        terrainTriangleCount += 1;
+      }
+    }
+  }
+
+  if (terrainTriangleCount === 0) {
+    return null;
+  }
+
+  const objectKeys: string[] = [];
+  const objectEntries = [
+    ...decodedObjectSprites,
+    { kind: "flag", spriteIndex: decodedFlagSpriteIndex } as const,
+  ];
+  for (const { kind, spriteIndex } of objectEntries) {
+    const object = decodeSafely(archive, "map_object", spriteIndex);
+    if (object === null) {
+      continue;
+    }
+
+    sprites[`obj:${kind}`] = object;
+    objectKeys.push(`obj:${kind}`);
+
+    const shadow = decodeSafely(archive, "map_shadow", spriteIndex);
+    if (shadow !== null) {
+      sprites[`objshadow:${kind}`] = shadow;
+    }
+  }
+
+  return {
+    source: "dos-pa-decoded",
+    atlas: buildSpriteAtlas(sprites),
+    terrainTriangleCount,
+    objectKeys,
+    definedArchiveEntries: archive.catalog.entrySummary.defined,
+  };
+}
+
+function decodeSafely(
+  archive: DosPaArchive,
+  resourceName: string,
+  spriteIndex: number,
+): DecodedDosSprite | null {
+  try {
+    return decodeDosResourceSprite(archive, resourceName, spriteIndex);
+  } catch {
+    return null;
+  }
+}
+
+function createDecodedRenderScene(
+  virtualSize: RenderSize,
+  decodedAssets: DecodedRenderAssets,
+  builtStructures: readonly SerfboundBuiltStructure[],
+): FirstRenderLayerScene {
+  const { atlas } = decodedAssets;
+  const sprites: RenderSpritePrimitive[] = [];
+  const columns = Math.ceil(virtualSize.width / decodedTileWidth) + 2;
+  const rows = Math.ceil(virtualSize.height / decodedTileHeight) + 4;
+
+  const pushSprite = (
+    layer: RenderLayerKey,
+    key: string,
+    anchorX: number,
+    anchorY: number,
+    sortY: number,
+  ): void => {
+    const region = atlas.regions[key];
+    if (region === undefined) {
+      return;
+    }
+
+    sprites.push({
+      layer,
+      key,
+      x: anchorX + region.offsetX,
+      y: anchorY + region.offsetY,
+      sortY,
+      sortX: anchorX,
+    });
+  };
+
+  for (let row = -2; row <= rows; row += 1) {
+    for (let column = -1; column <= columns; column += 1) {
+      const apexHeight = fieldHeight(column, row);
+      const apexX = vertexScreenX(column, row);
+      const apexY = row * decodedTileHeight - decodedHeightStep * apexHeight;
+
+      const up = decodedTriangleUp(column, row);
+      if (up !== null) {
+        pushSprite("terrain", terrainComboKey(up), apexX - decodedTileWidth / 2, apexY, apexY);
+      }
+
+      const down = decodedTriangleDown(column, row);
+      if (down !== null) {
+        pushSprite("terrain", terrainComboKey(down), apexX - decodedTileWidth / 2, apexY, apexY);
+      }
+
+      const objectKind =
+        up === null ? null : fieldObjectKind(column, row, up.terrain, apexHeight);
+      if (objectKind !== null) {
+        pushSprite("shadows", `objshadow:${objectKind}`, apexX, apexY, apexY);
+        pushSprite("objects", `obj:${objectKind}`, apexX, apexY, apexY);
+      }
+    }
+  }
+
+  const { transform, heightProvider } = createSceneProjection(virtualSize);
+  for (const structure of builtStructures) {
+    const top = transform.tileToScreen(structure.tile.position, heightProvider);
+    const anchorX = top.x;
+    const anchorY = top.y + 16;
+    pushSprite("shadows", "objshadow:flag", anchorX, anchorY, anchorY);
+    pushSprite("markers", "obj:flag", anchorX, anchorY, anchorY + structure.id / 1000);
+  }
+
+  const sortedSprites = sprites.sort(compareSpritePrimitive);
+
+  return {
+    renderer: "webgl2",
+    mapSize: decodedFieldColumns,
+    virtualSize,
+    layers: renderLayerOrder.map((key, order) => ({
+      key,
+      order,
+      primitiveCount: sortedSprites.filter((sprite) => sprite.layer === key).length,
+    })),
+    primitives: [],
+    sprites: sortedSprites,
+    atlas,
+    tilePrimitiveCount: sortedSprites.filter((sprite) => sprite.layer === "terrain").length,
+    assetSummary: {
+      source: "dos-pa-decoded",
+      definedArchiveEntries: decodedAssets.definedArchiveEntries,
+      mapGroundStatus: `decoded:${decodedAssets.terrainTriangleCount}`,
+      pathGroundStatus: "deferred",
+      mapObjectsStatus: `decoded:${decodedAssets.objectKeys.length}`,
+      mapShadowsStatus: "decoded",
+    },
+  };
+}
+
+function compareSpritePrimitive(
+  left: RenderSpritePrimitive,
+  right: RenderSpritePrimitive,
+): number {
+  const layerDelta = renderLayerOrder.indexOf(left.layer) - renderLayerOrder.indexOf(right.layer);
+  if (layerDelta !== 0) {
+    return layerDelta;
+  }
+
+  const yDelta = left.sortY - right.sortY;
+  if (yDelta !== 0) {
+    return yDelta;
+  }
+
+  return left.sortX - right.sortX;
 }
 
 function createSceneProjection(size: RenderSize): {
@@ -432,6 +860,153 @@ function summarizeSceneAssets(catalog: TypedAssetCatalog | undefined): RenderSce
 
 function resourceSceneStatus(resource: TypedAssetResource): string {
   return `${resource.availability.status}:${resource.availability.availableCount}/${resource.availability.totalCount}`;
+}
+
+function renderDecodedSpriteScene(
+  gl: WebGL2RenderingContext,
+  canvas: HTMLCanvasElement,
+  scene: FirstRenderLayerScene,
+  atlas: SpriteAtlas,
+): void {
+  const program = createTextureProgram(gl);
+  const positionLocation = gl.getAttribLocation(program, "a_position");
+  const texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
+  const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+  const textureLocation = gl.getUniformLocation(program, "u_texture");
+  if (
+    positionLocation < 0 ||
+    texcoordLocation < 0 ||
+    resolutionLocation === null ||
+    textureLocation === null
+  ) {
+    throw new Error("Serfbound WebGL2 decoded scene shader locations are unavailable.");
+  }
+
+  const texture = gl.createTexture();
+  if (texture === null) {
+    throw new Error("Serfbound WebGL2 decoded scene could not allocate the atlas texture.");
+  }
+
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    atlas.width,
+    atlas.height,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    new Uint8Array(atlas.rgba.buffer, atlas.rgba.byteOffset, atlas.rgba.byteLength),
+  );
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  const vertices = new Float32Array(scene.sprites.length * 6 * 4);
+  let offset = 0;
+  for (const sprite of scene.sprites) {
+    const region = atlas.regions[sprite.key];
+    if (region === undefined) {
+      continue;
+    }
+
+    const x0 = sprite.x;
+    const y0 = sprite.y;
+    const x1 = sprite.x + region.width;
+    const y1 = sprite.y + region.height;
+    const u0 = region.x / atlas.width;
+    const v0 = region.y / atlas.height;
+    const u1 = (region.x + region.width) / atlas.width;
+    const v1 = (region.y + region.height) / atlas.height;
+    const quad = [
+      x0, y0, u0, v0,
+      x1, y0, u1, v0,
+      x0, y1, u0, v1,
+      x0, y1, u0, v1,
+      x1, y0, u1, v0,
+      x1, y1, u1, v1,
+    ];
+    vertices.set(quad, offset);
+    offset += quad.length;
+  }
+
+  const buffer = gl.createBuffer();
+  if (buffer === null) {
+    throw new Error("Serfbound WebGL2 decoded scene could not allocate a vertex buffer.");
+  }
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0.07, 0.1, 0.08, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(program);
+  gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+  gl.uniform1i(textureLocation, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices.subarray(0, offset), gl.STATIC_DRAW);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.enableVertexAttribArray(positionLocation);
+  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
+  gl.enableVertexAttribArray(texcoordLocation);
+  gl.vertexAttribPointer(texcoordLocation, 2, gl.FLOAT, false, 16, 8);
+  gl.drawArrays(gl.TRIANGLES, 0, offset / 4);
+  gl.deleteBuffer(buffer);
+  gl.deleteTexture(texture);
+}
+
+function createTextureProgram(gl: WebGL2RenderingContext): WebGLProgram {
+  const vertexShader = createShader(
+    gl,
+    gl.VERTEX_SHADER,
+    `#version 300 es
+    in vec2 a_position;
+    in vec2 a_texcoord;
+    uniform vec2 u_resolution;
+    out vec2 v_texcoord;
+
+    void main() {
+      vec2 zeroToOne = a_position / u_resolution;
+      vec2 clipSpace = zeroToOne * 2.0 - 1.0;
+      gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+      v_texcoord = a_texcoord;
+    }`,
+  );
+  const fragmentShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    `#version 300 es
+    precision mediump float;
+    in vec2 v_texcoord;
+    uniform sampler2D u_texture;
+    out vec4 outColor;
+
+    void main() {
+      outColor = texture(u_texture, v_texcoord);
+    }`,
+  );
+  const program = gl.createProgram();
+  if (program === null) {
+    throw new Error("Serfbound WebGL2 decoded scene could not allocate a shader program.");
+  }
+
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    const message = gl.getProgramInfoLog(program) ?? "unknown program link error";
+    gl.deleteProgram(program);
+    throw new Error(`Serfbound WebGL2 decoded scene shader failed to link: ${message}`);
+  }
+
+  gl.deleteShader(vertexShader);
+  gl.deleteShader(fragmentShader);
+
+  return program;
 }
 
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {

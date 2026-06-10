@@ -214,6 +214,11 @@ For Serfbound specifically, every implementation story must identify:
   imported `SPAU.PA` bytes into RGBA, ported from
   `Freeserf.Core/Data/DataSourceDos.cs`, with synthetic-fixture CI coverage and
   opt-in real-data checks.
+- **Current decoded render path:** `@serfbound/app` builds decoded render
+  assets from imported archive bytes (terrain triangle composition + runtime
+  texture atlas), renders them through a textured WebGL2 path with authentic
+  placement math, and falls back to the catalog scene for non-decodable
+  archives; exercised in CI by a generated decodable fixture archive.
 - **Current renderer API baseline:** Phase 5 selected a small first-party WebGL2
   renderer as the baseline, with Canvas2D reserved for generated debug/test
   paths and WebGPU deferred as a later accelerator.

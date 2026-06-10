@@ -36,7 +36,7 @@ synthetic triangle scene with decoded game art.
 - [x] Terrain triangles compose from decoded `map_ground` sprites and
   `map_mask_up`/`map_mask_down` masks using the reference mask tables, packed
   into a runtime texture atlas. (SB-10-02)
-- [ ] The browser scene renders decoded terrain, at least one authentic map
+- [x] The browser scene renders decoded terrain, at least one authentic map
   object, and the real flag sprite for built structures when real data is
   imported, with graceful fallback for non-decodable archives. (SB-10-03)
 - [ ] A captured browser screenshot using real local `SPAU.PA` visibly shows
@@ -48,14 +48,16 @@ synthetic triangle scene with decoded game art.
 |---|---|---|---|---|
 | SB-10-01 | Port DOS palette and sprite decoders | done | story-01-dos-sprite-decoders.md | evidence-story-01.md |
 | SB-10-02 | Compose terrain triangles into a texture atlas | done | story-02-terrain-composition-atlas.md | evidence-story-02.md |
-| SB-10-03 | Render decoded sprites in the browser scene | in-progress | story-03-decoded-webgl-scene.md | — |
-| SB-10-04 | Prove authentic visuals with real local data | ready | story-04-real-data-visual-proof.md | — |
+| SB-10-03 | Render decoded sprites in the browser scene | done | story-03-decoded-webgl-scene.md | evidence-story-03.md |
+| SB-10-04 | Prove authentic visuals with real local data | in-progress | story-04-real-data-visual-proof.md | — |
 
 ## Where we are
 
-SB-10-01 and SB-10-02 are done: real `SPAU.PA` sprites decode and compose
-into terrain triangles packed in a runtime atlas, verified against real data.
-SB-10-03 (decoded WebGL2 scene) is in progress.
+SB-10-01 through SB-10-03 are done: the browser now decodes imported archive
+bytes, composes terrain, and renders sprite scenes through a textured WebGL2
+path, proven end-to-end in Chromium with a CI-safe decodable fixture and
+spot-checked against real local data. SB-10-04 (real-data visual proof) is in
+progress.
 
 ## Active risks
 
@@ -79,6 +81,10 @@ SB-10-03 (decoded WebGL2 scene) is in progress.
   atlas rule that ground tiles repeat vertically to the 41px max mask height;
   atlas regions are keyed by name instead of the reference's fixed slot
   indirection — SB-10-02.
+- 2026-06-10 — The decoded scene replaces synthetic terrain only when decoding
+  succeeds (palette 3 present and at least one terrain combo composes);
+  otherwise the app keeps the catalog/fixture scene, so the CI-generated
+  minimal archive and all pre-existing browser tests stay valid — SB-10-03.
 
 ## Decisions deferred
 
