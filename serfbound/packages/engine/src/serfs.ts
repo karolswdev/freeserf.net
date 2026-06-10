@@ -4,6 +4,7 @@ import {
   type SerfboundGameWorld,
   type WorldBuilding,
 } from "./game-world.js";
+import { inventoryTakeResource, inventoryTakeSerf, resourceType } from "./inventory.js";
 
 // Serf state machine core ported from Freeserf.Core/Serf.cs (spawning,
 // walking, entering/leaving buildings). Professions, transport, and combat
@@ -113,10 +114,16 @@ export class SerfboundSerfEngine {
     return index === 0 ? null : (this.serfs.get(index) ?? null);
   }
 
-  // Serf.InitGeneric: spawn inside the castle inventory.
+  // Serf.InitGeneric: spawn inside the castle inventory, consuming one of
+  // its stocked generic serfs.
   spawnGenericSerf(player: number, gameTick: number): WorldSerf | null {
     const castlePosition = this.world.players[player]?.castlePosition;
     if (castlePosition === undefined || castlePosition === null) {
+      return null;
+    }
+
+    const inventory = this.world.inventoryForPlayer(player);
+    if (inventory === null || !inventoryTakeSerf(inventory)) {
       return null;
     }
 
@@ -569,14 +576,23 @@ export class SerfboundSerfEngine {
 
     this.#dispatchedBuildings.add(building.index);
 
-    // Materials: planks are resource 7, stones resource 9 (reference order).
+    // Materials come out of the castle inventory's stock.
+    const inventory = this.world.inventoryForPlayer(building.player);
+    if (inventory === null) {
+      return false;
+    }
+
     const [planks, stones] = buildingConstructionCosts[building.type] ?? [0, 0];
     for (let count = 0; count < planks; count += 1) {
-      this.world.dropResource(castleFlag.index, 7, buildingFlag.index);
+      if (inventoryTakeResource(inventory, resourceType.plank)) {
+        this.world.dropResource(castleFlag.index, resourceType.plank, buildingFlag.index);
+      }
     }
 
     for (let count = 0; count < stones; count += 1) {
-      this.world.dropResource(castleFlag.index, 9, buildingFlag.index);
+      if (inventoryTakeResource(inventory, resourceType.stone)) {
+        this.world.dropResource(castleFlag.index, resourceType.stone, buildingFlag.index);
+      }
     }
 
     // Walk the flag route and staff each unmanned road with a transporter.

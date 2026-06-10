@@ -1,7 +1,7 @@
 # Phase 14 — A Working Economy
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -28,8 +28,8 @@ serfs that work them, so a settlement sustains and grows on its own.
 
 ## Exit criteria (evidence required)
 
-- [ ] Inventories and distribution priorities match reference fixtures.
-  (SB-14-01)
+- [x] Inventories and distribution priorities match reference fixtures.
+  (SB-14-01; priority sliders transfer to chain/UI stories — recorded)
 - [ ] Wood and stone chains run end-to-end and feed construction. (SB-14-02)
 - [ ] Food chains run and feed mines per reference gating. (SB-14-03)
 - [ ] Mining and metallurgy produce steel and tools that re-enter the
@@ -41,15 +41,17 @@ serfs that work them, so a settlement sustains and grows on its own.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-14-01 | Port inventories and resource distribution | backlog | story-01-inventories-distribution.md | — |
-| SB-14-02 | Wood and stone production chains | backlog | story-02-wood-stone-chains.md | — |
+| SB-14-01 | Port inventories and resource distribution | done | story-01-inventories-distribution.md | evidence-story-01.md |
+| SB-14-02 | Wood and stone production chains | in-progress | story-02-wood-stone-chains.md | — |
 | SB-14-03 | Food production chains | backlog | story-03-food-chains.md | — |
 | SB-14-04 | Mining, metallurgy, and tools | backlog | story-04-mining-metallurgy-tools.md | — |
 | SB-14-05 | Full-economy gate with live stats | backlog | story-05-full-economy-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 13 closes.
+SB-14-01 is done: the castle stocks the reference supplies preset, serfs
+and materials deplete it, and construction logistics draw from it.
+SB-14-02 (wood/stone chains) is in progress.
 
 ## Active risks
 

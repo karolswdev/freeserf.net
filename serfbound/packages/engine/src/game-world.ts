@@ -1,4 +1,5 @@
 import { MapGeometry, type Direction } from "./index.js";
+import { createInventory, type WorldInventory } from "./inventory.js";
 import {
   classicSpiralPattern,
   mapObject,
@@ -220,6 +221,7 @@ export class SerfboundGameWorld {
   readonly objectIndexes: Uint32Array;
   readonly flags = new Map<number, WorldFlag>();
   readonly buildings = new Map<number, WorldBuilding>();
+  readonly inventories = new Map<number, WorldInventory>();
   readonly players: WorldPlayer[];
   #nextFlagIndex = 1;
   #nextBuildingIndex = 1;
@@ -1034,9 +1036,31 @@ export class SerfboundGameWorld {
     this.players[player]!.hasCastle = true;
     this.players[player]!.castlePosition = position;
 
+    // The castle is the player's first inventory (Game.BuildCastle allocates
+    // it with the initial-supplies preset; supplies level 20 matches the
+    // default custom-game setting until game setup options arrive).
+    const inventory = createInventory(
+      this.inventories.size + 1,
+      player,
+      castle.index,
+      flag.index,
+      20,
+    );
+    this.inventories.set(inventory.index, inventory);
+
     this.updateLandOwnership(position);
 
     return castle;
+  }
+
+  inventoryForPlayer(player: number): WorldInventory | null {
+    for (const inventory of this.inventories.values()) {
+      if (inventory.player === player) {
+        return inventory;
+      }
+    }
+
+    return null;
   }
 
   // Serf-driven construction (SB-13-04): the builder's work advances the

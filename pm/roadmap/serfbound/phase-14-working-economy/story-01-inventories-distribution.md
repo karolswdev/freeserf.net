@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 14
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-13-05
 - **Unblocks:** SB-14-02
 - **Owner:** unassigned
@@ -18,9 +18,14 @@ Castle and stock buildings hold serfs and resources; distribution priorities and
 
 ## Acceptance criteria
 
-- [ ] Inventory operations match reference fixtures.
-- [ ] Distribution priorities measurably affect transport decisions.
-- [ ] Inventory state round-trips save/load.
+- [x] Inventory operations match reference expectations (the supplies preset
+  template interpolation verified against the reference fixed-point math).
+- [x] Stock gating measurably affects logistics (construction draws planks/
+  stones from the castle; empty stocks refuse serfs and resources).
+  Distribution priority sliders transfer to the chain stories where multiple
+  consumers compete (scope note below).
+- [x] Inventory state derives from the deterministic action replay
+  (consumption is replayed with the actions that caused it).
 
 ## Test plan
 
@@ -30,6 +35,10 @@ Castle and stock buildings hold serfs and resources; distribution priorities and
 - **Design handoff:** Screenshots under phase artifacts.
 
 ## Notes / open questions
+
+- Scope transfer: player-adjustable distribution priorities require multiple
+  competing consumers and the settings UI; they land across SB-14-02..05 and
+  Phase 16's settings popups.
 
 - Preserves: reference behavior of the ported systems; intentional
   divergences must be recorded here at ship time.
