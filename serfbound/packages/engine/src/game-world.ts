@@ -215,6 +215,24 @@ export class SerfboundGameWorld {
     );
   }
 
+  // Structural compatibility with ClassicMapLandscape so renderers can read
+  // the live world the same way they read a freshly generated landscape.
+  get size(): number {
+    return this.geometry.size;
+  }
+
+  get columns(): number {
+    return this.geometry.columns;
+  }
+
+  get rows(): number {
+    return this.geometry.rows;
+  }
+
+  get tileCount(): number {
+    return this.geometry.tileCount;
+  }
+
   // --- tile access -----------------------------------------------------------
 
   positionAddSpirally(position: number, offset: number): number {

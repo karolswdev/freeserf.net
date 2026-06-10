@@ -30,7 +30,7 @@ with authentic construction sprites.
 ## Exit criteria (evidence required)
 
 - [x] Flags connect into a road graph with reference-equivalent merge/split
-  semantics (SB-12-01); path costs land with SB-12-02.
+  semantics and path costs. (SB-12-01, SB-12-02)
 - [ ] The castle places under original validity rules and claims territory
   with rendered borders. (SB-12-03)
 - [ ] Buildings progress visually from cleared ground to frame to finished
@@ -43,17 +43,17 @@ with authentic construction sprites.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-12-01 | Port the flag and road graph | done | story-01-flag-and-road-graph.md | evidence-story-01.md |
-| SB-12-02 | Port road pathfinding and road-building mode | in-progress | story-02-road-pathfinding-mode.md | — |
-| SB-12-03 | Place the castle and claim territory | backlog | story-03-castle-and-territory.md | — |
+| SB-12-02 | Port road pathfinding and road-building mode | done | story-02-road-pathfinding-mode.md | evidence-story-02.md |
+| SB-12-03 | Place the castle and claim territory | in-progress | story-03-castle-and-territory.md | — |
 | SB-12-04 | Construct buildings with progress sprites | backlog | story-04-building-construction.md | — |
 | SB-12-05 | Found a settlement end-to-end | backlog | story-05-settlement-end-to-end.md | — |
 
 ## Where we are
 
-SB-12-01 is done: the engine has a real game world (paths/owners/objects
-over the generated landscape) with reference flag/road graph semantics
-including split and merge. SB-12-02 (pathfinding + road mode) is in
-progress.
+SB-12-02 is done: the A* pathfinder matches reference walk costs and roads
+render with authentic path masks (slope + terrain selection per
+RenderRoadSegment). Interactive road mode transfers to SB-12-05's build UI.
+SB-12-03 (castle + territory) is in progress.
 
 ## Active risks
 
@@ -69,6 +69,10 @@ progress.
   reference-derived expectations instead of Python-mirror fixtures; the
   reference graph code's serf branches don't exist yet and are deferred to
   Phase 13 with code markers — SB-12-01.
+- 2026-06-10 — The pathfinder replaces the reference's wall-clock abort with a
+  deterministic node-expansion cap (reproducibility); all 270 path
+  ground/mask combos precompose so roads built mid-game never miss atlas
+  regions — SB-12-02.
 
 ## Decisions deferred
 

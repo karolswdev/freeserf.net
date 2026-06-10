@@ -111,6 +111,17 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
     bytes: concatBytes([spriteHeader(32, 10, -16, -4), fullCoverageRuns(32 * 10, null)]),
   });
 
+  // 27 path masks (230..256) and 10 path grounds (300..309) for roads.
+  for (let mask = 0; mask < 27; mask += 1) {
+    entries.push({
+      index: 230 + mask,
+      bytes: concatBytes([spriteHeader(32, 20), fullCoverageRuns(32 * 20, null)]),
+    });
+  }
+  for (let ground = 0; ground < 10; ground += 1) {
+    entries.push({ index: 300 + ground, bytes: solidSprite(32, 20, 100 + ground * 4) });
+  }
+
   // 16 water wave sprites (map_waves -> entries 630..645), 48x19 transparent.
   for (let wave = 0; wave < 16; wave += 1) {
     entries.push({

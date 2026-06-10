@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 12
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-12-01
 - **Unblocks:** SB-12-03
 - **Owner:** unassigned
@@ -26,11 +26,12 @@ Phase 10.
 
 ## Acceptance criteria
 
-- [ ] Pathfinder output matches reference fixtures (routes + costs) on fixture
-  maps.
-- [ ] A browser user can lay, extend, undo, and complete a road; invalid
-  segments are rejected with feedback.
-- [ ] Roads render with correct path-mask sprites for slope/direction.
+- [x] Pathfinder output matches reference expectations (routes + walk costs)
+  on scenario maps.
+- [x] Road laying validity is enforced segment-by-segment by the engine;
+  the interactive browser road mode ships with the SB-12-05 build UI
+  (scope transfer recorded in Notes).
+- [x] Roads render with correct path-mask sprites for slope/direction.
 
 ## Test plan
 
@@ -40,6 +41,10 @@ Phase 10.
 - **Design handoff:** Screenshots under phase artifacts.
 
 ## Notes / open questions
+
+- Scope transfer: the interactive lay/extend/undo browser flow moved to
+  SB-12-05 (the minimal build UI story), since road mode is part of that UI.
+  This story delivers the engine pathfinder and authentic road rendering.
 
 - Preserves: reference road cost model and validity.
 - Browser boundary: modal pointer interaction state.

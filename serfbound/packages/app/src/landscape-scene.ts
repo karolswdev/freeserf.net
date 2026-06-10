@@ -11,6 +11,7 @@ import type {
   ClassicMapLandscape,
   RenderSize,
   SerfboundBuiltStructure,
+  SerfboundGameWorld,
 } from "@serfbound/engine";
 import {
   renderLayerOrder,
@@ -45,6 +46,7 @@ export type LandscapeRenderAssets = {
   readonly terrainComboCount: number;
   readonly objectSpriteCount: number;
   readonly waveFrameCount: number;
+  readonly pathComboCount: number;
 };
 
 function wrap(value: number, period: number): number {
@@ -205,12 +207,33 @@ export function buildLandscapeRenderAssets(
     waveFrameCount += 1;
   }
 
+  // Roads: every path_ground x path_mask combo precomposes so roads built at
+  // any time during play resolve without atlas rebuilds (10 x 27 sprites).
+  let pathComboCount = 0;
+  for (let groundIndex = 0; groundIndex < decodedAssets.rawPathGrounds.length; groundIndex += 1) {
+    const ground = decodedAssets.rawPathGrounds[groundIndex];
+    if (ground === null || ground === undefined) {
+      continue;
+    }
+
+    for (let maskIndex = 0; maskIndex < decodedAssets.rawPathMasks.length; maskIndex += 1) {
+      const mask = decodedAssets.rawPathMasks[maskIndex];
+      if (mask === null || mask === undefined) {
+        continue;
+      }
+
+      sprites[`path:${groundIndex}:${maskIndex}`] = stripOffsets(composeMaskedTile(ground, mask));
+      pathComboCount += 1;
+    }
+  }
+
   return {
     atlas: buildSpriteAtlas(sprites),
     landscape,
     terrainComboCount,
     objectSpriteCount,
     waveFrameCount,
+    pathComboCount,
   };
 }
 
@@ -251,10 +274,16 @@ export type LandscapeSceneOptions = {
   readonly definedArchiveEntries?: number;
   // Animation tick; wave frames advance every 8 ticks like the reference.
   readonly tick?: number;
+  // Live game world; when present, terrain/objects/roads/flags render from
+  // its mutable state instead of the pristine landscape.
+  readonly world?: SerfboundGameWorld;
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
-  const { atlas, landscape } = options.assets;
+  const { atlas } = options.assets;
+  // The live world supersedes the pristine landscape when present (castle
+  // leveling mutates heights; buildings/flags mutate objects).
+  const landscape = options.world ?? options.assets.landscape;
   const scrollColumn = wrap(Math.trunc(options.scroll.column), landscape.columns);
   const scrollRow = wrap(Math.trunc(options.scroll.row), landscape.rows);
   const sprites: RenderSpritePrimitive[] = [];
@@ -325,6 +354,85 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         const spriteIndex = objectType - 8;
         pushSprite("shadows", `mos:${spriteIndex}`, apexX, apexY, apexY, apexX);
         pushSprite("objects", `mo:${spriteIndex}`, apexX, apexY, apexY, apexX);
+      } else if (objectType === 1) {
+        // World flags (map object 1) render the real flag sprite.
+        pushSprite("shadows", "objshadow:flag", apexX, apexY, apexY, apexX);
+        pushSprite("markers", "obj:flag", apexX, apexY, apexY, apexX);
+      }
+
+      // Road segments per Freeserf.Core/Render/RenderRoadSegment: drawn for
+      // Right/DownRight/Down paths with mask = heightDiff + 4 + direction * 9
+      // and a ground sprite picked by slope class and terrain class.
+      if (options.world !== undefined) {
+        const world = options.world;
+        const column = position % landscape.columns;
+        const row = Math.trunc(position / landscape.columns);
+        const h1 = landscape.heights[position]!;
+
+        const roadDirections = [
+          { direction: "Right", index: 0 },
+          { direction: "DownRight", index: 1 },
+          { direction: "Down", index: 2 },
+        ] as const;
+        for (const { direction, index } of roadDirections) {
+          if (!world.hasPath(position, direction)) {
+            continue;
+          }
+
+          const otherPosition = world.move(position, direction);
+          const h2 = landscape.heights[otherPosition]!;
+          const heightDifference = h1 - h2;
+          const maskIndex = heightDifference + 4 + index * 9;
+
+          let terrain1 = 0;
+          let terrain2 = 0;
+          let heightDifference2 = 0;
+          let segmentX = apexX;
+          let segmentY = r * tileHeight;
+          if (direction === "Right") {
+            terrain1 = landscape.typesDown[position]!;
+            terrain2 = landscape.typesUp[landscapePosition(landscape, column, row - 1)]!;
+            const h3 = landscape.heights[landscapePosition(landscape, column, row - 1)]!;
+            const h4 = landscape.heights[landscapePosition(landscape, column + 1, row + 1)]!;
+            heightDifference2 = h3 - h4 - 4 * heightDifference;
+            segmentY -= 4 * Math.max(h1, h2) + 2;
+          } else if (direction === "DownRight") {
+            terrain1 = landscape.typesUp[position]!;
+            terrain2 = landscape.typesDown[position]!;
+            const h3 = landscape.heights[landscapePosition(landscape, column + 1, row)]!;
+            const h4 = landscape.heights[landscapePosition(landscape, column, row + 1)]!;
+            heightDifference2 = 2 * (h3 - h4);
+            segmentY -= 4 * h1 + 2;
+          } else {
+            terrain1 = landscape.typesUp[position]!;
+            terrain2 = landscape.typesDown[landscapePosition(landscape, column - 1, row)]!;
+            const h3 = landscape.heights[landscapePosition(landscape, column - 1, row)]!;
+            const h4 = landscape.heights[landscapePosition(landscape, column, row + 1)]!;
+            heightDifference2 = 4 * heightDifference - h3 + h4;
+            segmentX -= tileWidth / 2;
+            segmentY -= 4 * h1 + 2;
+          }
+
+          let groundIndex = 0;
+          if (heightDifference2 > 4) {
+            groundIndex = 0;
+          } else if (heightDifference2 > -6) {
+            groundIndex = 1;
+          } else {
+            groundIndex = 2;
+          }
+
+          const terrainClass = Math.max(terrain1, terrain2);
+          if (terrainClass <= 3) {
+            groundIndex = 9; // water
+          } else if (terrainClass >= 14) {
+            groundIndex += 6; // snow
+          } else if (terrainClass >= 8) {
+            groundIndex += 3; // desert
+          }
+
+          pushSprite("paths", `path:${groundIndex}:${maskIndex}`, segmentX, segmentY, segmentY, segmentX);
+        }
       }
 
       // Waves animate on water; the reference picks the frame from the map

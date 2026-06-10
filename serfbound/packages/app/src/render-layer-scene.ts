@@ -54,6 +54,8 @@ export type DecodedRenderAssets = {
   readonly rawMasksDown: readonly (DecodedDosSprite | null)[];
   readonly rawMapObjects: ReadonlyMap<number, DecodedMapObjectSprite>;
   readonly rawWaves: readonly (DecodedDosSprite | null)[];
+  readonly rawPathGrounds: readonly (DecodedDosSprite | null)[];
+  readonly rawPathMasks: readonly (DecodedDosSprite | null)[];
 };
 
 export type RenderColor = readonly [number, number, number, number];
@@ -584,6 +586,16 @@ export function buildDecodedRenderAssets(
     rawWaves.push(decodeSafely(archive, "map_waves", waveIndex));
   }
 
+  const rawPathGrounds: (DecodedDosSprite | null)[] = [];
+  for (let groundIndex = 0; groundIndex < 10; groundIndex += 1) {
+    rawPathGrounds.push(decodeSafely(archive, "path_ground", groundIndex));
+  }
+
+  const rawPathMasks: (DecodedDosSprite | null)[] = [];
+  for (let maskIndex = 0; maskIndex < 27; maskIndex += 1) {
+    rawPathMasks.push(decodeSafely(archive, "path_mask", maskIndex));
+  }
+
   return {
     source: "dos-pa-decoded",
     atlas: buildSpriteAtlas(sprites),
@@ -595,6 +607,8 @@ export function buildDecodedRenderAssets(
     rawMasksDown,
     rawMapObjects,
     rawWaves,
+    rawPathGrounds,
+    rawPathMasks,
   };
 }
 
