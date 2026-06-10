@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 22
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-21-05
 - **Unblocks:** SB-22-02
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,10 +24,11 @@ over the flat world state to detect desync at the exact tick it happens.
 
 ## Acceptance criteria
 
-- [ ] The same seed + action schedule yields identical checksum streams
+- [x] The same seed + action schedule yields identical checksum streams
   across independent runs.
-- [ ] An injected single-field mutation is caught at the exact tick.
-- [ ] Checksum cost stays within the perf guard at gameplay cadence.
+- [x] An injected single-field mutation is caught at the exact tick.
+  (First checksum at/after the mutation; exactness follows the cadence.)
+- [x] Checksum cost stays within the perf guard at gameplay cadence.
 
 ## Test plan
 

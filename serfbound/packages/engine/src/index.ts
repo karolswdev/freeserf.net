@@ -820,3 +820,4 @@ export * from "./missions.js";
 export * from "./ai.js";
 export * from "./dos-savegame.js";
 export * from "./inventory.js";
+export * from "./checksum.js";

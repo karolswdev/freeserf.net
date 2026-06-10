@@ -8,8 +8,9 @@ and Phase 21 closed the launch-review punch list: authentic frame
 chrome, font-shadow readability, native-resolution rendering with
 1x/2x/3x view scales, and touch gestures (see
 [phase-21-presentation-fidelity/final-summary.md](./phase-21-presentation-fidelity/final-summary.md)).
-The remaining post-launch track: multiplayer foundations, online play,
-community/identity, and data breadth/localization.
+The remaining post-launch track: multiplayer foundations (SB-22-01
+determinism checksums shipped), online play, community/identity, and
+data breadth/localization.
 
 ## Vision
 
@@ -111,7 +112,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 19 | First-class browser experience: performance, mobile, PWA | complete | [phase-19-browser-experience](./phase-19-browser-experience/) |
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
-| 22 | Multiplayer foundations: checksums, lockstep, loopback play | scaffolded | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
+| 22 | Multiplayer foundations: checksums, lockstep, loopback play | in progress | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
 | 23 | Online play: WebRTC transport, signaling, resilience | scaffolded | [phase-23-online-play](./phase-23-online-play/) |
 | 24 | Community and identity: profiles, accounts, matchmaking, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
 | 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |

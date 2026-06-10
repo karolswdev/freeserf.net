@@ -1,7 +1,7 @@
 # Phase 22 — Multiplayer Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress — SB-22-01 done.
 
 ## Goal
 
@@ -35,7 +35,7 @@ gate — all provable without a single hosted server.
 
 ## Exit criteria (evidence required)
 
-- [ ] Per-tick checksums are stable across runs and divergence is
+- [x] Per-tick checksums are stable across runs and divergence is
   detected at the exact tick in fixtures. (SB-22-01)
 - [ ] Two simulated peers play one game through the lockstep scheduler
   with matching checksums under latency/jitter schedules. (SB-22-02)
@@ -49,14 +49,20 @@ gate — all provable without a single hosted server.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-22-01 | Determinism checksums and desync detection | backlog | story-01-determinism-checksums.md | — |
+| SB-22-01 | Determinism checksums and desync detection | done | story-01-determinism-checksums.md | evidence-story-01.md |
 | SB-22-02 | Lockstep session core | backlog | story-02-lockstep-session-core.md | — |
 | SB-22-03 | Session wire protocol | backlog | story-03-session-wire-protocol.md | — |
 | SB-22-04 | Two-tab loopback gate | backlog | story-04-two-tab-loopback-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 21 closes.
+SB-22-01 shipped: the materialized game state fingerprints through a
+fixed-order FNV-1a walk (`computeGameChecksum`), identical runs produce
+identical streams, an injected mutation surfaces at its cadence tick
+(`firstChecksumDivergence`), and the cost is negligible. One important
+record: snapshot restores replay the action log but not in-flight serf
+state, so Phase 23 rejoin-resync must replay from tick 0 or ship serf
+serialization first. Next: SB-22-02 lockstep session core.
 
 ## Active risks
 
