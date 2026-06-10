@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 15
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-15-01
 - **Unblocks:** SB-15-03
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ Huts, towers, and fortresses request knights, and occupied buildings project ter
 
 ## Acceptance criteria
 
-- [ ] Occupancy requests/fill match reference fixtures.
-- [ ] Territory growth on occupation matches border fixtures.
-- [ ] Borders re-render correctly on every change.
+- [x] Occupancy requests/fill match reference fixtures.
+- [x] Territory growth on occupation matches border fixtures.
+- [x] Borders re-render correctly on every change.
 
 ## Test plan
 

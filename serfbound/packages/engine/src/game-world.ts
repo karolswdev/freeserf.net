@@ -68,6 +68,43 @@ const militaryBuildingTypes: readonly number[] = [
   buildingType.fortress,
 ];
 
+// Building.UpdateMilitary occupant tables: needed knights by occupation
+// level (rows: max levels 0..4, then the reduced-knight levels 5..9).
+const hutOccupantsFromLevel: readonly number[] = [1, 1, 2, 2, 3, 1, 1, 1, 1, 2];
+const towerOccupantsFromLevel: readonly number[] = [1, 2, 3, 4, 6, 1, 1, 2, 3, 4];
+const fortressOccupantsFromLevel: readonly number[] = [1, 3, 6, 9, 12, 1, 2, 4, 6, 8];
+
+// Building.UpdateMilitary gold caps per military type.
+export function militaryGoldCap(type: BuildingTypeValue): number {
+  if (type === buildingType.hut) return 2;
+  if (type === buildingType.tower) return 4;
+  if (type === buildingType.fortress) return 8;
+  return 0;
+}
+
+// Needed occupants for a military building given the owner's occupation
+// settings and the building's threat level.
+export function militaryKnightsNeeded(
+  building: { type: BuildingTypeValue; threatLevel: number },
+  knightOccupation: readonly number[],
+): number {
+  const maxOccupiedLevel = Math.min(
+    (knightOccupation[building.threatLevel]! >> 4) & 0xf,
+    9,
+  );
+  if (building.type === buildingType.hut) return hutOccupantsFromLevel[maxOccupiedLevel]!;
+  if (building.type === buildingType.tower) return towerOccupantsFromLevel[maxOccupiedLevel]!;
+  if (building.type === buildingType.fortress) {
+    return fortressOccupantsFromLevel[maxOccupiedLevel]!;
+  }
+
+  return 0;
+}
+
+export function isMilitaryBuildingType(type: BuildingTypeValue): boolean {
+  return militaryBuildingTypes.includes(type);
+}
+
 export type FlagPathState = {
   hasPath: boolean;
   water: boolean;
@@ -117,6 +154,11 @@ export type WorldBuilding = {
   // Serf-driven construction state.
   builderTicks: number;
   consumedMaterials: number;
+  // Military occupation: knights garrisoned and in flight, and the
+  // building's threat level (Building.ThreatLevel, 0 = interior).
+  knights: number;
+  requestedKnights: number;
+  threatLevel: number;
 };
 
 // Building.ConstructionInfos material costs: [planks, stones] per type.
@@ -145,6 +187,9 @@ export type WorldPlayer = {
   goldDeposited: number;
   // Player settings.CastleKnightsWanted (reference default).
   castleKnightsWanted: number;
+  // Player settings.KnightOccupation per threat level (reference defaults);
+  // high nibble = max occupied level into the occupants tables.
+  knightOccupation: number[];
 };
 
 export type RoadPlan = {
@@ -256,6 +301,7 @@ export class SerfboundGameWorld {
       knightMorale: 1024,
       goldDeposited: 0,
       castleKnightsWanted: 3,
+      knightOccupation: [0x10, 0x21, 0x32, 0x43],
     }));
     this.#spiralPositions = classicSpiralPattern.map(([x, y]) =>
       this.geometry.position(x & this.geometry.columnMask, y & this.geometry.rowMask),
@@ -962,6 +1008,9 @@ export class SerfboundGameWorld {
       requestedResources: {},
       builderTicks: 0,
       consumedMaterials: 0,
+      knights: 0,
+      requestedKnights: 0,
+      threatLevel: 0,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(building.index, building);
@@ -1031,6 +1080,9 @@ export class SerfboundGameWorld {
       requestedResources: {},
       builderTicks: 0,
       consumedMaterials: 0,
+      knights: 0,
+      requestedKnights: 0,
+      threatLevel: 0,
     };
     this.#nextBuildingIndex += 1;
     this.buildings.set(castle.index, castle);
@@ -1232,9 +1284,9 @@ export class SerfboundGameWorld {
           let militaryType = -1;
           if (building.type === buildingType.castle) {
             militaryType = 2;
-          } else if (building.isDone) {
-            // Reference also requires IsActive (occupied); occupation arrives
-            // in Phase 15 — completed military buildings count here until then.
+          } else if (building.isDone && building.knights > 0) {
+            // Reference IsActive: military buildings project territory only
+            // while occupied by at least one knight.
             if (building.type === buildingType.hut) militaryType = 0;
             else if (building.type === buildingType.tower) militaryType = 1;
             else if (building.type === buildingType.fortress) militaryType = 2;

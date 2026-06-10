@@ -31,7 +31,7 @@ outcomes parity-checked against the reference simulation.
 
 - [x] Weapons/shields and gold morale supply knights per reference rules.
   (SB-15-01)
-- [ ] Military buildings occupy, set territory, and grow borders matching
+- [x] Military buildings occupy, set territory, and grow borders matching
   fixtures. (SB-15-02)
 - [ ] Combat sequences match reference outcome fixtures; fights animate with
   authentic sprites. (SB-15-03)
@@ -43,17 +43,17 @@ outcomes parity-checked against the reference simulation.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-15-01 | Arm and recruit knights | done | story-01-arm-and-recruit-knights.md | evidence-story-01.md |
-| SB-15-02 | Military occupation and border growth | backlog | story-02-occupation-border-growth.md | — |
+| SB-15-02 | Military occupation and border growth | done | story-02-occupation-border-growth.md | evidence-story-02.md |
 | SB-15-03 | Port combat resolution with parity fixtures | backlog | story-03-combat-resolution-parity.md | — |
 | SB-15-04 | Capture, defeat, and game over | backlog | story-04-capture-defeat-game-over.md | — |
 
 ## Where we are
 
-SB-15-01 is done: the weaponsmith forges swords and free shields from
-coal + steel, knight morale follows the reference gold formula, and the
-castle recruits its wanted knight stock (generic serf + sword + shield),
-all live in the browser military summary. SB-15-02 (occupation and border
-growth) is next.
+SB-15-02 is done: huts, towers, and fortresses request knights per the
+reference occupant tables, knights walk the roads to garrison, the first
+arrival activates the post and grows the borders through the influence
+tables, and gold bars route to occupied posts feeding morale. SB-15-03
+(combat resolution parity) is next.
 
 ## Active risks
 

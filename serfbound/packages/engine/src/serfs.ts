@@ -1,6 +1,9 @@
 import type { Direction } from "./index.js";
 import {
   buildingConstructionCosts,
+  isMilitaryBuildingType,
+  militaryGoldCap,
+  militaryKnightsNeeded,
   type SerfboundGameWorld,
   type WorldBuilding,
 } from "./game-world.js";
@@ -59,6 +62,7 @@ const productConsumers: Readonly<Record<number, readonly number[]>> = {
   10: [18], // iron ore -> steel smelter
   13: [23], // gold ore -> gold smelter
   11: [19, 20], // steel -> toolmaker, weaponsmith
+  14: [11, 21, 22], // gold bars -> occupied huts, towers, fortresses
 };
 
 // Mine building type -> [deposit mineral value, ore resource value].
@@ -142,6 +146,9 @@ export type WorldSerf = {
   workPhase: number;
   workCounter: number;
   workTargetPosition: number;
+  // Knight assignment: the military building this knight garrisons.
+  isKnight: boolean;
+  garrisonTargetIndex: number;
 };
 
 export class SerfboundSerfEngine {
@@ -201,9 +208,32 @@ export class SerfboundSerfEngine {
       workPhase: 0,
       workCounter: 0,
       workTargetPosition: -1,
+      isKnight: false,
+      garrisonTargetIndex: 0,
     };
     this.#nextSerfIndex += 1;
     this.serfs.set(serf.index, serf);
+    return serf;
+  }
+
+  // Spawn a knight from the inventory's recruited knight stock.
+  spawnKnightSerf(player: number, gameTick: number): WorldSerf | null {
+    const inventory = this.world.inventoryForPlayer(player);
+    if (inventory === null || inventory.knights <= 0) {
+      return null;
+    }
+
+    // Borrow the generic spawn path, then restore the generic pool the
+    // knight did not consume (knights were already promoted out of it).
+    inventory.genericSerfs += 1;
+    const serf = this.spawnGenericSerf(player, gameTick);
+    if (serf === null) {
+      inventory.genericSerfs -= 1;
+      return null;
+    }
+
+    inventory.knights -= 1;
+    serf.isKnight = true;
     return serf;
   }
 
@@ -365,6 +395,25 @@ export class SerfboundSerfEngine {
               serf.workPhase = 0;
               serf.workCounter = 0;
               serf.counter = 0;
+              return;
+            }
+          }
+
+          // Knights take their garrison post; the first knight activates
+          // the building and its territory (reference knight occupation).
+          if (serf.garrisonTargetIndex !== 0 && flag.buildingIndex === serf.garrisonTargetIndex) {
+            const post = this.world.buildings.get(serf.garrisonTargetIndex);
+            if (post !== undefined && post.isDone) {
+              this.serfIndexes[serf.position] = 0;
+              serf.position = post.position;
+              serf.state = serfState.idleInStock;
+              serf.garrisonTargetIndex = 0;
+              post.requestedKnights = Math.max(0, post.requestedKnights - 1);
+              post.knights += 1;
+              if (post.knights === 1) {
+                this.world.updateLandOwnership(post.position);
+              }
+
               return;
             }
           }
@@ -681,6 +730,49 @@ export class SerfboundSerfEngine {
       const wanted = this.world.players[inventory.player]?.castleKnightsWanted ?? 0;
       while (inventory.knights < wanted && inventoryPromoteSerfToKnight(inventory)) {
         // Promotion consumed a sword, a shield, and a generic serf.
+      }
+    }
+
+    // Building.UpdateMilitary: completed military buildings request knights
+    // up to their occupation level; knights walk the roads to their post.
+    for (const building of this.world.buildings.values()) {
+      if (!building.isDone || !isMilitaryBuildingType(building.type)) {
+        continue;
+      }
+
+      const player = this.world.players[building.player];
+      const inventory = this.world.inventoryForPlayer(building.player);
+      if (player === undefined || player.castlePosition === null || inventory === null) {
+        continue;
+      }
+
+      const needed = militaryKnightsNeeded(building, player.knightOccupation);
+      if (building.knights + building.requestedKnights >= needed) {
+        continue;
+      }
+
+      const castleFlag = this.world.flagAt(this.world.move(player.castlePosition, "DownRight"));
+      const buildingFlag = this.world.flags.get(building.flagIndex);
+      if (castleFlag === null || buildingFlag === undefined) {
+        continue;
+      }
+
+      if (
+        castleFlag.index !== buildingFlag.index &&
+        this.#directionToward(castleFlag.index, buildingFlag.index) === null
+      ) {
+        continue;
+      }
+
+      while (building.knights + building.requestedKnights < needed) {
+        const knight = this.spawnKnightSerf(building.player, gameTick);
+        if (knight === null) {
+          break;
+        }
+
+        knight.garrisonTargetIndex = building.index;
+        building.requestedKnights += 1;
+        this.callOutSerf(knight, buildingFlag.index, gameTick);
       }
     }
   }
@@ -1009,11 +1101,24 @@ export class SerfboundSerfEngine {
     const consumerTypes = productConsumers[product];
     if (consumerTypes !== undefined) {
       for (const consumer of this.world.buildings.values()) {
+        if (!consumer.isDone || !consumerTypes.includes(consumer.type)) {
+          continue;
+        }
+
+        // Military demand: gold goes only to occupied posts, capped at the
+        // reference per-type gold stock (hut 2, tower 4, fortress 8).
+        let stockCap = 4;
+        if (isMilitaryBuildingType(consumer.type)) {
+          if (consumer.knights === 0) {
+            continue;
+          }
+
+          stockCap = militaryGoldCap(consumer.type);
+        }
+
         if (
-          consumer.isDone &&
-          consumerTypes.includes(consumer.type) &&
           (consumer.deliveredResources[product] ?? 0) +
-            (consumer.requestedResources[product] ?? 0) < 4 &&
+            (consumer.requestedResources[product] ?? 0) < stockCap &&
           this.#directionToward(building.flagIndex, consumer.flagIndex) !== null
         ) {
           destination = consumer.flagIndex;
