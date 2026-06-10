@@ -17,6 +17,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "npm run test:ci",
     "test:browser": "npm run build:web && playwright test",
+    "test:compatibility": "node -e \"require('fs').rmSync('../pm/roadmap/serfbound/phase-8-browser-hardening/artifacts/story-04-browser-compatibility-report.json', { force: true })\" && npm run build:web && playwright test --config=playwright.compatibility.config.ts",
     "test:ci": "npm run test:unit && npm run test:browser",
     "test:unit": "npm run build && node --test tests/ci/*.test.mjs",
     "test:local:assets": "node scripts/test-local-assets.mjs"

@@ -157,6 +157,7 @@ h1 {
 }
 
 .import-input:focus-visible + .primary-action,
+.import-control:focus-visible,
 .secondary-action:focus-visible,
 .primary-action:focus-visible {
   outline: 3px solid rgba(215, 236, 242, 0.72);

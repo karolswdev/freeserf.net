@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-09.
 
-**Status:** in progress.
+**Status:** complete.
 
 ## Goal
 
@@ -32,9 +32,9 @@ recovery.
 - [x] Main-thread and worker strategy is documented and implemented or
   explicitly deferred.
 - [x] Persistence survives reloads and has recovery/reset behavior.
-- [ ] Browser compatibility matrix is documented with at least Chrome, Firefox,
+- [x] Browser compatibility matrix is documented with at least Chrome, Firefox,
   Safari/WebKit, and mobile Safari/Chrome positions.
-- [ ] Accessibility basics are verified for keyboard, focus, contrast, and
+- [x] Accessibility basics are verified for keyboard, focus, contrast, and
   reduced-motion expectations where applicable.
 
 ## Story status
@@ -44,19 +44,18 @@ recovery.
 | SB-8-01 | Establish performance budgets | done | story-01-performance-budgets.md | evidence-story-01.md |
 | SB-8-02 | Decide worker and threading model | done | story-02-worker-threading-model.md | evidence-story-02.md |
 | SB-8-03 | Harden persistence recovery | done | story-03-persistence-recovery.md | evidence-story-03.md |
-| SB-8-04 | Verify browser compatibility | ready | story-04-browser-compatibility.md | — |
+| SB-8-04 | Verify browser compatibility | done | story-04-browser-compatibility.md | evidence-story-04.md |
 
 ## Where we are
 
-Phase 8 is in progress. SB-8-01 added a repeatable performance measurement
-script, explicit first-slice budgets, and a local Chromium baseline for
-simulation tick, browser frame cadence, import, save, and reload/load timings.
-SB-8-02 used that baseline to choose a main-thread-first browser runtime for
-the current playable slice, with Workers explicitly deferred until measured
-stop signals trip. SB-8-03 hardened persistence recovery around corrupt,
-unsupported-version, failed, and quota-limited browser storage. The next
-responsible move is SB-8-04: verify browser compatibility across the required
-desktop and mobile browser positions.
+Phase 8 is complete. SB-8-01 added a repeatable performance measurement script
+and first-slice budgets. SB-8-02 chose a main-thread-first browser runtime with
+Workers explicitly deferred until measured stop signals trip. SB-8-03 hardened
+persistence recovery around corrupt, unsupported-version, failed, and
+quota-limited browser storage. SB-8-04 proved the first playable slice across
+desktop Chromium, Firefox, WebKit, mobile Chrome, and mobile Safari Playwright
+positions, then closed the remaining compatibility and accessibility exit
+criteria. Phase 9 is ready to begin release operations.
 
 ## Active risks
 
@@ -81,6 +80,10 @@ desktop and mobile browser positions.
   imported-data and save records as explicit recoverable errors. `Clear data`
   resets imported data; `Clear save` resets only the local-game save and keeps
   imported data intact — SB-8-03.
+- 2026-06-09 — Browser compatibility baseline passes across desktop Chromium,
+  desktop Firefox, desktop WebKit, mobile Chrome, and mobile Safari Playwright
+  positions. Physical mobile device contradiction remains a Phase 9 release
+  readiness stop signal — SB-8-04.
 
 ## Decisions deferred
 

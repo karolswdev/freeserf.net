@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 8
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-8-01, SB-8-02, SB-8-03
 - **Unblocks:** SB-9-04
 - **Owner:** unassigned
@@ -22,12 +22,12 @@ performance enough to set release expectations.
 
 ## Acceptance criteria
 
-- [ ] Compatibility matrix exists with Chrome, Firefox, Safari/WebKit, and mobile
+- [x] Compatibility matrix exists with Chrome, Firefox, Safari/WebKit, and mobile
   browser positions.
-- [ ] Matrix records renderer, file import, storage, and input status.
-- [ ] Blocking incompatibilities have stop signals or release notes.
-- [ ] At least one automated browser check contributes evidence.
-- [ ] Manual checks include browser/version metadata.
+- [x] Matrix records renderer, file import, storage, and input status.
+- [x] Blocking incompatibilities have stop signals or release notes.
+- [x] At least one automated browser check contributes evidence.
+- [x] Manual checks include browser/version metadata.
 
 ## Test plan
 
@@ -39,4 +39,6 @@ performance enough to set release expectations.
 
 ## Notes / open questions
 
-Compatibility can be scoped. It cannot be guessed.
+Compatibility is scoped to the first playable slice. Mobile positions are
+Playwright device emulations; physical-device contradictions are a Phase 9
+release-readiness stop signal.

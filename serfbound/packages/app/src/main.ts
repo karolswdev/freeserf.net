@@ -204,6 +204,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           data-testid="data-import-input"
           type="file"
           accept=".PA,.pa"
+          tabindex="-1"
         />
         <button
           class="secondary-action"
@@ -229,7 +230,13 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           type="button"
           disabled
         >Load game</button>
-        <label class="secondary-action" for="data-import">Import data</label>
+        <label
+          class="secondary-action import-control"
+          data-testid="data-import-control"
+          for="data-import"
+          role="button"
+          tabindex="0"
+        >Import data</label>
         <button
           class="secondary-action"
           data-testid="clear-save-button"
@@ -323,6 +330,20 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         renderGeneratedScene,
       );
     }
+  });
+
+  const importControl = root.querySelector<HTMLElement>("[data-testid='data-import-control']");
+  if (importControl === null) {
+    throw new Error("Serfbound shell import control did not mount.");
+  }
+
+  importControl.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    input.click();
   });
 
   const resetButton = root.querySelector<HTMLButtonElement>("[data-testid='data-reset-button']");

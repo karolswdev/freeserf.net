@@ -1,6 +1,7 @@
 # Phase 9 — Release Operations
 
 **Last updated:** 2026-06-09.
+**Status:** in progress.
 
 ## Goal
 
@@ -37,15 +38,17 @@ Package, document, and operate Serfbound as a maintainable browser product.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-9-01 | Add release CI checks | backlog | story-01-release-ci-checks.md | — |
+| SB-9-01 | Add release CI checks | ready | story-01-release-ci-checks.md | — |
 | SB-9-02 | Define static hosting release path | backlog | story-02-static-hosting-release-path.md | — |
 | SB-9-03 | Write player and developer docs | backlog | story-03-player-developer-docs.md | — |
 | SB-9-04 | Run release readiness review | backlog | story-04-release-readiness-review.md | — |
 
 ## Where we are
 
-Phase 9 is not started. It should only begin once Phase 8 has hardening
-evidence.
+Phase 9 is in progress. Phase 8 is complete with performance budgets,
+worker/threading decision, persistence recovery, browser compatibility matrix,
+and accessibility-basics evidence. The next responsible move is SB-9-01: add
+release CI checks that run without local original assets.
 
 ## Active risks
 

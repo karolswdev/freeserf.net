@@ -1,8 +1,8 @@
 # Serfbound — Roadmap
 
 **Last updated:** 2026-06-09.
-**Current phase:** [phase-8-browser-hardening](./phase-8-browser-hardening/current-phase-status.md)
-**Status:** Phase 0 through Phase 7 complete; Phase 8 in progress.
+**Current phase:** [phase-9-release-operations](./phase-9-release-operations/current-phase-status.md)
+**Status:** Phase 0 through Phase 8 complete; Phase 9 in progress.
 
 ## Vision
 
@@ -90,8 +90,8 @@ and either prove the new behavior intentionally or defer the decision.
 | 5 | Build the map renderer, projection model, and visual asset path | complete | [phase-5-renderer-projection](./phase-5-renderer-projection/) |
 | 6 | Build browser input, UI shell, and game interaction loops | complete | [phase-6-ui-input-shell](./phase-6-ui-input-shell/) |
 | 7 | Ship the first local playable vertical slice | complete | [phase-7-playable-slice](./phase-7-playable-slice/) |
-| 8 | Harden persistence, performance, workers, and browser constraints | in-progress | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
-| 9 | Package, document, and operate Serfbound as a browser product | planning | [phase-9-release-operations](./phase-9-release-operations/) |
+| 8 | Harden persistence, performance, workers, and browser constraints | complete | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
+| 9 | Package, document, and operate Serfbound as a browser product | in-progress | [phase-9-release-operations](./phase-9-release-operations/) |
 
 ## Delivery Gates
 
@@ -247,6 +247,12 @@ For Serfbound specifically, every implementation story must identify:
   imported-data reset, corrupt save reset without losing imported data, and
   quota/write error UI feedback. Player-facing troubleshooting lives in
   `phase-8-browser-hardening/persistence-recovery-guide.md`.
+- **Current browser compatibility proof:** Phase 8 compatibility tests cover
+  desktop Chromium, desktop Firefox, desktop WebKit, mobile Chrome, and mobile
+  Safari Playwright positions for WebGL2 rendering, file import, IndexedDB
+  storage, pointer/touch-style input, keyboard focus, contrast, and
+  reduced-motion state. See
+  `phase-8-browser-hardening/browser-compatibility-matrix.md`.
 
 ## Glossary
 

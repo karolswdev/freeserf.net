@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/browser",
+  testIgnore: "**/compatibility.spec.ts",
   outputDir: "./test-results/browser",
   reporter: [["list"]],
   use: {

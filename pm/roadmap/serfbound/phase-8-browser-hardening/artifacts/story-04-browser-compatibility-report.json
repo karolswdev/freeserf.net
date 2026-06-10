@@ -1,0 +1,112 @@
+[
+  {
+    "project": "desktop-chromium",
+    "browserName": "chromium",
+    "status": "passed",
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+    "platform": "MacIntel",
+    "maxTouchPoints": 0,
+    "renderer": "webgl2",
+    "fileImport": "passed",
+    "indexedDbStorage": "passed",
+    "pointerInput": "passed",
+    "touchPointerInput": "passed",
+    "keyboardFocus": "passed",
+    "contrastMinimumRatio": 8.658921320934834,
+    "reducedMotionPreference": "no-preference",
+    "nonBlankPixels": 902208
+  },
+  {
+    "project": "desktop-firefox",
+    "browserName": "firefox",
+    "status": "passed",
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0.2) Gecko/20100101 Firefox/150.0.2",
+    "platform": "MacIntel",
+    "maxTouchPoints": 0,
+    "renderer": "webgl2",
+    "fileImport": "passed",
+    "indexedDbStorage": "passed",
+    "pointerInput": "passed",
+    "touchPointerInput": "passed",
+    "keyboardFocus": "passed",
+    "contrastMinimumRatio": 8.658921320934834,
+    "reducedMotionPreference": "no-preference",
+    "nonBlankPixels": 902208
+  },
+  {
+    "project": "desktop-webkit",
+    "browserName": "webkit",
+    "status": "passed",
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 2
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15",
+    "platform": "MacIntel",
+    "maxTouchPoints": 0,
+    "renderer": "webgl2",
+    "fileImport": "passed",
+    "indexedDbStorage": "passed",
+    "pointerInput": "passed",
+    "touchPointerInput": "passed",
+    "keyboardFocus": "passed",
+    "contrastMinimumRatio": 8.658921320934834,
+    "reducedMotionPreference": "no-preference",
+    "nonBlankPixels": 902208
+  },
+  {
+    "project": "mobile-chrome",
+    "browserName": "chromium",
+    "status": "passed",
+    "viewport": {
+      "width": 412,
+      "height": 839,
+      "deviceScaleFactor": 2.625
+    },
+    "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Mobile Safari/537.36",
+    "platform": "MacIntel",
+    "maxTouchPoints": 1,
+    "renderer": "webgl2",
+    "fileImport": "passed",
+    "indexedDbStorage": "passed",
+    "pointerInput": "passed",
+    "touchPointerInput": "passed",
+    "keyboardFocus": "passed",
+    "contrastMinimumRatio": 8.658921320934834,
+    "reducedMotionPreference": "no-preference",
+    "nonBlankPixels": 151152
+  },
+  {
+    "project": "mobile-safari",
+    "browserName": "webkit",
+    "status": "passed",
+    "viewport": {
+      "width": 393,
+      "height": 659,
+      "deviceScaleFactor": 3
+    },
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Mobile/15E148 Safari/604.1",
+    "platform": "MacIntel",
+    "maxTouchPoints": 0,
+    "renderer": "webgl2",
+    "fileImport": "passed",
+    "indexedDbStorage": "passed",
+    "pointerInput": "passed",
+    "touchPointerInput": "passed",
+    "keyboardFocus": "passed",
+    "contrastMinimumRatio": 8.658921320934834,
+    "reducedMotionPreference": "no-preference",
+    "nonBlankPixels": 114240
+  }
+]
