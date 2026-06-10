@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 23
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-22-04
 - **Unblocks:** SB-23-02
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -28,11 +28,11 @@ tampered moves recoverably.
 
 ## Acceptance criteria
 
-- [ ] Two match instances advance window by window to identical
+- [x] Two match instances advance window by window to identical
   checksums across several alternating windows.
-- [ ] A tampered or rules-invalid move rejects recoverably at apply
+- [x] A tampered or rules-invalid move rejects recoverably at apply
   time; the match state stays consistent.
-- [ ] A match resumes anywhere by replay from tick 0 within a
+- [x] A match resumes anywhere by replay from tick 0 within a
   fixture-asserted time budget.
 
 ## Test plan

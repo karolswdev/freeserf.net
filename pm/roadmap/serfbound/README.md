@@ -13,8 +13,9 @@ BroadcastChannel — zero servers, agreeing state checksums (see
 [phase-22-multiplayer-foundations/final-summary.md](./phase-22-multiplayer-foundations/final-summary.md)).
 The multiplayer track is re-ordered correspondence-first (decision in
 the Phase 23 status doc): async "offline chess" play over the lockstep
-core (23), then identity/challenges/the turn mailbox (24), data breadth
-and localization (25), with realtime WebRTC play as Phase 26.
+core (23 — the turn-window match model shipped), then
+identity/challenges/the turn mailbox (24), data breadth and
+localization (25), with realtime WebRTC play as Phase 26.
 
 ## Vision
 
@@ -117,7 +118,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
 | 21 | Presentation fidelity: frames, text, resolution, gestures | complete | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | complete | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
-| 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | scaffolded | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
+| 23 | Correspondence play: turn windows, recaps, hot-seat/async gate | in progress | [phase-23-correspondence-foundations](./phase-23-correspondence-foundations/) |
 | 24 | Community and identity: profiles, accounts, challenges, mailbox, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |
 | 25 | Data breadth and localization: Amiga evaluation, language tables | scaffolded | [phase-25-data-breadth-localization](./phase-25-data-breadth-localization/) |
 | 26 | Realtime online play: WebRTC transport, signaling, resilience | scaffolded | [phase-26-realtime-online-play](./phase-26-realtime-online-play/) |

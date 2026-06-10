@@ -50,11 +50,26 @@ export type SessionLeaveMessage = {
   readonly reason: string;
 };
 
+// Correspondence play (SB-23-01): one session window's move — the
+// active player's tick-stamped action segment plus the end checksum.
+export type SessionWindowMoveMessage = {
+  readonly type: "window-move";
+  readonly player: number;
+  readonly window: number;
+  readonly endTick: number;
+  readonly endChecksum: number;
+  readonly actions: readonly {
+    readonly tick: number;
+    readonly action: SerfboundWorldAction;
+  }[];
+};
+
 export type SessionMessage =
   | SessionHelloMessage
   | SessionTurnMessage
   | SessionChecksumMessage
-  | SessionLeaveMessage;
+  | SessionLeaveMessage
+  | SessionWindowMoveMessage;
 
 // Decode failures carry a stable reason for recoverable handling; a
 // malformed message must never take the engine loop down.
@@ -90,6 +105,8 @@ export function decodeSessionMessage(text: string): SessionMessage {
       return decodeHello(message);
     case "turn":
       return decodeTurn(message);
+    case "window-move":
+      return decodeWindowMove(message);
     case "checksum": {
       const player = requireInt(message, "player");
       const tick = requireInt(message, "tick");
@@ -244,6 +261,40 @@ function decodeHello(message: Record<string, unknown>): SessionHelloMessage {
     },
     turnTicks,
     inputDelayTurns,
+  };
+}
+
+function decodeWindowMove(message: Record<string, unknown>): SessionWindowMoveMessage {
+  const player = requireInt(message, "player");
+  const window = requireInt(message, "window");
+  const endTick = requireInt(message, "endTick");
+  const endChecksum = requireInt(message, "endChecksum");
+  const actions = message["actions"];
+  if (!Array.isArray(actions)) {
+    throw new SessionProtocolError("malformed-field", "window-move.actions must be an array.");
+  }
+
+  for (const stamped of actions) {
+    if (
+      typeof stamped !== "object" ||
+      stamped === null ||
+      !Number.isInteger((stamped as Record<string, unknown>)["tick"]) ||
+      !isSerfboundWorldAction((stamped as Record<string, unknown>)["action"])
+    ) {
+      throw new SessionProtocolError(
+        "malformed-action",
+        "window-move.actions carries a malformed stamped action.",
+      );
+    }
+  }
+
+  return {
+    type: "window-move",
+    player,
+    window,
+    endTick,
+    endChecksum,
+    actions: actions as SessionWindowMoveMessage["actions"],
   };
 }
 

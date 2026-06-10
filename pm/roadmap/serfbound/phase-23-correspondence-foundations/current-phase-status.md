@@ -1,7 +1,7 @@
 # Phase 23 — Correspondence Foundations
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress — SB-23-01 done.
 
 ## Goal
 
@@ -43,7 +43,7 @@ loopback are the gate.
 
 ## Exit criteria (evidence required)
 
-- [ ] A match advances window by window: capture, transfer, trustless
+- [x] A match advances window by window: capture, transfer, trustless
   re-simulation, checksum verification, tamper rejection — all in CI
   fixtures. (SB-23-01)
 - [ ] A window produces an accurate digest and the shell replays the
@@ -57,15 +57,18 @@ loopback are the gate.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-23-01 | Turn-window match model | backlog | story-01-turn-window-match-model.md | — |
+| SB-23-01 | Turn-window match model | done | story-01-turn-window-match-model.md | evidence-story-01.md |
 | SB-23-02 | Window digests and recap replay | backlog | story-02-window-digests-recap.md | — |
 | SB-23-03 | Turn flow and pickup countdown | backlog | story-03-turn-flow-countdown.md | — |
 | SB-23-04 | Async play gate | backlog | story-04-async-play-gate.md | — |
 
 ## Where we are
 
-Scaffolded; starts after Phase 22 closed. This phase encodes the
-correspondence-first reorder decision (see "Decisions made").
+SB-23-01 shipped: `CorrespondenceMatch` plays alternating windows with
+trustless re-simulation, every tamper class rejects with restoration,
+matches resume by replay from tick 0 inside the fixture budget, and
+the `window-move` message rides the session protocol. See
+match-model.md. Next: SB-23-02 digests and recap replay.
 
 ## Active risks
 
