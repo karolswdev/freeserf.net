@@ -26,7 +26,7 @@ Package, document, and operate Serfbound as a maintainable browser product.
 ## Exit criteria (evidence required)
 
 - [x] CI runs build/type checks, unit tests, browser tests, and data-free parity tests.
-- [ ] Release packaging is browser/static-web oriented and contains no .NET or
+- [x] Release packaging is browser/static-web oriented and contains no .NET or
   desktop runtime artifacts.
 - [ ] Player docs explain import, save, reset, troubleshooting, and local asset
   requirements.
@@ -39,16 +39,16 @@ Package, document, and operate Serfbound as a maintainable browser product.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-9-01 | Add release CI checks | done | story-01-release-ci-checks.md | evidence-story-01.md |
-| SB-9-02 | Define static hosting release path | ready | story-02-static-hosting-release-path.md | — |
-| SB-9-03 | Write player and developer docs | backlog | story-03-player-developer-docs.md | — |
+| SB-9-02 | Define static hosting release path | done | story-02-static-hosting-release-path.md | evidence-story-02.md |
+| SB-9-03 | Write player and developer docs | ready | story-03-player-developer-docs.md | — |
 | SB-9-04 | Run release readiness review | backlog | story-04-release-readiness-review.md | — |
 
 ## Where we are
 
-Phase 9 is in progress. SB-9-01 adds a browser-native release CI workflow and
-local `npm run ci:release` command that run without local original assets. The
-next responsible move is SB-9-02: define the static hosting release path and
-inspect the static build artifact.
+Phase 9 is in progress. SB-9-02 defines `serfbound/dist/` as the static release
+artifact, documents hosted-origin import/storage behavior, and verifies the
+artifact under a `/serfbound/` static-hosting mount. The next responsible move
+is SB-9-03: write player and developer docs.
 
 ## Active risks
 
@@ -64,8 +64,12 @@ inspect the static build artifact.
   data-free unit/parity tests, Chromium browser smoke tests, boundary checks,
   static artifact inspection, and the local asset skip path. It does not build
   .NET/desktop deliverables or require `serfbound-local-data/` — SB-9-01.
+- 2026-06-09 — First release packaging is static hosting: publish
+  `serfbound/dist/` to an HTTPS static host, keep original data user-provided via
+  browser file import, cache `index.html` with revalidation, and cache hashed
+  `assets/*` immutably — SB-9-02.
 
 ## Decisions deferred
 
-- Hosting target — resolve in SB-9-02 — default to static hosting if browser
-  import/persistence works client-side.
+- Release documentation split — SB-9-02 owns static hosting mechanics; SB-9-03
+  owns player/developer operational docs.

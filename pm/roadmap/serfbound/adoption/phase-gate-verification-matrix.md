@@ -38,7 +38,7 @@ artifacts, or manual verification notes.
 | 6 | Player intent reaches engine | Pointer/input/UI shell routes valid commands and rejects invalid ones recoverably | Complete |
 | 7 | First playable loop works | Human can import, start, act, save, reload, and resume in browser with evidence | Complete |
 | 8 | Browser constraints are handled | Performance, storage recovery, worker decision, and browser matrix are measured | Complete |
-| 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | In progress; release CI added |
+| 9 | Release is operational | CI, static packaging, docs, compatibility, and release audit pass without forbidden artifacts | In progress; release CI and static hosting added |
 
 ## Evidence Rules By Type
 
@@ -75,5 +75,5 @@ Before marking the whole Serfbound goal complete:
 
 As of 2026-06-09, Phases 0 through 8 are complete and documented with paired
 story evidence plus phase final summaries. Phase 9 is in progress with release
-CI added. The product is not complete. The next gap is SB-9-02: define and
-inspect the static hosting release path.
+CI and static hosting added. The product is not complete. The next gap is
+SB-9-03: write player and developer docs.

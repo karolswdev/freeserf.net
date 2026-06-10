@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 9
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-2-04, SB-9-01
 - **Unblocks:** SB-9-04
 - **Owner:** unassigned
@@ -22,11 +22,11 @@ original assets.
 
 ## Acceptance criteria
 
-- [ ] Static build artifact can be produced.
-- [ ] Artifact contains no original game data and no .NET/desktop runtime.
-- [ ] Hosted-origin behavior for file import and storage is documented.
-- [ ] Cache/update strategy is documented enough for player troubleshooting.
-- [ ] Release path names exact commands.
+- [x] Static build artifact can be produced.
+- [x] Artifact contains no original game data and no .NET/desktop runtime.
+- [x] Hosted-origin behavior for file import and storage is documented.
+- [x] Cache/update strategy is documented enough for player troubleshooting.
+- [x] Release path names exact commands.
 
 ## Test plan
 
@@ -38,5 +38,6 @@ original assets.
 
 ## Notes / open questions
 
-Static hosting is the default unless browser import/storage constraints force a
-different pure-browser deployment model.
+Static hosting is the release path. The artifact is `serfbound/dist/`, built by
+`npm run release:static`, verified by `npm run test:release:static`, and
+documented in `serfbound/docs/static-hosting-release.md`.

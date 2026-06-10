@@ -166,6 +166,11 @@ For Serfbound specifically, every implementation story must identify:
   workspace, runs Node's built-in test runner against committed Phase 1 fixture
   data, builds the static browser shell, and runs the Playwright smoke test
   without `serfbound-local-data/`.
+- **Current static release path:** `npm run release:static` builds and inspects
+  `serfbound/dist/`; `npm run test:release:static` serves the artifact at
+  `/serfbound/`, checks cache headers, imports generated `SPAU.PA`, and proves
+  IndexedDB restore after reload. The release mechanics are documented in
+  `serfbound/docs/static-hosting-release.md`.
 - **Current runtime boundary baseline:**
   `pm/roadmap/serfbound/adoption/runtime-module-boundaries.md`.
 - **Current static shell proof:**

@@ -28,6 +28,8 @@ nvm use
 npm install
 npm run build
 npm run build:web
+npm run release:static
+npm run test:release:static
 npm test
 npm run check:boundaries
 ```
@@ -35,6 +37,12 @@ npm run check:boundaries
 `npm run build` compiles all packages with TypeScript project references.
 `npm run build:web` compiles the package graph and writes a static browser
 artifact to `serfbound/dist/` with Vite.
+`npm run release:static` builds the browser artifact and inspects it for
+forbidden original-data, .NET, native runtime, and desktop packaging output.
+`npm run test:release:static` serves `dist/` from a local static host under
+`/serfbound/`, checks cache headers, imports generated `SPAU.PA` data through
+the browser, and verifies IndexedDB restore after reload. See
+`docs/static-hosting-release.md` for the release path.
 `npm test` runs the default CI-safe test spine. It builds the workspace, uses
 Node's built-in test runner against committed fixtures under
 `pm/roadmap/serfbound/reference-fixtures/ci/`, builds the static browser shell,
