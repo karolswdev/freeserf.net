@@ -201,6 +201,24 @@ type PointerMapInteractionHandlers = {
   readonly onSelection: (interaction: PointerMapInteraction) => void;
 };
 
+// PWA: the offline app shell registers in secure contexts; original game
+// data never flows through the worker (imports live in IndexedDB).
+export function registerServiceWorker(): void {
+  try {
+    if (
+      typeof navigator !== "undefined" &&
+      "serviceWorker" in navigator &&
+      (globalThis.isSecureContext ?? false)
+    ) {
+      void navigator.serviceWorker.register("./sw.js").catch(() => {
+        // Offline support is progressive; registration failures are quiet.
+      });
+    }
+  } catch {
+    // Older browsers simply play online.
+  }
+}
+
 export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions = {}): void {
   const importedArchiveStore =
     options.importedArchiveStore ?? new BrowserIndexedDbImportedArchiveStore();

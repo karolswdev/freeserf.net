@@ -37,7 +37,7 @@ polished first-run experience and real accessibility.
 - [x] The game is playable on a tablet/phone: touch controls, responsive
   authentic UI, device-tested. (SB-19-03; emulated device positions —
   physical-device notes join the launch checklist)
-- [ ] Installable PWA with offline shell; imported data and saves work
+- [x] Installable PWA with offline shell; imported data and saves work
   offline. (SB-19-04)
 - [ ] First-run onboarding guides asset import; keyboard/contrast/motion
   accessibility audited and fixed. (SB-19-05)
@@ -49,15 +49,16 @@ polished first-run experience and real accessibility.
 | SB-19-01 | Performance at scale | done | story-01-performance-at-scale.md | evidence-story-01.md |
 | SB-19-02 | Worker offload decision and implementation | done | story-02-worker-offload.md | evidence-story-02.md |
 | SB-19-03 | Touch and mobile play | done | story-03-touch-mobile-play.md | evidence-story-03.md |
-| SB-19-04 | PWA install and offline shell | backlog | story-04-pwa-offline-shell.md | — |
+| SB-19-04 | PWA install and offline shell | done | story-04-pwa-offline-shell.md | evidence-story-04.md |
 | SB-19-05 | Onboarding, accessibility, and settings | backlog | story-05-onboarding-accessibility.md | — |
 
 ## Where we are
 
-SB-19-03 is done: the authentic chrome scales to 1x on narrow canvases
-and the whole founding flow drives by touch on an iPhone-13 viewport
-(init screen, castle, panel bar, popups). SB-19-04 (PWA and offline
-shell) is next.
+SB-19-04 is done: the app installs as a PWA and plays offline — the
+worker precaches the shell and hashed assets at first visit, original
+data never touches the cache, and the offline e2e boots the imported
+game without a network. SB-19-05 (onboarding and accessibility) closes
+the phase.
 
 ## Active risks
 

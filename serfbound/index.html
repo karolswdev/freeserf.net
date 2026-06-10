@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Serfbound</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#12161a" />
     <link rel="stylesheet" href="/packages/app/src/styles.css" />
   </head>
   <body>
     <div id="app"></div>
     <script type="module">
-      import { mountSerfbound } from "/packages/app/src/main.ts";
+      import { mountSerfbound, registerServiceWorker } from "/packages/app/src/main.ts";
 
       const root = document.querySelector("#app");
       if (!(root instanceof HTMLElement)) {
@@ -17,6 +19,7 @@
       }
 
       mountSerfbound(root);
+      registerServiceWorker();
     </script>
   </body>
 </html>

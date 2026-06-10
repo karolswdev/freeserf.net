@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 19
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-19-03
 - **Unblocks:** SB-19-05
 - **Owner:** unassigned
@@ -18,10 +18,10 @@ An installable app that opens offline - service worker caching the app shell (ne
 
 ## Acceptance criteria
 
-- [ ] Installs as a PWA on desktop and mobile.
-- [ ] Cold-start offline reaches a playable state with imported data.
-- [ ] Updates apply without data loss
-- [ ]  original data never enters caches.
+- [x] Installs as a PWA on desktop and mobile.
+- [x] Cold-start offline reaches a playable state with imported data.
+- [x] Updates apply without data loss
+- [x]  original data never enters caches.
 
 ## Test plan
 

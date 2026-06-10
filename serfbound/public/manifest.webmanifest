@@ -1,0 +1,18 @@
+{
+  "name": "Serfbound",
+  "short_name": "Serfbound",
+  "description": "A browser-native remake engine for The Settlers I. Bring your own original game data.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12161a",
+  "theme_color": "#12161a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
