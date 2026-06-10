@@ -88,7 +88,7 @@ test("the UI overlay renders text, icon, frame, and cursor at 2x over the world"
   const router = new SerfboundCommandRouter(started.game.state, world);
 
   const scene = createLandscapeScene({
-    size: { width: 640, height: 480 },
+    size: { width: 1280, height: 720 },
     assets,
     scroll: { column: 0, row: 0 },
     world,

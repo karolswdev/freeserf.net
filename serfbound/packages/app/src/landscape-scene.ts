@@ -1,4 +1,4 @@
-import { panelBackgroundLayout, panelBarRect } from "./panel-bar.js";
+import { panelBackgroundLayout, panelBarRect, uiScaleFor } from "./panel-bar.js";
 import {
   buildPopupPages,
   minimapInterior,
@@ -783,7 +783,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   // UI chrome overlay (SB-16-01 foundation): decoded font text, an icon,
   // a popup frame piece, and the cursor at 2x integer scale, in screen
   // space above the map (the panel bar and popups build on this layer).
-  const uiScale = 2;
+  const uiScale = uiScaleFor(options.size);
   if (atlas.regions["uif:0"] !== undefined && options.world !== undefined) {
     const inventory = options.world.inventoryForPlayer(0);
     const plankCount = inventory === null ? 0 : inventory.resources[7];

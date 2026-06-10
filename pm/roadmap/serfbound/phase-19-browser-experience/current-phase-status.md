@@ -34,8 +34,9 @@ polished first-run experience and real accessibility.
   budgets met with 10-100x headroom; no optimization warranted, recorded)
 - [x] Worker offload implemented or explicitly rejected with measurements.
   (SB-19-02: rejected — see worker-offload-decision.md)
-- [ ] The game is playable on a tablet/phone: touch controls, responsive
-  authentic UI, device-tested. (SB-19-03)
+- [x] The game is playable on a tablet/phone: touch controls, responsive
+  authentic UI, device-tested. (SB-19-03; emulated device positions —
+  physical-device notes join the launch checklist)
 - [ ] Installable PWA with offline shell; imported data and saves work
   offline. (SB-19-04)
 - [ ] First-run onboarding guides asset import; keyboard/contrast/motion
@@ -47,16 +48,16 @@ polished first-run experience and real accessibility.
 |---|---|---|---|---|
 | SB-19-01 | Performance at scale | done | story-01-performance-at-scale.md | evidence-story-01.md |
 | SB-19-02 | Worker offload decision and implementation | done | story-02-worker-offload.md | evidence-story-02.md |
-| SB-19-03 | Touch and mobile play | backlog | story-03-touch-mobile-play.md | — |
+| SB-19-03 | Touch and mobile play | done | story-03-touch-mobile-play.md | evidence-story-03.md |
 | SB-19-04 | PWA install and offline shell | backlog | story-04-pwa-offline-shell.md | — |
 | SB-19-05 | Onboarding, accessibility, and settings | backlog | story-05-onboarding-accessibility.md | — |
 
 ## Where we are
 
-SB-19-02 is done: worker offload is explicitly rejected with
-measurements (the sim costs 0.002% of the frame; cloning state would cost
-more than the work), with stop-signal thresholds and CI alarms recorded.
-SB-19-03 (touch and mobile play) is next.
+SB-19-03 is done: the authentic chrome scales to 1x on narrow canvases
+and the whole founding flow drives by touch on an iPhone-13 viewport
+(init screen, castle, panel bar, popups). SB-19-04 (PWA and offline
+shell) is next.
 
 ## Active risks
 

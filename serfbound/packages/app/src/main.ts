@@ -65,6 +65,7 @@ import {
   panelButtonAt,
   panelButtonSprites,
   pointInPanelBar,
+  uiScaleFor,
   type PanelBuildPossibility,
 } from "./panel-bar.js";
 import {
@@ -729,8 +730,9 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       // The start screen owns setup-state canvas clicks: seed randomizes,
       // supplies cycle, START begins the seeded custom game.
       if (currentWorld === undefined && initScreenSettings() !== undefined) {
-        const rect = initScreenRect({ width: canvas.width, height: canvas.height }, 2);
-        const row = initScreenRowAt(rect, 2, interaction.screen.x, interaction.screen.y);
+        const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height });
+        const rect = initScreenRect({ width: canvas.width, height: canvas.height }, uiScale);
+        const row = initScreenRowAt(rect, uiScale, interaction.screen.x, interaction.screen.y);
         if (row === "seed" && initMission === undefined) {
           initSeedString = randomSeedString(Math.random);
         } else if (row === "supplies" && initMission === undefined) {
@@ -771,8 +773,9 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       // An open popup owns the pointer above the map: build items place
       // buildings at the selected tile, the flip button cycles pages, the
       // sett rows cycle knight occupation, anywhere else closes.
+      const uiScale = uiScaleFor({ width: canvas.width, height: canvas.height });
       if (currentPopup !== undefined) {
-        const popup = popupRect({ width: canvas.width, height: canvas.height }, 2);
+        const popup = popupRect({ width: canvas.width, height: canvas.height }, uiScale);
         if (!pointInPopup(popup, interaction.screen.x, interaction.screen.y)) {
           setPopup(undefined);
           renderCurrentScene();
@@ -781,7 +784,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
         if (currentPopup.startsWith("build")) {
           const hit = popupBuildItemAt(
-            popup, 2, currentPopup, interaction.screen.x, interaction.screen.y,
+            popup, uiScale, currentPopup, interaction.screen.x, interaction.screen.y,
           );
           if (hit === "flip") {
             const pageIndex = buildPopupPageOrder.indexOf(currentPopup);
@@ -819,7 +822,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
             }
           }
         } else if (currentPopup === "sett") {
-          const toggle = settAudioToggleAt(popup, 2, interaction.screen.x, interaction.screen.y);
+          const toggle = settAudioToggleAt(popup, uiScale, interaction.screen.x, interaction.screen.y);
           if (toggle === "sfx") {
             audioService.sfxMuted = !audioService.sfxMuted;
           } else if (toggle === "music") {
@@ -843,7 +846,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
             syncAudioState();
           }
 
-          const row = settOccupationRowAt(popup, 2, interaction.screen.x, interaction.screen.y);
+          const row = settOccupationRowAt(popup, uiScale, interaction.screen.x, interaction.screen.y);
           const player = currentWorld.players[0];
           if (toggle === null && row !== null && player !== undefined) {
             const cycle = knightOccupationCycle;
@@ -853,7 +856,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         } else if (currentPopup === "map") {
           // Click-to-navigate: center the viewport on the clicked tile.
           const target = minimapTileAt(
-            popup, 2, interaction.screen.x, interaction.screen.y,
+            popup, uiScale, interaction.screen.x, interaction.screen.y,
             currentWorld.columns, currentWorld.rows,
           );
           if (target !== null) {
@@ -865,12 +868,12 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         return true;
       }
 
-      const rect = panelBarRect({ width: canvas.width, height: canvas.height }, 2);
+      const rect = panelBarRect({ width: canvas.width, height: canvas.height }, uiScale);
       if (!pointInPanelBar(rect, interaction.screen.x, interaction.screen.y)) {
         return false;
       }
 
-      const slot = panelButtonAt(rect, 2, interaction.screen.x, interaction.screen.y);
+      const slot = panelButtonAt(rect, uiScale, interaction.screen.x, interaction.screen.y);
       if (slot === 0) {
         // Build: place the castle directly during founding; with a castle
         // standing, the build popup offers the building menu.

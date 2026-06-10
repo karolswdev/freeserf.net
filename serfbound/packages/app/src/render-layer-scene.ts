@@ -28,6 +28,7 @@ import {
   type TypedAssetCatalog,
   type TypedAssetResource,
 } from "@serfbound/assets";
+import { uiScaleFor } from "./panel-bar.js";
 import {
   MapGeometry,
   MapProjectionTransform,
@@ -900,7 +901,7 @@ function createDecodedRenderScene(
   // The game start screen (SB-16-05): the GameInitBox condensed to the
   // options the engine supports, drawn from decoded art at 2x.
   if (initScreen !== undefined && atlas.regions["uif:0"] !== undefined) {
-    const scale = 2;
+    const scale = uiScaleFor(virtualSize);
     const boxWidth = 144 * scale;
     const boxHeight = 128 * scale;
     const boxX = Math.max(0, Math.floor((virtualSize.width - boxWidth) / 2));

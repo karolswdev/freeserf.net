@@ -49,6 +49,12 @@ export const panelBackgroundLayout: readonly (readonly [number, number, number])
   [6, 312, 0],
 ];
 
+// Narrow (mobile) canvases drop the chrome to 1x so the original
+// 320-wide layout still fits.
+export function uiScaleFor(canvas: RenderSize): number {
+  return canvas.width < 700 ? 1 : 2;
+}
+
 export const panelBarWidth = 320;
 export const panelBarHeight = 40;
 export const panelButtonSize = 32;
