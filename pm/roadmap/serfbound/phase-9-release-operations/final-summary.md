@@ -20,7 +20,7 @@ not claim full original gameplay parity.
 | SB-9-01 Add release CI checks | `4d5f8c3`, `da2b39c`, `26718aa` | [evidence-story-01](./evidence-story-01.md) | Added browser-native GitHub Actions release CI and a local `npm run ci:release` gate. |
 | SB-9-02 Define static hosting release path | `12b14dc` | [evidence-story-02](./evidence-story-02.md) | Defined `serfbound/dist/` static hosting, relative asset URLs, cache policy, and subpath-hosting verification. |
 | SB-9-03 Write player and developer docs | `05ff837` | [evidence-story-03](./evidence-story-03.md) | Added operational player/developer docs and docs coverage checks in release CI. |
-| SB-9-04 Run release readiness review | pending | [evidence-story-04](./evidence-story-04.md) | Audited phase gates, release artifact, CI, compatibility, performance, local assets, docs, issue intake, and known limitations. |
+| SB-9-04 Run release readiness review | `4ced835` | [evidence-story-04](./evidence-story-04.md) | Audited phase gates, release artifact, CI, compatibility, performance, local assets, docs, issue intake, and known limitations. |
 
 ## Exit Criteria Audit
 
