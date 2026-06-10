@@ -41,19 +41,19 @@ test("the panel bar docks bottom-center at the reference 320x40 layout", () => {
 test("button sprites follow the reference build possibility and road mode", () => {
   assert.deepEqual(
     panelButtonSprites({ buildPossibility: "castle", roadMode: false }),
-    [5, 8, 9, 11, 13],
+    [5, 8, 10, 12, 14],
   );
   assert.deepEqual(
     panelButtonSprites({ buildPossibility: "large", roadMode: false }),
-    [4, 8, 9, 11, 13],
+    [4, 8, 10, 12, 14],
   );
   assert.deepEqual(
     panelButtonSprites({ buildPossibility: "flag", roadMode: true }),
-    [1, 25, 9, 11, 13],
+    [1, 25, 10, 12, 14],
   );
   assert.deepEqual(
     panelButtonSprites({ buildPossibility: "none", roadMode: false }),
-    [0, 8, 9, 11, 13],
+    [0, 8, 10, 12, 14],
   );
 });
 

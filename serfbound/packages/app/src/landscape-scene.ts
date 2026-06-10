@@ -1,6 +1,8 @@
 import { panelBackgroundLayout, panelBarRect } from "./panel-bar.js";
 import {
   buildPopupPages,
+  minimapInterior,
+  minimapTerrainColors,
   popupBackgroundIcon,
   popupFlipButton,
   popupHeight,
@@ -25,6 +27,7 @@ import {
 } from "@serfbound/assets";
 import type {
   ClassicMapLandscape,
+  MapPoint,
   RenderSize,
   SerfboundBuiltStructure,
   SerfboundGameWorld,
@@ -34,6 +37,7 @@ import {
   type DecodedRenderAssets,
   type FirstRenderLayerScene,
   type RenderLayerKey,
+  type RenderScenePrimitive,
   type RenderSpritePrimitive,
 } from "./render-layer-scene.js";
 
@@ -494,6 +498,8 @@ export type LandscapeSceneOptions = {
   readonly panel?: { readonly buttons: readonly number[] };
   // The open popup, if any (SB-16-03).
   readonly popup?: { readonly kind: PopupKind };
+  // A notification banner in the game font (SB-16-04).
+  readonly notice?: string;
 };
 
 export function createLandscapeScene(options: LandscapeSceneOptions): FirstRenderLayerScene {
@@ -504,6 +510,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
   const scrollColumn = wrap(Math.trunc(options.scroll.column), landscape.columns);
   const scrollRow = wrap(Math.trunc(options.scroll.row), landscape.rows);
   const sprites: RenderSpritePrimitive[] = [];
+  const primitives: RenderScenePrimitive[] = [];
 
   const pushSprite = (
     layer: RenderLayerKey,
@@ -880,6 +887,99 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
         pushPopupText(`THREAT ${threat} LEVEL ${maxLevel}`, 8, row.y);
       });
       pushPopupText(`MORALE ${player?.knightMorale ?? 0}`, 8, 144);
+    } else if (kind === "map") {
+      // The minimap: one colored pixel block per map tile (the reference
+      // terrain palette), with the viewport marked; drawn as color
+      // primitives above the popup chrome.
+      const world = options.world;
+      const fieldX = rect.x + minimapInterior.x * uiScale;
+      const fieldY = rect.y + minimapInterior.y * uiScale;
+      const pixelWidth = (minimapInterior.width * uiScale) / world.columns;
+      const pixelHeight = (minimapInterior.height * uiScale) / world.rows;
+      const pushQuad = (
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        color: readonly [number, number, number, number],
+      ): void => {
+        const corners: [MapPoint, MapPoint, MapPoint, MapPoint] = [
+          { x, y },
+          { x: x + width, y },
+          { x: x + width, y: y + height },
+          { x, y: y + height },
+        ];
+        primitives.push(
+          {
+            layer: "ui",
+            points: [corners[0], corners[1], corners[2]],
+            color,
+            assetRole: "ui.minimap",
+            sortY: y,
+            sortX: x,
+          },
+          {
+            layer: "ui",
+            points: [corners[0], corners[2], corners[3]],
+            color,
+            assetRole: "ui.minimap",
+            sortY: y,
+            sortX: x,
+          },
+        );
+      };
+
+      for (let row = 0; row < world.rows; row += 1) {
+        for (let column = 0; column < world.columns; column += 1) {
+          const position = landscapePosition(world, column, row);
+          const terrain = world.typesUp[position]!;
+          const base = minimapTerrainColors[terrain] ?? [0, 0, 0];
+          let color: [number, number, number, number] = [
+            base[0] / 255,
+            base[1] / 255,
+            base[2] / 255,
+            1,
+          ];
+          if (world.owners[position]! >= 0) {
+            // Owned land brightens toward the player tint.
+            color = [
+              Math.min(1, color[0] * 0.6 + 0.4),
+              color[1] * 0.8,
+              color[2] * 0.8,
+              1,
+            ];
+          }
+
+          pushQuad(
+            fieldX + column * pixelWidth,
+            fieldY + row * pixelHeight,
+            Math.ceil(pixelWidth),
+            Math.ceil(pixelHeight),
+            color,
+          );
+        }
+      }
+
+      // Viewport marker at the current scroll position.
+      pushQuad(
+        fieldX + scrollColumn * pixelWidth,
+        fieldY + scrollRow * pixelHeight,
+        Math.max(2, pixelWidth * 8),
+        Math.max(2, pixelHeight * 5),
+        [1, 1, 1, 0.45],
+      );
+    }
+  }
+
+  // Notification banner: events surface in the game font, top center.
+  if (options.notice !== undefined && atlas.regions["uif:0"] !== undefined) {
+    const noticeWidth = options.notice.length * 8 * uiScale;
+    const noticeX = Math.max(0, Math.floor((options.size.width - noticeWidth) / 2));
+    for (const placement of layoutUiText(options.notice)) {
+      pushUiSprite(
+        sprites, atlas, `uif:${placement.glyphIndex}`,
+        noticeX + placement.x * uiScale, 18 * uiScale, uiScale,
+      );
     }
   }
 
@@ -894,7 +994,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
       order,
       primitiveCount: sortedSprites.filter((sprite) => sprite.layer === key).length,
     })),
-    primitives: [],
+    primitives,
     sprites: sortedSprites,
     atlas,
     tilePrimitiveCount: sortedSprites.filter((sprite) => sprite.layer === "terrain").length,

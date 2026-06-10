@@ -65,6 +65,7 @@ import {
 import {
   buildPopupPageOrder,
   knightOccupationCycle,
+  minimapTileAt,
   pointInPopup,
   popupBuildItemAt,
   popupRect,
@@ -346,6 +347,17 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       root.dataset.serfboundPopup = popup;
     }
   };
+  // Notifications surface game events in the game font until replaced.
+  let currentNotice: string | undefined;
+  let lastDoneBuildingCount = 0;
+  const setNotice = (notice: string | undefined) => {
+    currentNotice = notice;
+    if (notice === undefined) {
+      delete root.dataset.serfboundNotification;
+    } else {
+      root.dataset.serfboundNotification = notice;
+    }
+  };
   // The authentic panel bar's build slot mirrors what the selected tile
   // allows (reference Interface.BuildPossibility, condensed).
   const computeBuildPossibility = (): PanelBuildPossibility => {
@@ -401,6 +413,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       currentBuiltStructures,
       panelButtons,
       currentPopup,
+      currentNotice,
     );
   };
   const applyScroll = (columnDelta: number, rowDelta: number) => {
@@ -452,6 +465,21 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         if (currentSerfEngine !== undefined) {
           currentSerfEngine.update(commandRouter.state.tick);
           syncWorldState(root, currentWorld);
+
+          // Notifications: surface completed buildings and defeat.
+          if (currentWorld !== undefined) {
+            const doneCount = [...currentWorld.buildings.values()].filter(
+              (building) => building.isDone,
+            ).length;
+            if (doneCount > lastDoneBuildingCount && lastDoneBuildingCount > 0) {
+              setNotice("BUILDING COMPLETE");
+            }
+
+            lastDoneBuildingCount = doneCount;
+            if (currentWorld.players[0]?.defeated === true) {
+              setNotice("GAME OVER");
+            }
+          }
         }
 
         root.dataset.serfboundGameTick = String(commandRouter.state.tick);
@@ -600,6 +628,15 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
             const index = cycle.indexOf(player.knightOccupation[row] ?? cycle[0]!);
             player.knightOccupation[row] = cycle[(index + 1) % cycle.length]!;
           }
+        } else if (currentPopup === "map") {
+          // Click-to-navigate: center the viewport on the clicked tile.
+          const target = minimapTileAt(
+            popup, 2, interaction.screen.x, interaction.screen.y,
+            currentWorld.columns, currentWorld.rows,
+          );
+          if (target !== null) {
+            currentScroll = { column: target.column, row: target.row };
+          }
         }
 
         renderCurrentScene();
@@ -628,6 +665,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
         } else if (currentWorld.players[0]?.hasCastle === true) {
           setPopup("buildBasic");
         }
+      } else if (slot === 2) {
+        setPopup("map");
       } else if (slot === 3) {
         setPopup("stats");
       } else if (slot === 4) {
@@ -644,9 +683,6 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           getCommandStateElement(root).textContent = "Build road";
           getCommandDetailElement(root).textContent = "Select the starting flag.";
         }
-      } else if (slot !== null) {
-        // Map/stats/settings popups land with SB-16-03/04.
-        root.dataset.serfboundLastEffect = "panel-popup-pending";
       }
 
       renderCurrentScene();
@@ -1416,6 +1452,7 @@ function renderScene(
   builtStructures: readonly SerfboundBuiltStructure[] = [],
   panelButtons?: readonly number[],
   popup?: PopupKind,
+  notice?: string,
 ): void {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='terrain-preview']");
   if (canvas === null) {
@@ -1435,6 +1472,7 @@ function renderScene(
           ...(serfs === undefined ? {} : { serfs }),
           ...(panelButtons === undefined ? {} : { panel: { buttons: panelButtons } }),
           ...(popup === undefined ? {} : { popup: { kind: popup } }),
+          ...(notice === undefined ? {} : { notice }),
           ...(decodedAssets === undefined
             ? {}
             : { definedArchiveEntries: decodedAssets.definedArchiveEntries }),

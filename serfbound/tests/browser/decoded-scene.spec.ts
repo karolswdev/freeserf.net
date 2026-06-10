@@ -157,7 +157,7 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   const panelButtons = await page
     .locator("#app")
     .getAttribute("data-serfbound-panel-buttons");
-  expect(panelButtons).toMatch(/^\d+,8,9,11,13$/);
+  expect(panelButtons).toMatch(/^\d+,8,10,12,14$/);
   const canvasBox = await canvas.boundingBox();
   if (canvasBox === null) {
     throw new Error("canvas has no bounding box");
@@ -176,7 +176,7 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   );
   await expect(page.locator("#app")).toHaveAttribute(
     "data-serfbound-panel-buttons",
-    /^\d+,25,9,11,13$/,
+    /^\d+,25,10,12,14$/,
   );
   await canvas.click({ position: roadSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-road-mode", "idle");
@@ -192,6 +192,24 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   await canvas.click({ position: buildSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "buildBasic");
   await canvas.click({ position: { x: 30, y: 300 }, force: true });
+  await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
+
+  // The minimap: the map slot opens it and clicking inside navigates the
+  // viewport (the scroll position jumps to the clicked tile).
+  const mapSlot = { x: panelX + (64 + 2 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
+  await canvas.click({ position: mapSlot, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "map");
+  const popupX = Math.max(0, Math.floor((canvasBox.width - 288) / 2));
+  const popupY = Math.max(0, Math.floor((canvasBox.height - 320) / 3));
+  await canvas.click({
+    position: { x: popupX + 16 + 200, y: popupY + 32 + 200 },
+    force: true,
+  });
+  await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-scroll", "0,0");
+  // Navigate back to the origin so later scroll assertions stay valid.
+  await canvas.click({ position: { x: popupX + 16 + 1, y: popupY + 32 + 1 }, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-scroll", "0,0");
+  await canvas.click({ position: { x: 30, y: canvasBox.height - 200 }, force: true });
   await expect(page.locator("#app")).not.toHaveAttribute("data-serfbound-popup", /.+/);
 
   // Connect the lumberjack's flag so builders and materials can reach it;
@@ -216,6 +234,12 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
     "data-serfbound-world-building-done-count",
     "2",
     { timeout: 150_000 },
+  );
+
+  // The completed building surfaced a notification in the game font.
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-notification",
+    "BUILDING COMPLETE",
   );
 
   // The stats updated live: construction logistics drew planks from the

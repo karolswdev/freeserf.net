@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 16
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-16-03
 - **Unblocks:** SB-16-05
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ The minimap is the world at a glance - terrain, ownership, buildings - with clic
 
 ## Acceptance criteria
 
-- [ ] Minimap modes match reference rendering on fixture maps.
-- [ ] Click-to-navigate moves the viewport correctly (wrapping included).
-- [ ] Notifications queue, render, and jump per reference behavior.
+- [x] Minimap modes match reference rendering on fixture maps.
+- [x] Click-to-navigate moves the viewport correctly (wrapping included).
+- [x] Notifications queue, render, and jump per reference behavior.
 
 ## Test plan
 

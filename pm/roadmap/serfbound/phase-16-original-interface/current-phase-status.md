@@ -38,7 +38,7 @@ original.
   game speed. (SB-16-02; stats/settings slots open with their popups)
 - [x] The popup system covers build menus, stats, and settings with original
   layouts. (SB-16-03)
-- [ ] Minimap renders the world, supports click-to-navigate, and
+- [x] Minimap renders the world, supports click-to-navigate, and
   notifications surface events. (SB-16-04)
 - [ ] The start screen handles game setup authentically. (SB-16-05)
 
@@ -49,16 +49,15 @@ original.
 | SB-16-01 | Render decoded UI art: fonts, icons, frames, cursors | done | story-01-ui-art-foundation.md | evidence-story-01.md |
 | SB-16-02 | Build the authentic panel bar | done | story-02-authentic-panel-bar.md | evidence-story-02.md |
 | SB-16-03 | Build the popup system | done | story-03-popup-system.md | evidence-story-03.md |
-| SB-16-04 | Minimap and notifications | backlog | story-04-minimap-notifications.md | — |
+| SB-16-04 | Minimap and notifications | done | story-04-minimap-notifications.md | evidence-story-04.md |
 | SB-16-05 | Authentic game start screen | backlog | story-05-game-start-screen.md | — |
 
 ## Where we are
 
-SB-16-03 is done: the popup system covers the three build-menu pages at
-the reference positions (placing buildings at the selected tile), the
-exact resources box with live counts, and the sett popup cycling knight
-occupation into live player settings — deferred popups are recorded in
-evidence. SB-16-04 (minimap and notifications) is next.
+SB-16-04 is done: the minimap renders the world in the reference palette
+with click-to-navigate and a viewport marker, and notifications surface
+completed buildings and defeat in the game font. SB-16-05 (the start
+screen and temp-panel retirement) closes the phase.
 
 ## Active risks
 

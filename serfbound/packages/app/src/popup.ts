@@ -4,7 +4,7 @@ import type { RenderSize } from "@serfbound/engine";
 // browser-native logic: the reference 144x160 box, the build-menu pages
 // with their exact building positions, and the resources box layout.
 
-export type PopupKind = "buildBasic" | "buildAdv1" | "buildAdv2" | "stats" | "sett";
+export type PopupKind = "buildBasic" | "buildAdv1" | "buildAdv2" | "stats" | "sett" | "map";
 
 export const popupWidth = 144;
 export const popupHeight = 160;
@@ -183,6 +183,61 @@ export const settOccupationRows: readonly { readonly y: number }[] = [
   { y: 88 },
   { y: 120 },
 ];
+
+// --- minimap (UI/Minimap.cs, condensed) ------------------------------------
+
+// The 128x128 minimap pixels sit inside the popup box.
+export const minimapInterior = { x: 8, y: 16, width: 128, height: 128 } as const;
+
+// Terrain colors sampled from the reference Minimap color table, one per
+// terrain type (the per-height shading lands with the full minimap modes).
+export const minimapTerrainColors: readonly (readonly [number, number, number])[] = [
+  [0x00, 0x00, 0xaf], // water0
+  [0x00, 0x00, 0xaf], // water1
+  [0x00, 0x00, 0xaf], // water2
+  [0x00, 0x00, 0xaf], // water3
+  [0x73, 0xb3, 0x43], // grass0
+  [0x6b, 0xab, 0x3b], // grass1
+  [0x63, 0xa3, 0x33], // grass2
+  [0x57, 0x93, 0x27], // grass3
+  [0xef, 0xcf, 0xaf], // desert0
+  [0xe3, 0xbf, 0x9f], // desert1
+  [0xd7, 0xb3, 0x8f], // desert2
+  [0xab, 0x7b, 0x5b], // tundra0
+  [0x9f, 0x6f, 0x4f], // tundra1
+  [0x93, 0x63, 0x43], // tundra2
+  [0xff, 0xff, 0xff], // snow0
+  [0xef, 0xef, 0xef], // snow1
+];
+
+// Which map tile a canvas pixel hits inside the open minimap; null
+// outside the 128x128 pixel field.
+export function minimapTileAt(
+  rect: PopupRect,
+  scale: number,
+  pointX: number,
+  pointY: number,
+  columns: number,
+  rows: number,
+): { column: number; row: number } | null {
+  const fieldX = rect.x + minimapInterior.x * scale;
+  const fieldY = rect.y + minimapInterior.y * scale;
+  const fieldWidth = minimapInterior.width * scale;
+  const fieldHeight = minimapInterior.height * scale;
+  if (
+    pointX < fieldX ||
+    pointX >= fieldX + fieldWidth ||
+    pointY < fieldY ||
+    pointY >= fieldY + fieldHeight
+  ) {
+    return null;
+  }
+
+  return {
+    column: Math.floor(((pointX - fieldX) / fieldWidth) * columns) % columns,
+    row: Math.floor(((pointY - fieldY) / fieldHeight) * rows) % rows,
+  };
+}
 
 export function settOccupationRowAt(
   rect: PopupRect,

@@ -257,9 +257,23 @@ export function renderFirstRenderLayerScene(
 
   if (scene.atlas !== null && scene.sprites.length > 0) {
     renderDecodedSpriteScene(gl, canvas, scene, scene.atlas);
+    // Color primitives draw above the sprites (the minimap overlay).
+    if (scene.primitives.length > 0) {
+      renderColorPrimitives(gl, canvas, scene, false);
+    }
+
     return;
   }
 
+  renderColorPrimitives(gl, canvas, scene, true);
+}
+
+function renderColorPrimitives(
+  gl: WebGL2RenderingContext,
+  canvas: HTMLCanvasElement,
+  scene: FirstRenderLayerScene,
+  clear: boolean,
+): void {
   const program = createProgram(gl);
   const positionLocation = gl.getAttribLocation(program, "a_position");
   const colorLocation = gl.getAttribLocation(program, "a_color");
@@ -288,8 +302,11 @@ export function renderFirstRenderLayerScene(
   }
 
   gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0.07, 0.1, 0.08, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  if (clear) {
+    gl.clearColor(0.07, 0.1, 0.08, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+
   gl.useProgram(program);
   gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);

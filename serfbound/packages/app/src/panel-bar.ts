@@ -121,8 +121,8 @@ export type PanelBarButtonsState = {
 };
 
 // The five slots' panel_button sprite ids for the current game state
-// (reference ButtonTypeFromBuildPossibility; map/stats/sett stay inactive
-// until their popups land in SB-16-03/04).
+// (reference ButtonTypeFromBuildPossibility; map/stats/sett active with
+// their popups).
 export function panelButtonSprites(state: PanelBarButtonsState): number[] {
   let build: number = panelButtonId.buildInactive;
   switch (state.buildPossibility) {
@@ -148,8 +148,8 @@ export function panelButtonSprites(state: PanelBarButtonsState): number[] {
   return [
     build,
     state.roadMode ? panelButtonId.buildRoadStarred : panelButtonId.buildRoad,
-    panelButtonId.mapInactive,
-    panelButtonId.statsInactive,
-    panelButtonId.settInactive,
+    panelButtonId.map,
+    panelButtonId.stats,
+    panelButtonId.sett,
   ];
 }
