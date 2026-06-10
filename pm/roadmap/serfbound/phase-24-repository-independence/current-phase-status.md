@@ -1,7 +1,7 @@
 # Phase 24 — Repository Independence
 
 **Last updated:** 2026-06-10.
-**Status:** in progress — SB-24-01 done.
+**Status:** in progress — SB-24-01..02 done.
 
 ## Goal
 
@@ -44,7 +44,7 @@ The old repository becomes the archive it always was.
 - [x] The extraction and licensing decision record ships: inventory of
   what moves/stays, GPL-3.0 + derivation notice, fresh-history
   rationale. (SB-24-01)
-- [ ] The standalone repository exists and holds the complete
+- [x] The standalone repository exists and holds the complete
   browser-native workspace with standalone docs; the full local gate
   set passes in the export tree. (SB-24-02)
 - [ ] CI and the Pages release path run green in the new repository.
@@ -57,15 +57,17 @@ The old repository becomes the archive it always was.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-24-01 | Extraction and licensing decision record | done | story-01-extraction-licensing.md | evidence-story-01.md |
-| SB-24-02 | Create and populate the standalone repository | backlog | story-02-standalone-repository.md | — |
+| SB-24-02 | Create and populate the standalone repository | done | story-02-standalone-repository.md | evidence-story-02.md |
 | SB-24-03 | CI and Pages in the new repository | backlog | story-03-ci-pages-new-repo.md | — |
 | SB-24-04 | Independence gate and handoff | backlog | story-04-independence-gate.md | — |
 
 ## Where we are
 
-SB-24-01 shipped: the extraction inventory, GPL-3.0 + derivation
-posture, fresh-history strategy, and citation rules are on record
-(extraction-decision.md). Next: SB-24-02 executes the move.
+SB-24-01..02 shipped: https://github.com/karolswdev/serfbound exists —
+public, GPL-3.0 with the derivation notice, the workspace at the root,
+the PMO record aboard, zero .NET, all gates green in the export before
+the push. Historical visual artifacts stay in this archive (recorded
+refinement). Next: SB-24-03 verifies CI and Pages by real runs there.
 
 ## Active risks
 

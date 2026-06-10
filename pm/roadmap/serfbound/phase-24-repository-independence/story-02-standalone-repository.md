@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 24
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-24-01
 - **Unblocks:** SB-24-03
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -26,11 +26,11 @@ export before the first push.
 
 ## Acceptance criteria
 
-- [ ] The repository exists under the recorded name/visibility with
+- [x] The repository exists under the recorded name/visibility with
   LICENSE (GPL-3.0) and the derivation notice in the README.
-- [ ] The full local gate set passes inside the export tree before the
+- [x] The full local gate set passes inside the export tree before the
   push (unit, browser, boundaries, docs, static).
-- [ ] No .NET file exists anywhere in the pushed tree.
+- [x] No .NET file exists anywhere in the pushed tree.
 
 ## Test plan
 
