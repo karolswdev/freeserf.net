@@ -1,8 +1,10 @@
 # Serfbound — Roadmap
 
-**Last updated:** 2026-06-09.
-**Current phase:** [phase-9-release-operations](./phase-9-release-operations/current-phase-status.md)
-**Status:** Phase 0 through Phase 9 complete for the first browser-slice release candidate.
+**Last updated:** 2026-06-10.
+**Current phase:** [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/current-phase-status.md)
+**Status:** Phases 0–9 complete for the infrastructure slice; Phase 10 (decoded
+game art from real `SPAU.PA`) is in progress because the shipped scene is still
+synthetic — see the Phase 10 status doc for the recorded gap.
 
 ## Vision
 
@@ -92,6 +94,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 7 | Ship the first local playable vertical slice | complete | [phase-7-playable-slice](./phase-7-playable-slice/) |
 | 8 | Harden persistence, performance, workers, and browser constraints | complete | [phase-8-browser-hardening](./phase-8-browser-hardening/) |
 | 9 | Package, document, and operate Serfbound as a browser product | complete | [phase-9-release-operations](./phase-9-release-operations/) |
+| 10 | Decode real DOS sprites and render authentic game art in the browser | in progress | [phase-10-authentic-asset-rendering](./phase-10-authentic-asset-rendering/) |
 
 ## Delivery Gates
 
@@ -110,6 +113,9 @@ when the previous phase has evidence:
 - Phase 7 proves the loop is playable.
 - Phase 8 proves it survives browser limits.
 - Phase 9 proves it can be released and maintained.
+- Phase 10 proves imported original data becomes visible, authentic game art —
+  the gate phases 4/5 deferred by stopping at catalog metadata and synthetic
+  rendering.
 
 ## Operating cadence
 
