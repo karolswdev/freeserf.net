@@ -1,7 +1,7 @@
 # Phase 21 — Presentation Fidelity
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress — SB-21-01 done.
 
 ## Goal
 
@@ -36,7 +36,7 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
 
 ## Exit criteria (evidence required)
 
-- [ ] Popups and notifications draw the full four-piece border with inset
+- [x] Popups and notifications draw the full four-piece border with inset
   interiors; init box and panel bar chrome audited against the reference
   definitions. (SB-21-01)
 - [ ] Every UI text draws over its font-shadow glyphs; readability holds
@@ -52,7 +52,7 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-21-01 | Authentic frame chrome | backlog | story-01-authentic-frame-chrome.md | — |
+| SB-21-01 | Authentic frame chrome | done | story-01-authentic-frame-chrome.md | evidence-story-01.md |
 | SB-21-02 | Font shadows and text colors | backlog | story-02-font-shadows-text-colors.md | — |
 | SB-21-03 | High-resolution rendering and view scales | backlog | story-03-high-resolution-rendering.md | — |
 | SB-21-04 | Touch gestures | backlog | story-04-touch-gestures.md | — |
@@ -60,8 +60,10 @@ popup borders, low-contrast text, blurry rendering on high-DPI displays).
 
 ## Where we are
 
-Scaffolded from the launch review punch list; starts after the v0.1.0
-launch record (SB-20-04).
+SB-21-01 shipped: popups and the init box assemble the full four-piece
+Box.cs border with inset interiors, the panel-bar layout audit is pinned
+by test, and real-data captures show the corrected chrome. Next:
+SB-21-02 font shadows and text colors.
 
 ## Active risks
 

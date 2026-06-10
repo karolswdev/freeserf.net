@@ -76,7 +76,13 @@ test("decoded UI art lands in the render assets and the landscape atlas", () => 
   assert.notEqual(assets.atlas.regions["uif:0"], undefined, "font glyph in atlas");
   assert.notEqual(assets.atlas.regions["uii:0"], undefined, "icon in atlas");
   assert.notEqual(assets.atlas.regions["uip:0"], undefined, "panel button in atlas");
+  // All four Box.cs border pieces at their reference sizes (full-height
+  // sides in the landscape atlas; the pre-game atlas crops them).
   assert.notEqual(assets.atlas.regions["uifr:0"], undefined, "frame piece in atlas");
+  assert.equal(assets.atlas.regions["uifr:0"].height, 9, "top bar 144x9");
+  assert.equal(assets.atlas.regions["uifr:1"].height, 7, "bottom bar 144x7");
+  assert.equal(assets.atlas.regions["uifr:2"].height, 144, "left side 8x144");
+  assert.equal(assets.atlas.regions["uifr:3"].width, 8, "right side 8x144");
   assert.notEqual(assets.atlas.regions["uic"], undefined, "cursor in atlas");
 });
 

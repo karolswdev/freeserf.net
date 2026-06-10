@@ -29,6 +29,8 @@ import {
   type TypedAssetResource,
 } from "@serfbound/assets";
 import { uiScaleFor } from "./panel-bar.js";
+import { initBoxHeight, initBoxWidth } from "./init-screen.js";
+import { popupBorderLayout, popupBorderSize } from "./popup.js";
 import {
   MapGeometry,
   MapProjectionTransform,
@@ -758,6 +760,14 @@ export function buildDecodedRenderAssets(
     offsetX: 0,
     offsetY: 0,
   });
+  const cropSpriteHeight = (sprite: DecodedDosSprite, height: number): DecodedDosSprite => {
+    const rows = Math.min(height, sprite.height);
+    return {
+      ...sprite,
+      height: rows,
+      rgba: sprite.rgba.slice(0, sprite.width * rows * 4),
+    };
+  };
   rawFontGlyphs.forEach((glyph, index) => {
     if (glyph !== null) {
       sprites[`uif:${index}`] = zeroAnchored(glyph);
@@ -768,9 +778,16 @@ export function buildDecodedRenderAssets(
     sprites["uii:310"] = zeroAnchored(backgroundPattern);
   }
 
-  rawPopupFrames.slice(0, 2).forEach((frame, index) => {
+  // The four type-1 border pieces (UI/Box.cs): horizontals 0/1 as-is,
+  // the 144-tall side pieces 2/3 cropped to the condensed init box's
+  // interior height.
+  const initSideHeight = initBoxHeight - popupBorderSize.top - popupBorderSize.bottom;
+  rawPopupFrames.slice(0, 4).forEach((frame, index) => {
     if (frame !== null) {
-      sprites[`uifr:${index}`] = zeroAnchored(frame);
+      sprites[`uifr:${index}`] =
+        index >= 2
+          ? cropSpriteHeight(zeroAnchored(frame), initSideHeight)
+          : zeroAnchored(frame);
     }
   });
   if (rawLogo !== null) {
@@ -917,14 +934,23 @@ function createDecodedRenderScene(
       }
     };
 
-    for (let tileY = 0; tileY < 128; tileY += 16) {
-      for (let tileX = 0; tileX < 144; tileX += 16) {
-        pushUi("uii:310", boxX + tileX * scale, boxY + tileY * scale);
+    // Interior pattern between the borders (the side pieces in this
+    // atlas are pre-cropped to the condensed box's interior height).
+    const interiorWidth = initBoxWidth - popupBorderSize.left - popupBorderSize.right;
+    const interiorHeight = initBoxHeight - popupBorderSize.top - popupBorderSize.bottom;
+    for (let tileY = 0; tileY < interiorHeight; tileY += 16) {
+      for (let tileX = 0; tileX < interiorWidth; tileX += 16) {
+        pushUi(
+          "uii:310",
+          boxX + (popupBorderSize.left + tileX) * scale,
+          boxY + (popupBorderSize.top + tileY) * scale,
+        );
       }
     }
 
-    pushUi("uifr:0", boxX, boxY);
-    pushUi("uifr:1", boxX + (144 - 16) * scale, boxY);
+    for (const piece of popupBorderLayout(initBoxWidth, initBoxHeight)) {
+      pushUi(`uifr:${piece.sprite}`, boxX + piece.x * scale, boxY + piece.y * scale);
+    }
 
     const logoRegion = atlas.regions["uilogo"];
     if (logoRegion !== undefined) {
@@ -939,7 +965,7 @@ function createDecodedRenderScene(
       });
     }
 
-    pushText("SERFBOUND", 36, 8);
+    pushText("SERFBOUND", 36, 10);
     pushText("SEED", 8, 24);
     pushText(initScreen.seedString, 8, 36);
     pushText(`SUPPLIES ${initScreen.initialSupplies}`, 8, 56);

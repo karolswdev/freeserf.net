@@ -4,9 +4,12 @@ import { test } from "node:test";
 import {
   buildDecodedRenderAssets,
   createFirstRenderLayerScene,
+  initBoxHeight,
+  initBoxWidth,
   initScreenRect,
   initScreenRowAt,
   nextSupplies,
+  popupBorderLayout,
   randomSeedString,
 } from "@serfbound/app";
 import { startSerfboundLocalGame, suppliesPresetResources } from "@serfbound/engine";
@@ -52,6 +55,32 @@ test("the init screen draws over the import preview with decoded art", () => {
   const uiSprites = scene.sprites.filter((sprite) => sprite.layer === "ui");
   assert.equal(uiSprites.some((sprite) => sprite.key === "uilogo"), true, "logo drawn");
   assert.equal(uiSprites.some((sprite) => sprite.key === "uii:310"), true, "box background");
+
+  // The four-piece border surrounds the condensed box (sides cropped to
+  // the 112px interior height in the pre-game atlas).
+  const rect = initScreenRect({ width: 1280, height: 720 }, 2);
+  for (const piece of popupBorderLayout(initBoxWidth, initBoxHeight)) {
+    assert.equal(
+      uiSprites.some(
+        (sprite) =>
+          sprite.key === `uifr:${piece.sprite}` &&
+          sprite.x === rect.x + piece.x * 2 &&
+          sprite.y === rect.y + piece.y * 2,
+      ),
+      true,
+      `init border piece ${piece.sprite} placed`,
+    );
+  }
+  assert.equal(decoded.atlas.regions["uifr:2"].height, 112, "side piece cropped to the box");
+
+  // The interior pattern stays between the borders.
+  const pattern = uiSprites.filter((sprite) => sprite.key === "uii:310");
+  assert.equal(pattern.length, 56, "8x7 interior tiles");
+  assert.equal(
+    pattern.every((sprite) => sprite.x >= rect.x + 8 * 2 && sprite.y >= rect.y + 9 * 2),
+    true,
+    "pattern tiles inset by the border",
+  );
   // The seed digits render in the game font (digit glyphs 29..36 for 1..8).
   const digitGlyphs = uiSprites.filter((sprite) => {
     const match = sprite.key.match(/^uif:(\d+)$/);

@@ -4,10 +4,11 @@
 **Current phase:** [21 — Presentation Fidelity](./phase-21-presentation-fidelity/)
 **Status:** Phases 0–20 complete; Serfbound v0.1.0 shipped launch-ready
 (see [phase-20-launch-operations/final-summary.md](./phase-20-launch-operations/final-summary.md)).
-The post-launch track is scaffolded as phases 21–25: presentation
-fidelity from the launch-review punch list, then multiplayer foundations,
-online play, community/identity, and data breadth/localization — turning
-the SB-20-04 post-launch decision record into accountable phases.
+The post-launch track runs as phases 21–25: presentation fidelity from
+the launch-review punch list (SB-21-01 frame chrome shipped), then
+multiplayer foundations, online play, community/identity, and data
+breadth/localization — turning the SB-20-04 post-launch decision record
+into accountable phases.
 
 ## Vision
 
@@ -108,7 +109,7 @@ and either prove the new behavior intentionally or defer the decision.
 | 18 | Missions, classic AI, and original savegames | complete | [phase-18-complete-game](./phase-18-complete-game/) |
 | 19 | First-class browser experience: performance, mobile, PWA | complete | [phase-19-browser-experience](./phase-19-browser-experience/) |
 | 20 | Public launch and live operations | complete | [phase-20-launch-operations](./phase-20-launch-operations/) |
-| 21 | Presentation fidelity: frames, text, resolution, gestures | scaffolded | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
+| 21 | Presentation fidelity: frames, text, resolution, gestures | in progress | [phase-21-presentation-fidelity](./phase-21-presentation-fidelity/) |
 | 22 | Multiplayer foundations: checksums, lockstep, loopback play | scaffolded | [phase-22-multiplayer-foundations](./phase-22-multiplayer-foundations/) |
 | 23 | Online play: WebRTC transport, signaling, resilience | scaffolded | [phase-23-online-play](./phase-23-online-play/) |
 | 24 | Community and identity: profiles, accounts, matchmaking, ladder | scaffolded | [phase-24-community-identity](./phase-24-community-identity/) |

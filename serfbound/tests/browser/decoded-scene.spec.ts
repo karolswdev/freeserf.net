@@ -247,7 +247,7 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   const settSlot = { x: panelX + (64 + 4 * 48) * 2 + 32, y: panelY + 4 * 2 + 32 };
   await canvas.click({ position: settSlot, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-popup", "sett");
-  const musicToggle = { x: popupX + 160, y: popupY + 146 * 2 + 6 };
+  const musicToggle = { x: popupX + 160, y: popupY + 144 * 2 + 6 };
   await canvas.click({ position: musicToggle, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-music-muted", "true");
   const persisted = await page.evaluate(() =>

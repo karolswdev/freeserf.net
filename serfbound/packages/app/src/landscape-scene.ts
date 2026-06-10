@@ -4,11 +4,14 @@ import {
   minimapInterior,
   minimapTerrainColors,
   popupBackgroundIcon,
+  popupBorderLayout,
   popupFlipButton,
   popupHeight,
+  popupInterior,
   popupRect,
   popupWidth,
   resourceStatsLayout,
+  settAudioRowY,
   settOccupationRows,
   type PopupKind,
 } from "./popup.js";
@@ -837,22 +840,27 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
       }
     };
 
-    // Interior: the DiagonalGreen 16x16 pattern tiled over the box.
-    for (let tileY = 0; tileY < popupHeight; tileY += 16) {
-      for (let tileX = 0; tileX < popupWidth; tileX += 16) {
+    // Interior: the DiagonalGreen 16x16 pattern tiled over the 128x144
+    // content area between the borders.
+    for (let tileY = 0; tileY < popupInterior.height; tileY += 16) {
+      for (let tileX = 0; tileX < popupInterior.width; tileX += 16) {
         pushUiSprite(
           sprites, atlas, `uii:${popupBackgroundIcon}`,
-          rect.x + tileX * uiScale, rect.y + tileY * uiScale, uiScale,
+          rect.x + (popupInterior.x + tileX) * uiScale,
+          rect.y + (popupInterior.y + tileY) * uiScale,
+          uiScale,
         );
       }
     }
 
-    // Borders from frame_popup art.
-    pushUiSprite(sprites, atlas, "uifr:0", rect.x, rect.y, uiScale);
-    pushUiSprite(
-      sprites, atlas, "uifr:1",
-      rect.x + (popupWidth - 16) * uiScale, rect.y, uiScale,
-    );
+    // The four frame_popup border pieces (UI/Box.cs type-1 layout); the
+    // 144-tall side sprites fit the 160-tall popup exactly.
+    for (const piece of popupBorderLayout(popupWidth, popupHeight)) {
+      pushUiSprite(
+        sprites, atlas, `uifr:${piece.sprite}`,
+        rect.x + piece.x * uiScale, rect.y + piece.y * uiScale, uiScale,
+      );
+    }
 
     const kind = options.popup.kind;
     if (kind.startsWith("build")) {
@@ -893,7 +901,7 @@ export function createLandscapeScene(options: LandscapeSceneOptions): FirstRende
       pushPopupText(
         `SFX ${audio?.sfxMuted === true ? "OFF" : "ON"} MUSIC ${audio?.musicMuted === true ? "OFF" : "ON"}`,
         8,
-        146,
+        settAudioRowY,
       );
     } else if (kind === "map") {
       // The minimap: one colored pixel block per map tile (the reference

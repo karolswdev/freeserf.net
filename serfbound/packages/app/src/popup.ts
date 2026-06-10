@@ -16,6 +16,37 @@ export type PopupRect = {
   readonly height: number;
 };
 
+// UI/Box.cs Border definitions, type 1 (PopupBox/NotificationBox):
+// frame_popup sprite 0 is the 144x9 top bar, sprite 1 the 144x7 bottom
+// bar, sprites 2/3 the 8x144 left/right sides. Horizontal bars span the
+// full box width; the sides run between them.
+export const popupBorderSize = { left: 8, right: 8, top: 9, bottom: 7 } as const;
+
+export type PopupBorderPiece = {
+  // frame_popup sprite index.
+  readonly sprite: number;
+  readonly x: number;
+  readonly y: number;
+  // Piece height in box pixels; vertical pieces crop the 144-tall side
+  // sprite when the box is shorter than the reference 160.
+  readonly height: number;
+};
+
+export function popupBorderLayout(width: number, height: number): readonly PopupBorderPiece[] {
+  const sideHeight = height - popupBorderSize.top - popupBorderSize.bottom;
+  return [
+    { sprite: 0, x: 0, y: 0, height: popupBorderSize.top },
+    { sprite: 2, x: 0, y: popupBorderSize.top, height: sideHeight },
+    { sprite: 3, x: width - popupBorderSize.right, y: popupBorderSize.top, height: sideHeight },
+    { sprite: 1, x: 0, y: height - popupBorderSize.bottom, height: popupBorderSize.bottom },
+  ];
+}
+
+// The interior between the borders: the reference 128x144 content area
+// the background pattern tiles (content layouts below are box-space,
+// insets already applied, matching the reference draw helpers).
+export const popupInterior = { x: 8, y: 9, width: 128, height: 144 } as const;
+
 // Popups float above the map, centered horizontally, upper third like the
 // original interface layout.
 export function popupRect(canvas: RenderSize, scale: number): PopupRect {
@@ -240,7 +271,9 @@ export function minimapTileAt(
 }
 
 // The sett popup's audio row: SFX on the left half, MUSIC on the right.
-export const settAudioRowY = 146;
+// At 144 the 8px text row stays inside the interior (the bottom border
+// starts at 153).
+export const settAudioRowY = 144;
 
 export function settAudioToggleAt(
   rect: PopupRect,

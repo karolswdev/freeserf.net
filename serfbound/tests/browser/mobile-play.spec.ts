@@ -34,10 +34,15 @@ test("a phone founds a settlement through the authentic UI by touch", async ({ p
   await canvas.tap({ position: { x: initX + 72 * scale, y: initY + 104 * scale + 5 * scale }, force: true });
   await expect(page.getByTestId("game-state")).toHaveText("Running");
 
-  // Found the castle by tapping the map.
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    const x = 40 + (attempt % 6) * Math.floor((box.width - 80) / 6);
-    const y = 80 + Math.floor(attempt / 6) * 60;
+  // Found the castle by tapping the map: probe a grid over the whole
+  // visible map (valid sites are terrain-dependent per generated world).
+  const probeColumns = 7;
+  const probeRows = 8;
+  const probeStepX = Math.floor((box.width - 48) / (probeColumns - 1));
+  const probeStepY = Math.floor((box.height - 130) / (probeRows - 1));
+  for (let attempt = 0; attempt < probeColumns * probeRows; attempt += 1) {
+    const x = 24 + (attempt % probeColumns) * probeStepX;
+    const y = 70 + Math.floor(attempt / probeColumns) * probeStepY;
     await canvas.tap({ position: { x, y }, force: true });
     const hasCastle = await page
       .locator("#app")

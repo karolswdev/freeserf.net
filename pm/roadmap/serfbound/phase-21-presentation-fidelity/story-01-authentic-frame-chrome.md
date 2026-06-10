@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 21
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-20-04
 - **Unblocks:** SB-21-02
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -27,11 +27,14 @@ border thickness.
 
 ## Acceptance criteria
 
-- [ ] Popup borders surround the box on all four sides with the exact
+- [x] Popup borders surround the box on all four sides with the exact
   reference piece sizes and positions.
-- [ ] Popup interiors and content layouts inset by the border thickness;
-  click targets still resolve.
-- [ ] Init box and panel bar chrome match their reference definitions.
+- [x] Popup interiors and content layouts inset by the border thickness;
+  click targets still resolve. (Content layouts were already box-space
+  per the reference draw helpers; the interior pattern now insets.)
+- [x] Init box and panel bar chrome match their reference definitions.
+  (The panel layout audit found the SB-16-02 port already exact; now
+  pinned by test.)
 
 ## Test plan
 

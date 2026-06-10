@@ -57,6 +57,20 @@ test("button sprites follow the reference build possibility and road mode", () =
   );
 });
 
+test("the background layout matches PanelBar.BackgroundLayout exactly", () => {
+  // Freeserf.Core/UI/PanelBar.cs BackgroundLayout, audited piece for
+  // piece (sprite, x, y triplets).
+  assert.deepEqual(panelBackgroundLayout.flat(), [
+    6, 0, 0, 0, 40, 0, 20, 48, 0,
+    7, 64, 0, 8, 64, 36, 21, 96, 0,
+    9, 112, 0, 10, 112, 36, 22, 144, 0,
+    11, 160, 0, 12, 160, 36, 23, 192, 0,
+    13, 208, 0, 14, 208, 36, 24, 240, 0,
+    15, 256, 0, 16, 256, 36, 25, 288, 0,
+    1, 304, 0, 6, 312, 0,
+  ]);
+});
+
 test("the scene renders the panel bar from frame_bottom and panel_button art", () => {
   const decoded = buildDecodedRenderAssets(createDecodableGeneratedPaArchive());
   const started = startSerfboundLocalGame({ data: dataSource });

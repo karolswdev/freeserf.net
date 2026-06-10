@@ -7,7 +7,9 @@ import {
   buildPopupPages,
   createLandscapeScene,
   mapBuildingSprite,
+  popupBorderLayout,
   popupBuildItemAt,
+  popupInterior,
   popupRect,
   resourceStatsLayout,
 } from "@serfbound/app";
@@ -89,14 +91,57 @@ test("popup hit testing finds build items and the flip button", () => {
   assert.equal(popupBuildItemAt(rect, 2, "buildBasic", rect.x + 4, rect.y + 4), null);
 });
 
+test("the popup border assembles the four Box.cs frame pieces", () => {
+  // UI/Box.cs Border definitions, type 1: top 144x9 (sprite 0), left
+  // 8x144 (sprite 2), right 8x144 (sprite 3), bottom 144x7 (sprite 1).
+  const pieces = popupBorderLayout(144, 160);
+  assert.deepEqual(pieces, [
+    { sprite: 0, x: 0, y: 0, height: 9 },
+    { sprite: 2, x: 0, y: 9, height: 144 },
+    { sprite: 3, x: 136, y: 9, height: 144 },
+    { sprite: 1, x: 0, y: 153, height: 7 },
+  ]);
+
+  // The condensed 128-tall init box crops the side pieces.
+  const initPieces = popupBorderLayout(144, 128);
+  assert.equal(initPieces[1].height, 112);
+  assert.equal(initPieces[3].y, 121);
+
+  // The rendered popup places all four pieces around the box.
+  const scene = decodedScene("buildBasic");
+  const uiSprites = scene.sprites.filter((sprite) => sprite.layer === "ui");
+  const rect = popupRect({ width: 1280, height: 720 }, 2);
+  for (const piece of pieces) {
+    assert.equal(
+      uiSprites.some(
+        (sprite) =>
+          sprite.key === `uifr:${piece.sprite}` &&
+          sprite.x === rect.x + piece.x * 2 &&
+          sprite.y === rect.y + piece.y * 2,
+      ),
+      true,
+      `border piece ${piece.sprite} placed`,
+    );
+  }
+});
+
 test("the build popup renders building sprites at the reference layout", () => {
   const scene = decodedScene("buildBasic");
   const uiSprites = scene.sprites.filter((sprite) => sprite.layer === "ui");
   const rect = popupRect({ width: 1280, height: 720 }, 2);
 
-  // The tiled background pattern fills the box.
+  // The tiled background pattern fills the 128x144 interior between the
+  // borders, inset by the border thickness.
   const pattern = uiSprites.filter((sprite) => sprite.key === "uii:310");
-  assert.equal(pattern.length, 90, "9x10 background tiles");
+  assert.equal(pattern.length, 72, "8x9 interior tiles");
+  assert.equal(
+    pattern.every(
+      (sprite) =>
+        sprite.x >= rect.x + popupInterior.x * 2 && sprite.y >= rect.y + popupInterior.y * 2,
+    ),
+    true,
+    "pattern tiles inset by the border",
+  );
 
   // The lumberjack building sprite sits at the reference position.
   const lumberjackKey = `mo:${mapBuildingSprite[2]}`;

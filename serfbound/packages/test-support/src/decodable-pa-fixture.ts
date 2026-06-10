@@ -203,9 +203,12 @@ export function createDecodableGeneratedPaArchive(): Uint8Array {
   }
   // The popup background pattern icon (DiagonalGreen).
   entries.push({ index: 870 + 310, bytes: solidSprite(16, 16, 70) });
-  for (let frame = 0; frame < 4; frame += 1) {
-    entries.push({ index: 660 + frame, bytes: solidSprite(16, 144, 80 + frame * 5) });
-  }
+  // The reference frame_popup piece sizes (UI/Box.cs type 1): top 144x9,
+  // bottom 144x7, left/right sides 8x144.
+  entries.push({ index: 660, bytes: solidSprite(144, 9, 80) });
+  entries.push({ index: 661, bytes: solidSprite(144, 7, 85) });
+  entries.push({ index: 662, bytes: solidSprite(8, 144, 90) });
+  entries.push({ index: 663, bytes: solidSprite(8, 144, 95) });
   for (let button = 0; button < 26; button += 1) {
     entries.push({ index: 1750 + button, bytes: solidSprite(32, 32, 160 + button * 3) });
   }
