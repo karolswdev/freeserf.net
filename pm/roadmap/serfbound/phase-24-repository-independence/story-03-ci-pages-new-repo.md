@@ -2,10 +2,10 @@
 
 - **Project:** serfbound
 - **Phase:** 24
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-24-02
 - **Unblocks:** SB-24-04
-- **Owner:** unassigned
+- **Owner:** Claude
 
 ## Problem
 
@@ -24,11 +24,11 @@ YAML.
 
 ## Acceptance criteria
 
-- [ ] The CI workflow completes green on a real push to the new
+- [x] The CI workflow completes green on a real push to the new
   repository.
-- [ ] The Pages workflow completes green on a real trigger and the
+- [x] The Pages workflow completes green on a real trigger and the
   site serves the build.
-- [ ] No workflow references the old repository's layout.
+- [x] No workflow references the old repository's layout.
 
 ## Test plan
 
