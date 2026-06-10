@@ -63,6 +63,26 @@ test("importing a decodable archive renders the decoded sprite scene", async ({ 
   );
   await canvas.click({ position: { x: initX + 144, y: initY + 56 * 2 + 8 }, force: true });
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-supplies", "35");
+
+  // Campaign selection: cycling the mission row locks the mission seed and
+  // supplies; cycling back to CUSTOM restores the player's choices.
+  const missionRow = { x: initX + 144, y: initY + 86 * 2 + 6 };
+  await canvas.click({ position: missionRow, force: true });
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-mission", "START");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-init-seed",
+    "8667715887436237",
+  );
+  for (let cycles = 0; cycles < 31; cycles += 1) {
+    const current = await page.locator("#app").getAttribute("data-serfbound-init-mission");
+    if (current === "CUSTOM") {
+      break;
+    }
+
+    await canvas.click({ position: missionRow, force: true });
+  }
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-mission", "CUSTOM");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-init-supplies", "35");
   await canvas.click({ position: { x: initX + 144, y: initY + 100 * 2 + 10 }, force: true });
   await expect(page.getByTestId("game-state")).toHaveText("Running");
   await expect(page.locator("#app")).toHaveAttribute(

@@ -816,4 +816,5 @@ export * from "./game-world.js";
 export * from "./pathfinder.js";
 export * from "./world-commands.js";
 export * from "./serfs.js";
+export * from "./missions.js";
 export * from "./inventory.js";

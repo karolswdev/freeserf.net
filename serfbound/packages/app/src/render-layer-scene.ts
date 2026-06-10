@@ -130,6 +130,7 @@ export type FirstRenderLayerSceneOptions = {
     readonly seedString: string;
     readonly initialSupplies: number;
     readonly mapSize: number;
+    readonly mission?: string;
   };
 };
 
@@ -832,6 +833,7 @@ function createDecodedRenderScene(
     readonly seedString: string;
     readonly initialSupplies: number;
     readonly mapSize: number;
+    readonly mission?: string;
   },
 ): FirstRenderLayerScene {
   const { atlas } = decodedAssets;
@@ -941,7 +943,8 @@ function createDecodedRenderScene(
     pushText(initScreen.seedString, 8, 36);
     pushText(`SUPPLIES ${initScreen.initialSupplies}`, 8, 56);
     pushText(`MAP SIZE ${initScreen.mapSize}`, 8, 76);
-    pushText("START", 52, 104);
+    pushText(`MISSION ${initScreen.mission ?? "CUSTOM"}`, 8, 88);
+    pushText("START", 52, 106);
   }
 
   const sortedSprites = sprites.sort(compareSpritePrimitive);

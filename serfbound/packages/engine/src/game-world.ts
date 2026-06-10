@@ -277,6 +277,8 @@ export class SerfboundGameWorld {
   readonly owners: Int8Array;
   // GameInitBox player supplies setting consumed by buildCastle.
   initialSupplies = 20;
+  // Mission per-player supplies (falls back to initialSupplies).
+  playerSupplies: number[] | undefined;
   readonly objectIndexes: Uint32Array;
   readonly flags = new Map<number, WorldFlag>();
   readonly buildings = new Map<number, WorldBuilding>();
@@ -1115,7 +1117,7 @@ export class SerfboundGameWorld {
       player,
       castle.index,
       flag.index,
-      this.initialSupplies,
+      this.playerSupplies?.[player] ?? this.initialSupplies,
     );
     this.inventories.set(inventory.index, inventory);
 

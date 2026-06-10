@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 18
-- **Status:** backlog
+- **Status:** done
 - **Depends on:** SB-17-03
 - **Unblocks:** SB-18-02
 - **Owner:** unassigned
@@ -18,9 +18,9 @@ The original campaign is a list of predefined missions - seeds, player setups, s
 
 ## Acceptance criteria
 
-- [ ] Mission list and parameters match Mission.cs exactly.
-- [ ] Selecting a mission starts the right map, players, and supplies (fixtures).
-- [ ] Start screen flows cover campaign and custom games.
+- [x] Mission list and parameters match Mission.cs exactly.
+- [x] Selecting a mission starts the right map, players, and supplies (fixtures).
+- [x] Start screen flows cover campaign and custom games.
 
 ## Test plan
 

@@ -1,7 +1,7 @@
 # Phase 18 — The Complete Game
 
 **Last updated:** 2026-06-10.
-**Status:** not started.
+**Status:** in progress.
 
 ## Goal
 
@@ -27,7 +27,7 @@ speed/long-session robustness.
 
 ## Exit criteria (evidence required)
 
-- [ ] Campaign missions select and start with correct maps, players, and
+- [x] Campaign missions select and start with correct maps, players, and
   supplies. (SB-18-01)
 - [ ] AI opponents found settlements, build economies, and act militarily,
   matching decision fixtures on seeded runs. (SB-18-02, SB-18-03)
@@ -39,7 +39,7 @@ speed/long-session robustness.
 
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
-| SB-18-01 | Missions and game setup variants | backlog | story-01-missions-and-setup.md | — |
+| SB-18-01 | Missions and game setup variants | done | story-01-missions-and-setup.md | evidence-story-01.md |
 | SB-18-02 | Classic AI foundation | backlog | story-02-classic-ai-foundation.md | — |
 | SB-18-03 | Classic AI economy and military behaviors | backlog | story-03-classic-ai-behaviors.md | — |
 | SB-18-04 | Load original DOS savegames | backlog | story-04-original-savegames.md | — |
@@ -47,7 +47,10 @@ speed/long-session robustness.
 
 ## Where we are
 
-Scaffolded; starts after Phase 17 closes.
+SB-18-01 is done: the 31-mission campaign table is ported exactly, the
+start screen's MISSION row selects and launches missions with the right
+seeds, slots, and per-player supplies, and pinned AI castles found as
+replayable world actions. SB-18-02 (the classic AI foundation) is next.
 
 ## Active risks
 

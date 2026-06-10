@@ -11,6 +11,9 @@ import {
 import {
   buildingType,
   engineBoundary,
+  findSerfboundMission,
+  serfboundMissions,
+  startSerfboundMission,
   restoreSerfboundLocalGame,
   SerfboundCommandRouter,
   startSerfboundLocalGame,
@@ -388,10 +391,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   };
   // The start screen's custom-game choices (GameInitBox settings).
   let startGameNowRef:
-    | ((options: { seedString?: string; initialSupplies?: number }) => void)
+    | ((options: { seedString?: string; initialSupplies?: number; mission?: string }) => void)
     | undefined;
   let initSeedString = randomSeedString(Math.random);
   let initSupplies = 20;
+  let initMission: string | undefined;
   const initScreenSettings = (): InitScreenSettings | undefined => {
     if (
       currentDecodedAssets === undefined ||
@@ -401,9 +405,18 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       return undefined;
     }
 
-    root.dataset.serfboundInitSeed = initSeedString;
-    root.dataset.serfboundInitSupplies = String(initSupplies);
-    return { seedString: initSeedString, initialSupplies: initSupplies, mapSize: 3 };
+    const mission = initMission === undefined ? undefined : findSerfboundMission(initMission);
+    const seedString = mission?.seedString ?? initSeedString;
+    const supplies = mission?.players[0]?.supplies ?? initSupplies;
+    root.dataset.serfboundInitSeed = seedString;
+    root.dataset.serfboundInitSupplies = String(supplies);
+    root.dataset.serfboundInitMission = initMission ?? "CUSTOM";
+    return {
+      seedString,
+      initialSupplies: supplies,
+      mapSize: 3,
+      ...(initMission === undefined ? {} : { mission: initMission }),
+    };
   };
   // Notifications surface game events in the game font until replaced.
   let currentNotice: string | undefined;
@@ -659,12 +672,28 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
       if (currentWorld === undefined && initScreenSettings() !== undefined) {
         const rect = initScreenRect({ width: canvas.width, height: canvas.height }, 2);
         const row = initScreenRowAt(rect, 2, interaction.screen.x, interaction.screen.y);
-        if (row === "seed") {
+        if (row === "seed" && initMission === undefined) {
           initSeedString = randomSeedString(Math.random);
-        } else if (row === "supplies") {
+        } else if (row === "supplies" && initMission === undefined) {
           initSupplies = nextSupplies(initSupplies);
+        } else if (row === "mission") {
+          // Cycle CUSTOM -> the campaign missions -> CUSTOM.
+          const startable = serfboundMissions.filter(
+            (mission) => mission.name !== "PYRDACOR",
+          );
+          if (initMission === undefined) {
+            initMission = startable[0]?.name;
+          } else {
+            const index = startable.findIndex((mission) => mission.name === initMission);
+            initMission = startable[index + 1]?.name;
+          }
         } else if (row === "start") {
-          startGameNowRef?.({ seedString: initSeedString, initialSupplies: initSupplies });
+          if (initMission === undefined) {
+            startGameNowRef?.({ seedString: initSeedString, initialSupplies: initSupplies });
+          } else {
+            startGameNowRef?.({ mission: initMission });
+          }
+
           return true;
         }
 
@@ -992,12 +1021,19 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
     throw new Error("Serfbound shell start button did not mount.");
   }
 
-  const startGameNow = (options: { seedString?: string; initialSupplies?: number }) => {
-    const result = startSerfboundLocalGame(
-      currentImportedDataSource === undefined
-        ? {}
-        : { data: currentImportedDataSource, ...options },
-    );
+  const startGameNow = (options: {
+    seedString?: string;
+    initialSupplies?: number;
+    mission?: string;
+  }) => {
+    const result =
+      options.mission !== undefined && currentImportedDataSource !== undefined
+        ? startSerfboundMission(options.mission, currentImportedDataSource)
+        : startSerfboundLocalGame(
+            currentImportedDataSource === undefined
+              ? {}
+              : { data: currentImportedDataSource, ...options },
+          );
     if (result.status === "started") {
       currentBuiltStructures = [];
       currentLocalGameSnapshot = result.snapshot;

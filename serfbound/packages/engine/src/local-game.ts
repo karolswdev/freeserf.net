@@ -19,6 +19,9 @@ export type SerfboundLocalGameSettings = {
   readonly seedString: string;
   // GameInitBox player supplies (0..40, reference custom-game slider).
   readonly initialSupplies: number;
+  // Mission play: total player slots and per-player supplies presets.
+  readonly playerCount?: number;
+  readonly playerSupplies?: readonly number[];
 };
 
 export type SerfboundLocalGameStartOptions = {
@@ -26,6 +29,8 @@ export type SerfboundLocalGameStartOptions = {
   readonly mapSize?: number;
   readonly seedString?: string;
   readonly initialSupplies?: number;
+  readonly playerCount?: number;
+  readonly playerSupplies?: readonly number[];
 };
 
 export type SerfboundLocalGameSnapshot = {
@@ -105,8 +110,11 @@ export class SerfboundLocalGame {
   // log (saved in the game state), so restores replay to identical state.
   world(): SerfboundGameWorld {
     if (this.#world === undefined) {
-      this.#world = new SerfboundGameWorld(this.landscape());
+      this.#world = new SerfboundGameWorld(this.landscape(), this.settings.playerCount ?? 1);
       this.#world.initialSupplies = this.settings.initialSupplies ?? 20;
+      if (this.settings.playerSupplies !== undefined) {
+        this.#world.playerSupplies = [...this.settings.playerSupplies];
+      }
       replayWorldActions(
         this.#world,
         this.state.worldActions.filter(isSerfboundWorldAction),
@@ -196,6 +204,10 @@ export function startSerfboundLocalGame(
       mapSize,
       seedString,
       initialSupplies,
+      ...(options.playerCount === undefined ? {} : { playerCount: options.playerCount }),
+      ...(options.playerSupplies === undefined
+        ? {}
+        : { playerSupplies: [...options.playerSupplies] }),
     },
     state,
   );

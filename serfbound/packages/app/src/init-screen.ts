@@ -30,7 +30,8 @@ export function initScreenRect(canvas: RenderSize, scale: number): PopupRect {
 export const initScreenRows = {
   seed: { y: 24, height: 24 },
   supplies: { y: 56, height: 16 },
-  start: { y: 100, height: 20 },
+  mission: { y: 86, height: 12 },
+  start: { y: 104, height: 18 },
 } as const;
 
 export type InitScreenRow = keyof typeof initScreenRows;
