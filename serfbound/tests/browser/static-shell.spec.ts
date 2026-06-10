@@ -38,6 +38,8 @@ test("static app shell renders without original data or a desktop companion", as
   await expect(page.getByTestId("scene-detail")).toHaveText(
     "WebGL2, generated fixture assets",
   );
+  await expect(page.getByTestId("command-state")).toHaveText("No command routed");
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-command-state", "idle");
   await expect(page.getByTestId("data-reset-button")).toBeDisabled();
 
   await expect(page.locator("#app")).toHaveAttribute(
@@ -145,6 +147,20 @@ test("static app shell renders without original data or a desktop companion", as
   await clickCanvasFraction(page, 0.5, 0.5);
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-state", "selected");
   await expect(page.getByTestId("pointer-state")).toContainText(/Selected \d+,\d+/);
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-command-state", "accepted");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-command-type",
+    "debug.inspect-map-tile",
+  );
+  await expect(page.locator("#app")).toHaveAttribute("data-serfbound-command-id", "1");
+  await expect(page.locator("#app")).toHaveAttribute(
+    "data-serfbound-command-log-length",
+    "1",
+  );
+  await expect(page.getByTestId("command-state")).toHaveText("Command accepted");
+  await expect(page.getByTestId("command-detail")).toContainText(
+    /debug\.inspect-map-tile #1 tile \d+,\d+/,
+  );
   await dispatchCanvasPointer(page, "pointermove", 0.25, 0.35, "touch");
   await expect(page.locator("#app")).toHaveAttribute("data-serfbound-pointer-type", "touch");
   await expect(page.getByTestId("pointer-detail")).toContainText(/via touch/);

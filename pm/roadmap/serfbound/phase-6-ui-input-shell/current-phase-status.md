@@ -28,8 +28,8 @@ shell that is ergonomic enough for the first playable slice.
 ## Exit criteria (evidence required)
 
 - [x] Pointer input maps to map positions through tested conversion logic.
-- [ ] Keyboard shortcuts are chosen or deferred with explicit browser conflicts.
-- [ ] Basic game command routing exists from UI to engine state.
+- [x] Keyboard shortcuts are chosen or deferred with explicit browser conflicts.
+- [x] Basic game command routing exists from UI to engine state.
 - [ ] Missing/invalid data and import flows are user-recoverable.
 - [ ] Manual browser checks cover mouse, trackpad, and touch viability at a
   minimum exploratory level.
@@ -39,15 +39,18 @@ shell that is ergonomic enough for the first playable slice.
 | ID | Story | Status | Story file | Evidence |
 |---|---|---|---|---|
 | SB-6-01 | Implement pointer-to-map interaction | done | story-01-pointer-map-interaction.md | evidence-story-01.md |
-| SB-6-02 | Add command routing shell | ready | story-02-command-routing-shell.md | — |
-| SB-6-03 | Build basic panels and states | backlog | story-03-basic-panels-states.md | — |
+| SB-6-02 | Add command routing shell | done | story-02-command-routing-shell.md | evidence-story-02.md |
+| SB-6-03 | Build basic panels and states | ready | story-03-basic-panels-states.md | — |
 | SB-6-04 | Verify interaction ergonomics | backlog | story-04-interaction-ergonomics.md | — |
 
 ## Where we are
 
-Phase 6 is in progress. SB-6-01 added pointer-to-map hover and selection debug
-state over the WebGL2 scene using the Phase 5 projection transform. The next
-responsible move is SB-6-02: add the command routing shell.
+Phase 6 is in progress. SB-6-02 added a DOM-free `SerfboundCommandRouter`
+inside `@serfbound/engine`, routes browser canvas selection through
+`debug.inspect-map-tile`, and reserves `game.build` as an explicit deferred
+Phase 7 route. The next responsible move is SB-6-03: build the basic panels and
+states around imported data, running-game state, selected tile, and recoverable
+errors.
 
 ## Active risks
 
@@ -63,8 +66,17 @@ responsible move is SB-6-02: add the command routing shell.
   canvas-relative positions through `resolveFirstRenderLayerPointer()` and the
   shared Phase 5 `MapProjectionTransform`; keep physical-device ergonomics for
   SB-6-04 — SB-6-01.
+- 2026-06-09 — Route UI actions as semantic commands through
+  `SerfboundCommandRouter` in `@serfbound/engine`; use `debug.inspect-map-tile`
+  as the no-op end-to-end proof; reserve `game.build` as a structured
+  `build-command-deferred` route for Phase 7 — SB-6-02.
+- 2026-06-09 — Defer exact keyboard shortcut bindings until visible action
+  panels exist; command payloads already support `source: "keyboard"`, and
+  Phase 6 will prefer browser-safe bindings over legacy shortcuts that collide
+  with browser navigation, find, reload, text editing, or assistive technology
+  conventions — SB-6-02.
 
 ## Decisions deferred
 
-- Exact keyboard shortcut set — resolve in SB-6-02 — default to browser-safe
-  equivalents over exact DOS/desktop parity.
+- Physical-device ergonomics for mouse, trackpad, and touch — resolve in
+  SB-6-04 after command routing and panels exist.

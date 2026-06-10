@@ -201,6 +201,10 @@ For Serfbound specifically, every implementation story must identify:
   pointer positions to view, map, and tile coordinates through
   `resolveFirstRenderLayerPointer()` and the shared Phase 5 projection math,
   then exposes hover/selection debug state in the browser shell.
+- **Current command routing proof:** `@serfbound/engine` exposes a DOM-free
+  `SerfboundCommandRouter`; `@serfbound/app` routes canvas tile selection
+  through `debug.inspect-map-tile`, records deterministic command results, and
+  reserves `game.build` as a structured deferred Phase 7 route.
 
 ## Glossary
 

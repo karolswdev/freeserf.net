@@ -7,7 +7,12 @@ import {
   type DosPaCatalog,
   type TypedAssetCatalog,
 } from "@serfbound/assets";
-import { engineBoundary, uint16 } from "@serfbound/engine";
+import {
+  engineBoundary,
+  SerfboundCommandRouter,
+  uint16,
+  type SerfboundCommandResult,
+} from "@serfbound/engine";
 import {
   BrowserIndexedDbImportedArchiveStore,
   clearImportedArchiveRecord,
@@ -85,6 +90,8 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   root.dataset.serfboundDataState = summary.dataState;
   root.dataset.serfboundCatalogState = "unread";
   root.dataset.serfboundStorageState = "empty";
+  root.dataset.serfboundCommandState = "idle";
+  root.dataset.serfboundCommandLogLength = "0";
   root.innerHTML = `
     <main class="serfbound-shell" data-testid="serfbound-shell">
       <section class="scene" aria-labelledby="serfbound-title">
@@ -127,6 +134,11 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
           <p class="status-panel__value" data-testid="pointer-state">No map target</p>
         </div>
         <p class="status-panel__detail" data-testid="pointer-detail">Move over the map scene.</p>
+        <div>
+          <p class="status-panel__label">Command</p>
+          <p class="status-panel__value" data-testid="command-state">No command routed</p>
+        </div>
+        <p class="status-panel__detail" data-testid="command-detail">Select a map tile to route a debug command.</p>
         <input
           id="data-import"
           class="import-input"
@@ -149,6 +161,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
   if (canvas === null) {
     throw new Error("Serfbound shell canvas did not mount.");
   }
+  const commandRouter = new SerfboundCommandRouter();
 
   let currentTypedAssetCatalog: TypedAssetCatalog | undefined;
   const renderCurrentScene = () => {
@@ -165,7 +178,7 @@ export function mountSerfbound(root: HTMLElement, options: MountSerfboundOptions
 
   renderGeneratedScene();
   observeSceneResize(canvas, renderCurrentScene);
-  attachPointerMapInteraction(root, canvas);
+  attachPointerMapInteraction(root, canvas, commandRouter);
 
   const input = root.querySelector<HTMLInputElement>("[data-testid='data-import-input']");
   if (input === null) {
@@ -425,7 +438,11 @@ function renderScene(root: HTMLElement, typedAssetCatalog: TypedAssetCatalog | u
       : "WebGL2, generated fixture assets";
 }
 
-function attachPointerMapInteraction(root: HTMLElement, canvas: HTMLCanvasElement): void {
+function attachPointerMapInteraction(
+  root: HTMLElement,
+  canvas: HTMLCanvasElement,
+  commandRouter: SerfboundCommandRouter,
+): void {
   canvas.addEventListener("pointermove", (event) => {
     const interaction = resolveCanvasPointer(canvas, event);
     applyPointerHoverState(root, interaction, event.pointerType);
@@ -435,6 +452,15 @@ function attachPointerMapInteraction(root: HTMLElement, canvas: HTMLCanvasElemen
     const interaction = resolveCanvasPointer(canvas, event);
     applyPointerHoverState(root, interaction, event.pointerType);
     applyPointerSelectionState(root, interaction);
+    applyCommandResultState(
+      root,
+      commandRouter.dispatch({
+        type: "debug.inspect-map-tile",
+        source: "pointer",
+        map: interaction.map,
+        tile: interaction.tile,
+      }),
+    );
   });
 
   canvas.addEventListener("pointerleave", () => {
@@ -480,6 +506,31 @@ function applyPointerSelectionState(root: HTMLElement, interaction: PointerMapIn
   getPointerStateElement(root).textContent = `Selected ${interaction.tile.column},${interaction.tile.row}`;
 }
 
+function applyCommandResultState(root: HTMLElement, result: SerfboundCommandResult): void {
+  root.dataset.serfboundCommandState = result.status;
+  root.dataset.serfboundCommandId = String(result.commandId);
+  root.dataset.serfboundCommandLogLength = String(result.snapshot.commandLogLength);
+
+  if (result.status === "accepted") {
+    root.dataset.serfboundCommandType = result.command.type;
+    delete root.dataset.serfboundCommandReason;
+    getCommandStateElement(root).textContent = "Command accepted";
+    getCommandDetailElement(root).textContent =
+      `${result.command.type} #${result.commandId} tile ${result.command.tile.column},${result.command.tile.row}`;
+    return;
+  }
+
+  if (result.commandType === undefined) {
+    delete root.dataset.serfboundCommandType;
+  } else {
+    root.dataset.serfboundCommandType = result.commandType;
+  }
+
+  root.dataset.serfboundCommandReason = result.reason;
+  getCommandStateElement(root).textContent = "Command rejected";
+  getCommandDetailElement(root).textContent = `${result.reason}: ${result.message}`;
+}
+
 function getPointerStateElement(root: HTMLElement): HTMLElement {
   const state = root.querySelector<HTMLElement>("[data-testid='pointer-state']");
   if (state === null) {
@@ -493,6 +544,24 @@ function getPointerDetailElement(root: HTMLElement): HTMLElement {
   const detail = root.querySelector<HTMLElement>("[data-testid='pointer-detail']");
   if (detail === null) {
     throw new Error("Serfbound shell pointer detail did not mount.");
+  }
+
+  return detail;
+}
+
+function getCommandStateElement(root: HTMLElement): HTMLElement {
+  const state = root.querySelector<HTMLElement>("[data-testid='command-state']");
+  if (state === null) {
+    throw new Error("Serfbound shell command state did not mount.");
+  }
+
+  return state;
+}
+
+function getCommandDetailElement(root: HTMLElement): HTMLElement {
+  const detail = root.querySelector<HTMLElement>("[data-testid='command-detail']");
+  if (detail === null) {
+    throw new Error("Serfbound shell command detail did not mount.");
   }
 
   return detail;

@@ -2,7 +2,7 @@
 
 - **Project:** serfbound
 - **Phase:** 6
-- **Status:** ready
+- **Status:** done
 - **Depends on:** SB-6-01, SB-3-03
 - **Unblocks:** SB-7-02
 - **Owner:** unassigned
@@ -35,5 +35,10 @@ shell, browser components will mutate state ad hoc and break determinism.
 - **Design handoff:** n/a - non-visual architecture.
 
 ## Notes / open questions
+
+Shipped `SerfboundCommandRouter` in `@serfbound/engine`; browser pointer
+selection now dispatches `debug.inspect-map-tile` through that boundary.
+`game.build` is typed and routed, but rejected with a structured
+`build-command-deferred` result until Phase 7 owns build semantics.
 
 Keep commands semantic. Do not route raw DOM events into the engine.
